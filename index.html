@@ -194,30 +194,24 @@
             padding: 20px;
         }
 
+        /* RESTORED FULLSCREEN BUTTON STYLES */
         #fullscreen-button {
             position: absolute;
-            top: 15px;
+            top: 10px;
             left: 50%;
             transform: translateX(-50%);
             z-index: 20;
-            padding: 8px 20px;
+            padding: 2px 14px; /* Super thin - 2px top/bottom */
             background: rgba(255, 255, 255, 0.9);
             border: none;
-            border-radius: 4px;
+            border-radius: 2px; /* Very small radius */
             cursor: pointer;
             font-family: Arial, sans-serif;
-            font-size: 14px;
-            font-weight: bold;
+            font-size: 11px; /* Compact font */
             backdrop-filter: blur(5px);
             white-space: nowrap;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-            transition: all 0.2s ease;
+            line-height: 1.1; /* Very tight line height */
         }
-
-            #fullscreen-button:hover {
-                background: rgba(255, 255, 255, 1);
-                transform: translateX(-50%) scale(1.05);
-            }
 
         /* Mobile-specific adjustments */
         @media (max-width: 768px) {
@@ -267,10 +261,11 @@
                 max-width: 95%;
             }
 
+            /* RESTORED MOBILE FULLSCREEN BUTTON STYLES */
             #fullscreen-button {
-                top: 10px;
-                padding: 6px 16px;
-                font-size: 12px;
+                top: 5px;
+                padding: 1px 10px; /* Ultra thin on mobile */
+                font-size: 10px;
             }
 
             /* More compensation on mobile if needed */
