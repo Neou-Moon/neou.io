@@ -6,11 +6,8 @@
     <meta http-equiv="Cross-Origin-Embedder-Policy" content="require-corp">
     <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Neou.io - An Outer Worldly Adventure</title>
+    <title>Neou.io | An Outer Worldly Adventure</title>
     <link rel="icon" href="data:;base64,iVBORw0KGgo="> <!-- Suppress favicon 404 -->
-    <!-- Ad Network Scripts (Example using Google AdSense) -->
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
-
     <style>
         * {
             box-sizing: border-box;
@@ -19,106 +16,132 @@
         body {
             margin: 0;
             padding: 0;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-            display: flex;
-            flex-direction: column;
+            background: #000;
             min-height: 100vh;
             overflow-x: hidden;
             font-family: Arial, sans-serif;
             color: white;
+            position: relative;
         }
 
-        /* Page Header with Title */
-        #page-header {
+            /* Space background with stars */
+            body::before {
+                content: '';
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: radial-gradient(ellipse at center, rgba(8, 15, 30, 0.8) 0%, rgba(0, 0, 0, 1) 70%), url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"><defs><radialGradient id="grad"><stop offset="0%" stop-color="%23000B1A"/><stop offset="100%" stop-color="%23000000"/></radialGradient></defs><rect width="100%" height="100%" fill="url(%23grad)"/></svg>');
+                z-index: -2;
+            }
+
+        /* Starfield effect */
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .star {
+            position: absolute;
+            background-color: white;
+            border-radius: 50%;
+        }
+
+        /* Header with title */
+        .header {
             text-align: center;
-            padding: 20px 10px;
-            background: rgba(0, 0, 0, 0.3);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 10px 0;
+            position: relative;
+            z-index: 5;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
         }
 
-        #game-title {
+        .game-title {
             font-size: 3.5rem;
             font-weight: bold;
             margin: 0;
-            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.7), -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+            color: white;
+            text-shadow: 3px 3px 0 #000, -3px -3px 0 #000, 3px -3px 0 #000, -3px 3px 0 #000, 0 3px 0 #000, 3px 0 0 #000, 0 -3px 0 #000, -3px 0 0 #000, 2px 2px 5px rgba(0, 0, 0, 0.8);
             letter-spacing: 2px;
         }
 
-        #game-subtitle {
-            font-size: 1.5rem;
-            margin: 10px 0 0 0;
+        .game-subtitle {
+            font-size: 1.2rem;
+            margin: 5px 0 0 0;
+            color: #a0d2ff;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
             font-style: italic;
-            color: #FFD700; /* Changed to yellow */
-            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
-            font-weight: bold;
         }
 
-        /* Header with top ad */
-        #header-ad {
-            width: 100%;
-            height: 90px;
+        /* Main content layout */
+        .main-container {
             display: flex;
-            justify-content: center;
-            align-items: center;
-            background: rgba(0, 0, 0, 0.3);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            flex-direction: column;
+            min-height: 100vh;
+            padding: 0;
         }
 
-        .ad-container {
-            width: 728px;
-            height: 90px;
-            background: rgba(0, 0, 0, 0.2);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 14px;
-            border-radius: 4px;
-        }
-
-        /* Main content area */
-        #main-content {
+        .content-wrapper {
             display: flex;
             flex: 1;
-            padding: 15px;
-            gap: 15px;
-            min-height: 70vh;
+            width: 100%;
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 0 10px;
         }
 
-        /* Sidebar ads */
-        #left-ad, #right-ad {
-            width: 160px;
+        /* Ad containers */
+        .ad-side {
+            flex: 0 0 160px;
             display: flex;
             flex-direction: column;
             justify-content: flex-start;
-            align-items: center;
-            gap: 10px;
+            padding: 10px 5px;
         }
 
-        .vertical-ad {
-            width: 160px;
-            height: 600px;
-            background: rgba(0, 0, 0, 0.2);
+        .ad-top {
+            width: 100%;
+            height: 90px;
+            margin-bottom: 10px;
+            background: rgba(30, 30, 60, 0.5);
+            border: 1px solid rgba(100, 150, 255, 0.3);
             display: flex;
-            justify-content: center;
             align-items: center;
-            color: rgba(255, 255, 255, 0.7);
+            justify-content: center;
+            color: #a0d2ff;
             font-size: 14px;
             border-radius: 4px;
         }
 
-        /* Game container - Made larger when not in fullscreen */
-        #game-container {
+        .ad-vertical {
+            flex: 1;
+            min-height: 600px;
+            background: rgba(30, 30, 60, 0.5);
+            border: 1px solid rgba(100, 150, 255, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #a0d2ff;
+            font-size: 14px;
+            border-radius: 4px;
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+        }
+
+        /* Game container */
+        .game-area {
             flex: 1;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 12px;
-            padding: 15px;
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
-            min-height: 600px;
-            transition: all 0.3s ease;
+            padding: 10px;
         }
 
         #unity-container {
@@ -131,6 +154,7 @@
             background: #000;
             border-radius: 8px;
             overflow: hidden;
+            box-shadow: 0 0 20px rgba(80, 120, 255, 0.3);
             /* Add safe area compensation */
             padding: 2px; /* Small compensation to prevent cutting */
         }
@@ -141,41 +165,25 @@
             object-fit: contain;
             display: block;
             background: #000;
-            border-radius: 6px;
             /* Ensure no scaling beyond safe boundaries */
             max-width: calc(100% - 4px);
             max-height: calc(100% - 4px);
         }
 
-        /* How to Play Section */
-        #how-to-play {
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px 10px;
-            background: rgba(0, 0, 0, 0.2);
+        /* How to play image */
+        .how-to-play {
+            margin-top: 15px;
+            text-align: center;
         }
 
-        #how-to-play-image {
-            max-width: 800px;
-            width: 100%;
-            height: auto;
-            border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-        }
+            .how-to-play img {
+                max-width: 100%;
+                height: auto;
+                border-radius: 8px;
+                box-shadow: 0 0 10px rgba(80, 120, 255, 0.5);
+            }
 
-        /* Footer with bottom ad */
-        #footer-ad {
-            width: 100%;
-            height: 90px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background: rgba(0, 0, 0, 0.3);
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
+        /* Loading and fullscreen button styles */
         #loading-overlay {
             position: absolute;
             top: 0;
@@ -196,81 +204,58 @@
 
         #fullscreen-button {
             position: absolute;
-            top: 15px;
+            top: 10px;
             left: 50%;
             transform: translateX(-50%);
             z-index: 20;
-            padding: 8px 20px;
+            padding: 2px 14px; /* Super thin - 2px top/bottom */
             background: rgba(255, 255, 255, 0.9);
             border: none;
-            border-radius: 4px;
+            border-radius: 2px; /* Very small radius */
             cursor: pointer;
             font-family: Arial, sans-serif;
-            font-size: 14px;
-            font-weight: bold;
+            font-size: 11px; /* Compact font */
             backdrop-filter: blur(5px);
             white-space: nowrap;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-            transition: all 0.2s ease;
+            line-height: 1.1; /* Very tight line height */
         }
-
-            #fullscreen-button:hover {
-                background: rgba(255, 255, 255, 1);
-                transform: translateX(-50%) scale(1.05);
-            }
 
         /* Mobile-specific adjustments */
         @media (max-width: 768px) {
-            #game-title {
+            .content-wrapper {
+                flex-direction: column;
+                padding: 0 5px;
+            }
+
+            .ad-side {
+                flex-direction: row;
+                flex: 0 0 auto;
+                padding: 5px 0;
+            }
+
+            .ad-top {
+                width: 100%;
+                height: 50px;
+                margin: 0 5px;
+                writing-mode: horizontal-tb;
+            }
+
+            .ad-vertical {
+                display: none; /* Hide vertical ads on mobile */
+            }
+
+            .game-title {
                 font-size: 2.5rem;
             }
 
-            #game-subtitle {
-                font-size: 1.2rem;
-            }
-
-            #header-ad, #footer-ad {
-                height: 50px;
-            }
-
-            .ad-container {
-                width: 320px;
-                height: 50px;
-            }
-
-            #main-content {
-                flex-direction: column;
-                padding: 10px;
-            }
-
-            #left-ad, #right-ad {
-                width: 100%;
-                flex-direction: row;
-                justify-content: center;
-            }
-
-            .vertical-ad {
-                width: 300px;
-                height: 100px;
-            }
-
-            #game-container {
-                min-height: 400px;
-                padding: 10px;
-            }
-
-            #how-to-play {
-                padding: 15px 5px;
-            }
-
-            #how-to-play-image {
-                max-width: 95%;
+            .game-subtitle {
+                font-size: 1rem;
             }
 
             #fullscreen-button {
-                top: 10px;
-                padding: 6px 16px;
-                font-size: 12px;
+                top: 5px;
+                padding: 1px 10px; /* Ultra thin on mobile */
+                font-size: 10px;
             }
 
             /* More compensation on mobile if needed */
@@ -291,7 +276,6 @@
             width: 100vw;
             height: 100vh;
             padding: 0; /* Remove padding in fullscreen */
-            border-radius: 0;
         }
 
         :fullscreen #unity-canvas,
@@ -302,7 +286,6 @@
             object-fit: contain;
             max-width: 100vw;
             max-height: 100vh;
-            border-radius: 0;
         }
 
         /* Support for safe area insets on modern browsers */
@@ -321,47 +304,10 @@
         :-moz-full-screen #fullscreen-button {
             display: none;
         }
-
-        /* Hide ads, title, and how-to-play when in fullscreen mode */
-        :fullscreen #page-header,
-        :-webkit-full-screen #page-header,
-        :-moz-full-screen #page-header,
-        :fullscreen #header-ad,
-        :-webkit-full-screen #header-ad,
-        :-moz-full-screen #header-ad,
-        :fullscreen #footer-ad,
-        :-webkit-full-screen #footer-ad,
-        :-moz-full-screen #footer-ad,
-        :fullscreen #left-ad,
-        :-webkit-full-screen #left-ad,
-        :-moz-full-screen #left-ad,
-        :fullscreen #right-ad,
-        :-webkit-full-screen #right-ad,
-        :-moz-full-screen #right-ad,
-        :fullscreen #how-to-play,
-        :-webkit-full-screen #how-to-play,
-        :-moz-full-screen #how-to-play {
-            display: none;
-        }
-
-        :fullscreen #game-container,
-        :-webkit-full-screen #game-container,
-        :-moz-full-screen #game-container {
-            width: 100vw;
-            height: 100vh;
-            padding: 0;
-            border-radius: 0;
-            min-height: auto;
-        }
-
-        :fullscreen #main-content,
-        :-webkit-full-screen #main-content,
-        :-moz-full-screen #main-content {
-            padding: 0;
-        }
     </style>
     <!-- Use Firebase modular API -->
     <script type="module">
+        // Your existing Firebase code remains exactly the same
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js';
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, updateProfile, sendPasswordResetEmail, sendEmailVerification, signInAnonymously, updateEmail } from 'https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js';
         import { getDatabase, ref, set, update, remove, onValue, onDisconnect, push, get, query, orderByChild } from 'https://www.gstatic.com/firebasejs/10.14.0/firebase-database.js';
@@ -1499,94 +1445,79 @@
     </script>
 </head>
 <body>
-    <!-- Page Header with Title -->
-    <div id="page-header">
-        <h1 id="game-title">Neou.io</h1>
-        <p id="game-subtitle">An Outer Worldly Adventure</p>
-    </div>
+    <!-- Starfield background -->
+    <div class="stars" id="stars"></div>
 
-    <!-- Header with top ad -->
-    <div id="header-ad">
-        <div class="ad-container">
-            <!-- Replace with your actual ad code -->
-            <ins class="adsbygoogle"
-                 style="display:block"
-                 data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
-                 data-ad-slot="XXXXXXXXXX"
-                 data-ad-format="auto"
-                 data-full-width-responsive="true"></ins>
-            <script>
-                (adsbygoogle = window.adsbygoogle || []).push({});
-            </script>
+    <div class="main-container">
+        <!-- Header with title -->
+        <div class="header">
+            <h1 class="game-title">Neou.io</h1>
+            <p class="game-subtitle">An Outer Worldly Adventure</p>
         </div>
-    </div>
 
-    <!-- Main content area -->
-    <div id="main-content">
-        <!-- Left sidebar ad -->
-        <div id="left-ad">
-            <div class="vertical-ad">
-                <!-- Replace with your actual ad code -->
-                <ins class="adsbygoogle"
-                     style="display:block"
-                     data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
-                     data-ad-slot="XXXXXXXXXX"
-                     data-ad-format="auto"
-                     data-full-width-responsive="true"></ins>
-                <script>
-                    (adsbygoogle = window.adsbygoogle || []).push({});
-                </script>
+        <!-- Main content area -->
+        <div class="content-wrapper">
+            <!-- Left ad container -->
+            <div class="ad-side left-ad">
+                <div class="ad-top">Google AdSense</div>
+                <div class="ad-vertical">Google AdSense</div>
             </div>
-        </div>
 
-        <!-- Game container -->
-        <div id="game-container">
-            <div id="unity-container">
-                <canvas id="unity-canvas"></canvas>
-                <div id="loading-overlay">Loading Neou.io...</div>
-                <button id="fullscreen-button">Fullscreen</button>
+            <!-- Game area -->
+            <div class="game-area">
+                <div id="unity-container">
+                    <canvas id="unity-canvas"></canvas>
+                    <div id="loading-overlay">Loading NeouWebGL...</div>
+                    <button id="fullscreen-button">Fullscreen</button>
+                </div>
+
+                <!-- How to play image -->
+                <div class="how-to-play">
+                    <img src="https://neou-moon.github.io/neou-videos/HowToPlay.png" alt="How to Play">
+                </div>
             </div>
-        </div>
 
-        <!-- Right sidebar ad -->
-        <div id="right-ad">
-            <div class="vertical-ad">
-                <!-- Replace with your actual ad code -->
-                <ins class="adsbygoogle"
-                     style="display:block"
-                     data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
-                     data-ad-slot="XXXXXXXXXX"
-                     data-ad-format="auto"
-                     data-full-width-responsive="true"></ins>
-                <script>
-                    (adsbygoogle = window.adsbygoogle || []).push({});
-                </script>
+            <!-- Right ad container -->
+            <div class="ad-side right-ad">
+                <div class="ad-top">Google AdSense</div>
+                <div class="ad-vertical">Google AdSense</div>
             </div>
-        </div>
-    </div>
-
-    <!-- How to Play Section -->
-    <div id="how-to-play">
-        <img id="how-to-play-image" src="https://neou-moon.github.io/neou-videos/HowToPlay.png" alt="How to Play Neou.io">
-    </div>
-
-    <!-- Footer with bottom ad -->
-    <div id="footer-ad">
-        <div class="ad-container">
-            <!-- Replace with your actual ad code -->
-            <ins class="adsbygoogle"
-                 style="display:block"
-                 data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
-                 data-ad-slot="XXXXXXXXXX"
-                 data-ad-format="auto"
-                 data-full-width-responsive="true"></ins>
-            <script>
-                (adsbygoogle = window.adsbygoogle || []).push({});
-            </script>
         </div>
     </div>
 
     <script>
+        // Create starfield effect
+        function createStars() {
+            const starsContainer = document.getElementById('stars');
+            const starCount = 200;
+
+            for (let i = 0; i < starCount; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+
+                // Random position
+                const x = Math.random() * 100;
+                const y = Math.random() * 100;
+
+                // Random size (0.5px to 2px)
+                const size = Math.random() * 1.5 + 0.5;
+
+                // Random opacity
+                const opacity = Math.random() * 0.7 + 0.3;
+
+                star.style.left = `${x}%`;
+                star.style.top = `${y}%`;
+                star.style.width = `${size}px`;
+                star.style.height = `${size}px`;
+                star.style.opacity = opacity;
+
+                starsContainer.appendChild(star);
+            }
+        }
+
+        // Initialize starfield
+        createStars();
+
         var unityInstance = null;
         var container = document.querySelector("#unity-container");
         var canvas = document.querySelector("#unity-canvas");
@@ -1599,27 +1530,16 @@
 
         fullscreenButton.addEventListener("click", () => {
             if (!document.fullscreenElement) {
-                // Force landscape orientation on mobile devices when entering fullscreen
-                if (screen.orientation && screen.orientation.lock) {
-                    screen.orientation.lock('landscape').catch(err => {
-                        console.log('Orientation lock not supported:', err);
-                    });
-                }
                 container.requestFullscreen().catch(err => console.error("Fullscreen error:", err));
             } else {
-                // Unlock orientation when exiting fullscreen
-                if (screen.orientation && screen.orientation.unlock) {
-                    screen.orientation.unlock();
-                }
                 document.exitFullscreen();
             }
         });
 
         // Handle resize and aspect ratio properly
         function handleResize() {
-            const gameContainer = document.getElementById('game-container');
-            const windowWidth = gameContainer.clientWidth;
-            const windowHeight = gameContainer.clientHeight;
+            const windowWidth = window.innerWidth;
+            const windowHeight = window.innerHeight;
             const gameAspectRatio = 16 / 9;
             const windowAspectRatio = windowWidth / windowHeight;
 
@@ -1681,21 +1601,8 @@
                     container.style.padding = '0';
                     canvas.style.maxWidth = '100%';
                     canvas.style.maxHeight = '100%';
-
-                    // Force landscape on mobile when in fullscreen
-                    if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
-                        if (screen.orientation && screen.orientation.lock) {
-                            screen.orientation.lock('landscape').catch(err => {
-                                console.log('Orientation lock not supported:', err);
-                            });
-                        }
-                    }
                 } else {
                     applySafeAreaCompensation();
-                    // Unlock orientation when exiting fullscreen
-                    if (screen.orientation && screen.orientation.unlock) {
-                        screen.orientation.unlock();
-                    }
                 }
             }, 100);
         });
@@ -1706,21 +1613,8 @@
                     container.style.padding = '0';
                     canvas.style.maxWidth = '100%';
                     canvas.style.maxHeight = '100%';
-
-                    // Force landscape on mobile when in fullscreen
-                    if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
-                        if (screen.orientation && screen.orientation.lock) {
-                            screen.orientation.lock('landscape').catch(err => {
-                                console.log('Orientation lock not supported:', err);
-                            });
-                        }
-                    }
                 } else {
                     applySafeAreaCompensation();
-                    // Unlock orientation when exiting fullscreen
-                    if (screen.orientation && screen.orientation.unlock) {
-                        screen.orientation.unlock();
-                    }
                 }
             }, 100);
         });
@@ -1731,21 +1625,8 @@
                     container.style.padding = '0';
                     canvas.style.maxWidth = '100%';
                     canvas.style.maxHeight = '100%';
-
-                    // Force landscape on mobile when in fullscreen
-                    if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
-                        if (screen.orientation && screen.orientation.lock) {
-                            screen.orientation.lock('landscape').catch(err => {
-                                console.log('Orientation lock not supported:', err);
-                            });
-                        }
-                    }
                 } else {
                     applySafeAreaCompensation();
-                    // Unlock orientation when exiting fullscreen
-                    if (screen.orientation && screen.orientation.unlock) {
-                        screen.orientation.unlock();
-                    }
                 }
             }, 100);
         });
