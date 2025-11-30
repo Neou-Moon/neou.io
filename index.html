@@ -1653,9 +1653,9 @@
                 console.log(`Unity script loaded successfully: ${buildScriptPath}`);
                 const buildName = buildScriptPath.split('/').pop().replace('.loader.js', '');
                 createUnityInstance(canvas, {
-                    dataUrl: `Build/${buildName}.data`,
-                    frameworkUrl: `Build/${buildName}.framework.js`,
-                    codeUrl: `Build/${buildName}.wasm`,
+                    dataUrl: `Build/${buildName}.data.gz`,
+                    frameworkUrl: `Build/${buildName}.framework.js.gz`,
+                    codeUrl: `Build/${buildName}.wasm.gz`,
                     streamingAssetsUrl: "StreamingAssets",
                     companyName: "DefaultCompany",
                     productName: "1.0",
