@@ -1,24 +1,19 @@
-/*.js
-  Cross-Origin-Embedder-Policy: credentialless
-  Cross-Origin-Opener-Policy: same-origin
-  Cross-Origin-Resource-Policy: cross-origin
-  Access-Control-Allow-Origin: *
-
-/*.wasm
-  Cross-Origin-Embedder-Policy: credentialless
-  Cross-Origin-Opener-Policy: same-origin
-  Cross-Origin-Resource-Policy: cross-origin
-  Access-Control-Allow-Origin: *
-  Content-Type: application/wasm
-
-/*.data
-  Cross-Origin-Embedder-Policy: credentialless
-  Cross-Origin-Opener-Policy: same-origin
-  Cross-Origin-Resource-Policy: cross-origin
-  Access-Control-Allow-Origin: *
-  Content-Type: application/octet-stream
-
 /*
   Cross-Origin-Embedder-Policy: credentialless
   Cross-Origin-Opener-Policy: same-origin
   Cross-Origin-Resource-Policy: cross-origin
+
+/videos/*
+  Access-Control-Allow-Origin: *
+  Access-Control-Allow-Methods: GET, OPTIONS
+  Cross-Origin-Resource-Policy: cross-origin
+
+/Build/*
+  Access-Control-Allow-Origin: *
+  Cross-Origin-Embedder-Policy: credentialless
+  Cross-Origin-Opener-Policy: same-origin
+  Cross-Origin-Resource-Policy: cross-origin
+
+/Build/*.wasm
+  Content-Type: application/wasm
+  Access-Control-Allow-Origin: *
