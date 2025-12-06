@@ -2,7 +2,6 @@
   Access-Control-Allow-Origin: *
   Access-Control-Allow-Methods: GET, POST, OPTIONS
   Cross-Origin-Embedder-Policy: credentialless
-  Cross-Origin-Opener-Policy: same-origin
 
 /videos/*
   Access-Control-Allow-Origin: *
@@ -11,15 +10,8 @@
 
 /*.webm
   Access-Control-Allow-Origin: *
-  Content-Type: video/webm
   Cross-Origin-Resource-Policy: cross-origin
 
 /*.png
   Access-Control-Allow-Origin: *
-  Content-Type: image/png
-  Cross-Origin-Resource-Policy: cross-origin
-
-/*.jpg
-  Access-Control-Allow-Origin: *
-  Content-Type: image/jpeg
   Cross-Origin-Resource-Policy: cross-origin
