@@ -285,6 +285,26 @@
                     max-width: none;
                     max-height: none;
                 }
+
+            /* Safari-specific fullscreen fix */
+            #unity-container.fullscreen-active {
+                width: 100vh !important;
+                height: 100vw !important;
+                max-width: none !important;
+                max-height: none !important;
+                position: fixed !important;
+                top: 50% !important;
+                left: 50% !important;
+                transform: translate(-50%, -50%) rotate(90deg) !important;
+                z-index: 9999 !important;
+            }
+            
+            #unity-container.fullscreen-active #unity-canvas {
+                width: 100vh !important;
+                height: 100vw !important;
+                max-width: none !important;
+                max-height: none !important;
+            }
         }
 
         /* Enhanced fullscreen styles with safe area support */
@@ -346,6 +366,19 @@
         :-webkit-full-screen #fullscreen-button,
         :-moz-full-screen #fullscreen-button {
             display: none;
+        }
+
+        /* Safari fallback fullscreen styles */
+        .safari-fullscreen {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            max-width: none !important;
+            max-height: none !important;
+            z-index: 9999 !important;
+            background: #000 !important;
         }
     </style>
     <!-- Use Firebase modular API -->
@@ -1853,19 +1886,182 @@
         fullscreenButton.style.left = '50%';
         fullscreenButton.style.transform = 'translateX(-50%)';
 
-        // Mobile landscape lock function
-        function applyMobileLandscapeLock() {
-            const isMobile = window.innerWidth <= 768;
+        // Check browser type
+        const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        const isMobile = window.innerWidth <= 768;
 
-            if (isMobile && document.fullscreenElement) {
-                // Apply landscape lock styles
-                container.classList.add('landscape-lock');
-
-                // Lock orientation if supported
-                if (screen.orientation && screen.orientation.lock) {
-                    screen.orientation.lock('landscape').catch(error => {
-                        console.log('Orientation lock not supported:', error);
+        // Safari-safe fullscreen function
+        function toggleFullscreen() {
+            if (!document.fullscreenElement && 
+                !document.webkitFullscreenElement && 
+                !document.mozFullScreenElement &&
+                !container.classList.contains('fullscreen-active')) {
+                
+                // ENTER FULLSCREEN
+                if (container.requestFullscreen) {
+                    container.requestFullscreen().catch(err => {
+                        console.log("Standard fullscreen error:", err);
+                        safariFullscreenFallback(true);
                     });
+                } else if (container.webkitRequestFullscreen) {
+                    container.webkitRequestFullscreen().catch(err => {
+                        console.log("Webkit fullscreen error:", err);
+                        safariFullscreenFallback(true);
+                    });
+                } else if (container.mozRequestFullScreen) {
+                    container.mozRequestFullScreen().catch(err => {
+                        console.log("Moz fullscreen error:", err);
+                        safariFullscreenFallback(true);
+                    });
+                } else {
+                    // Fallback for browsers that don't support Fullscreen API
+                    safariFullscreenFallback(true);
+                }
+            } else {
+                // EXIT FULLSCREEN
+                if (document.exitFullscreen) {
+                    document.exitFullscreen().catch(err => {
+                        console.log("Exit fullscreen error:", err);
+                        safariFullscreenFallback(false);
+                    });
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen().catch(err => {
+                        console.log("Webkit exit fullscreen error:", err);
+                        safariFullscreenFallback(false);
+                    });
+                } else if (document.mozCancelFullScreen) {
+                    document.mozCancelFullScreen().catch(err => {
+                        console.log("Moz exit fullscreen error:", err);
+                        safariFullscreenFallback(false);
+                    });
+                } else {
+                    safariFullscreenFallback(false);
+                }
+            }
+        }
+
+        // Safari fallback method
+        function safariFullscreenFallback(enter) {
+            if (enter) {
+                // ENTER fullscreen fallback
+                if (isMobile) {
+                    container.classList.add('fullscreen-active');
+                    container.classList.add('safari-fullscreen');
+                    document.body.style.overflow = 'hidden';
+                    
+                    // Try to lock orientation on iOS
+                    if (isIOS && window.screen.orientation && window.screen.orientation.lock) {
+                        window.screen.orientation.lock('landscape').catch(e => {
+                            console.log("Orientation lock not supported:", e);
+                        });
+                    }
+                    
+                    // Hide fullscreen button
+                    fullscreenButton.style.display = 'none';
+                    
+                    // Dispatch event for resize handling
+                    window.dispatchEvent(new Event('resize'));
+                } else {
+                    // For desktop Safari, use CSS fullscreen simulation
+                    container.classList.add('safari-fullscreen');
+                    fullscreenButton.style.display = 'none';
+                    document.body.style.overflow = 'hidden';
+                }
+                
+                // Set a flag so we know we're in fallback mode
+                container.setAttribute('data-safari-fallback', 'true');
+            } else {
+                // EXIT fullscreen fallback
+                container.classList.remove('fullscreen-active');
+                container.classList.remove('safari-fullscreen');
+                
+                // Restore normal styling
+                container.removeAttribute('data-safari-fallback');
+                fullscreenButton.style.display = 'block';
+                document.body.style.overflow = '';
+                
+                // Unlock orientation
+                if (isIOS && window.screen.orientation && window.screen.orientation.unlock) {
+                    window.screen.orientation.unlock();
+                }
+                
+                // Dispatch event for resize handling
+                window.dispatchEvent(new Event('resize'));
+            }
+        }
+
+        // Enhanced event listener for fullscreen button
+        fullscreenButton.addEventListener("click", function(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            
+            // For Safari, use direct approach
+            if (isSafari) {
+                toggleFullscreen();
+            } else {
+                // For other browsers, use your existing logic
+                if (!document.fullscreenElement) {
+                    container.requestFullscreen().then(() => {
+                        // Apply mobile landscape lock after entering fullscreen
+                        setTimeout(applyMobileLandscapeLock, 100);
+                    }).catch(err => {
+                        console.error("Fullscreen error:", err);
+                        // Fallback for Safari-like behavior
+                        safariFullscreenFallback(true);
+                    });
+                } else {
+                    document.exitFullscreen().then(() => {
+                        // Remove landscape lock after exiting fullscreen
+                        setTimeout(applyMobileLandscapeLock, 100);
+                    }).catch(err => {
+                        console.error("Exit fullscreen error:", err);
+                        safariFullscreenFallback(false);
+                    });
+                }
+            }
+            
+            // Prevent default behavior
+            return false;
+        });
+
+        // Also allow double-tap for mobile fullscreen (common pattern)
+        if (isMobile) {
+            let lastTap = 0;
+            container.addEventListener('touchend', function(event) {
+                const currentTime = new Date().getTime();
+                const tapLength = currentTime - lastTap;
+                
+                if (tapLength < 500 && tapLength > 0) {
+                    // Double tap detected
+                    toggleFullscreen();
+                    event.preventDefault();
+                }
+                lastTap = currentTime;
+            });
+        }
+
+        // Mobile landscape lock function (updated for Safari)
+        function applyMobileLandscapeLock() {
+            if (isMobile && (document.fullscreenElement || 
+                document.webkitFullscreenElement || 
+                document.mozFullScreenElement ||
+                container.classList.contains('fullscreen-active'))) {
+                
+                // Apply landscape lock styles
+                if (!isSafari) {
+                    container.classList.add('landscape-lock');
+                }
+                
+                // Try to lock orientation if supported (may fail on Safari without HTTPS)
+                if (screen.orientation && screen.orientation.lock) {
+                    try {
+                        screen.orientation.lock('landscape').catch(error => {
+                            console.log('Orientation lock not supported:', error);
+                        });
+                    } catch (e) {
+                        console.log('Orientation lock error:', e);
+                    }
                 }
 
                 // Dispatch resize event to update layout
@@ -1876,24 +2072,14 @@
 
                 // Unlock orientation if supported
                 if (screen.orientation && screen.orientation.unlock) {
-                    screen.orientation.unlock();
+                    try {
+                        screen.orientation.unlock();
+                    } catch (e) {
+                        console.log('Orientation unlock error:', e);
+                    }
                 }
             }
         }
-
-        fullscreenButton.addEventListener("click", () => {
-            if (!document.fullscreenElement) {
-                container.requestFullscreen().then(() => {
-                    // Apply mobile landscape lock after entering fullscreen
-                    setTimeout(applyMobileLandscapeLock, 100);
-                }).catch(err => console.error("Fullscreen error:", err));
-            } else {
-                document.exitFullscreen().then(() => {
-                    // Remove landscape lock after exiting fullscreen
-                    setTimeout(applyMobileLandscapeLock, 100);
-                });
-            }
-        });
 
         // Handle resize and aspect ratio properly
         function handleResize() {
@@ -1905,7 +2091,10 @@
             console.log(`Window: ${windowWidth}x${windowHeight}, Aspect: ${windowAspectRatio.toFixed(2)}`);
 
             // If in fullscreen on mobile with landscape lock, use different calculations
-            if (container.classList.contains('landscape-lock')) {
+            if (container.classList.contains('landscape-lock') || 
+                container.classList.contains('fullscreen-active') ||
+                container.classList.contains('safari-fullscreen')) {
+                
                 // For landscape-locked mobile fullscreen
                 canvas.style.width = '100%';
                 canvas.style.height = '100%';
@@ -1946,6 +2135,33 @@
             canvas.style.maxHeight = `calc(100% - ${safetyMargin * 2}px)`;
         }
 
+        // Fullscreen change handlers
+        function handleFullscreenChange() {
+            const isFullscreen = !!(document.fullscreenElement || 
+                                   document.webkitFullscreenElement || 
+                                   document.mozFullScreenElement ||
+                                   container.classList.contains('fullscreen-active') ||
+                                   container.classList.contains('safari-fullscreen'));
+            
+            if (isFullscreen) {
+                container.style.padding = '0';
+                canvas.style.maxWidth = '100%';
+                canvas.style.maxHeight = '100%';
+                fullscreenButton.style.display = 'none';
+                // Apply mobile landscape lock
+                applyMobileLandscapeLock();
+            } else {
+                applySafeAreaCompensation();
+                fullscreenButton.style.display = 'block';
+                // Remove landscape lock
+                container.classList.remove('landscape-lock');
+                container.classList.remove('fullscreen-active');
+                container.classList.remove('safari-fullscreen');
+            }
+            
+            handleResize();
+        }
+
         window.addEventListener('load', function () {
             handleResize();
             applySafeAreaCompensation();
@@ -1963,54 +2179,9 @@
             }, 100);
         });
 
-        document.addEventListener('fullscreenchange', function () {
-            setTimeout(function () {
-                handleResize();
-                if (document.fullscreenElement) {
-                    container.style.padding = '0';
-                    canvas.style.maxWidth = '100%';
-                    canvas.style.maxHeight = '100%';
-                    // Apply mobile landscape lock
-                    applyMobileLandscapeLock();
-                } else {
-                    applySafeAreaCompensation();
-                    // Remove landscape lock
-                    container.classList.remove('landscape-lock');
-                }
-            }, 100);
-        });
-        document.addEventListener('webkitfullscreenchange', function () {
-            setTimeout(function () {
-                handleResize();
-                if (document.webkitFullscreenElement) {
-                    container.style.padding = '0';
-                    canvas.style.maxWidth = '100%';
-                    canvas.style.maxHeight = '100%';
-                    // Apply mobile landscape lock
-                    applyMobileLandscapeLock();
-                } else {
-                    applySafeAreaCompensation();
-                    // Remove landscape lock
-                    container.classList.remove('landscape-lock');
-                }
-            }, 100);
-        });
-        document.addEventListener('mozfullscreenchange', function () {
-            setTimeout(function () {
-                handleResize();
-                if (document.mozFullScreenElement) {
-                    container.style.padding = '0';
-                    canvas.style.maxWidth = '100%';
-                    canvas.style.maxHeight = '100%';
-                    // Apply mobile landscape lock
-                    applyMobileLandscapeLock();
-                } else {
-                    applySafeAreaCompensation();
-                    // Remove landscape lock
-                    container.classList.remove('landscape-lock');
-                }
-            }, 100);
-        });
+        document.addEventListener('fullscreenchange', handleFullscreenChange);
+        document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+        document.addEventListener('mozfullscreenchange', handleFullscreenChange);
 
         const possibleBuildPaths = [
             "Build/NeouWebGL.loader.js",
