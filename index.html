@@ -8,6 +8,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Neou.io | An Outer Worldly Adventure</title>
     <link rel="icon" href="data:;base64,iVBORw0KGgo="> <!-- Suppress favicon 404 -->
+    
+    <!-- PWA Manifest - CRITICAL FOR iOS HOME SCREEN -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Neou.io">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    
     <style>
         * {
             box-sizing: border-box;
@@ -222,6 +230,76 @@
             -webkit-tap-highlight-color: transparent;
         }
 
+        /* iOS Instructions Modal */
+        .ios-instructions {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .ios-instructions.active {
+            display: flex;
+        }
+        
+        .ios-instructions-content {
+            background: rgba(30, 30, 60, 0.95);
+            border-radius: 12px;
+            padding: 25px;
+            max-width: 400px;
+            border: 2px solid rgba(100, 150, 255, 0.5);
+            box-shadow: 0 0 30px rgba(80, 120, 255, 0.4);
+        }
+        
+        .ios-instructions h3 {
+            color: #a0d2ff;
+            margin-top: 0;
+            font-size: 1.5rem;
+        }
+        
+        .ios-steps {
+            text-align: left;
+            margin: 20px 0;
+            padding-left: 20px;
+        }
+        
+        .ios-steps li {
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+        
+        .ios-close-btn {
+            background: rgba(100, 150, 255, 0.9);
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+        
+        .ios-close-btn:hover {
+            background: rgba(120, 170, 255, 0.9);
+        }
+        
+        /* Different fullscreen button for iOS Safari */
+        #fullscreen-button.ios-mode {
+            background: rgba(100, 150, 255, 0.9);
+            color: white;
+            font-weight: bold;
+        }
+
         /* Mobile-specific adjustments */
         @media (max-width: 768px) {
             .content-wrapper {
@@ -268,6 +346,24 @@
             #unity-canvas {
                 max-width: calc(100% - 6px);
                 max-height: calc(100% - 6px);
+            }
+            
+            .ios-instructions-content {
+                margin: 20px;
+                padding: 20px;
+            }
+            
+            .ios-instructions h3 {
+                font-size: 1.3rem;
+            }
+            
+            .ios-steps {
+                padding-left: 15px;
+            }
+            
+            .ios-steps li {
+                font-size: 0.9rem;
+                margin-bottom: 12px;
             }
         }
 
@@ -1481,6 +1577,22 @@
     </script>
 </head>
 <body>
+    <!-- iOS Instructions Modal -->
+    <div class="ios-instructions" id="ios-instructions">
+        <div class="ios-instructions-content">
+            <h3>🚀 For Best Experience on iOS</h3>
+            <p>Add this game to your Home Screen for fullscreen gameplay:</p>
+            <ol class="ios-steps">
+                <li>Tap the <strong>Share button</strong> <span style="color:#a0d2ff">⎋</span> at the bottom</li>
+                <li>Scroll down and tap <strong>"Add to Home Screen"</strong></li>
+                <li>Tap <strong>"Add"</strong> in the top right</li>
+                <li>Launch from your <strong>Home Screen</strong> icon</li>
+            </ol>
+            <p><em>This will enable fullscreen and better performance!</em></p>
+            <button class="ios-close-btn" id="ios-close-btn">Got It!</button>
+        </div>
+    </div>
+
     <!-- Starfield background -->
     <div class="stars" id="stars"></div>
 
@@ -1522,6 +1634,50 @@
     </div>
 
     <script>
+        // Create manifest.json dynamically
+        const manifest = {
+            "name": "Neou.io",
+            "short_name": "Neou.io",
+            "description": "An Outer Worldly Adventure",
+            "start_url": "/",
+            "display": "standalone",
+            "background_color": "#000000",
+            "theme_color": "#000000",
+            "orientation": "landscape",
+            "icons": [
+                {
+                    "src": "icons/icon-192.png",
+                    "sizes": "192x192",
+                    "type": "image/png"
+                },
+                {
+                    "src": "icons/icon-512.png",
+                    "sizes": "512x512",
+                    "type": "image/png"
+                }
+            ]
+        };
+
+        // Create manifest file dynamically
+        const manifestBlob = new Blob([JSON.stringify(manifest, null, 2)], {type: 'application/json'});
+        const manifestURL = URL.createObjectURL(manifestBlob);
+        
+        // Update manifest link
+        const manifestLink = document.querySelector('link[rel="manifest"]');
+        if (manifestLink) {
+            manifestLink.href = manifestURL;
+        }
+
+        // Detect iOS and standalone mode
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+        const isIOSSafari = isIOS && isSafari;
+        const isStandalone = window.navigator.standalone || 
+                           window.matchMedia('(display-mode: standalone)').matches ||
+                           document.referrer.includes('android-app://');
+
+        console.log('iOS:', isIOS, 'iOS Safari:', isIOSSafari, 'Standalone:', isStandalone);
+
         // Create starfield effect
         function createStars() {
             const starsContainer = document.getElementById('stars');
@@ -1531,14 +1687,9 @@
                 const star = document.createElement('div');
                 star.className = 'star';
 
-                // Random position
                 const x = Math.random() * 100;
                 const y = Math.random() * 100;
-
-                // Random size (0.5px to 2px)
                 const size = Math.random() * 1.5 + 0.5;
-
-                // Random opacity
                 const opacity = Math.random() * 0.7 + 0.3;
 
                 star.style.left = `${x}%`;
@@ -1551,7 +1702,6 @@
             }
         }
 
-        // Initialize starfield
         createStars();
 
         var unityInstance = null;
@@ -1559,21 +1709,58 @@
         var canvas = document.querySelector("#unity-canvas");
         var loadingOverlay = document.querySelector("#loading-overlay");
         var fullscreenButton = document.querySelector("#fullscreen-button");
+        var iosInstructions = document.getElementById('ios-instructions');
+        var iosCloseBtn = document.getElementById('ios-close-btn');
 
         // ============================================================================
-        // SIMPLE FULLSCREEN SOLUTION FOR SAFARI (iOS)
+        // SMART FULLSCREEN HANDLING FOR iOS
         // ============================================================================
 
-        // Check if we're on iOS Safari
-        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-        const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-        const isIOSSafari = isIOS && isSafari;
-        
-        console.log('iOS Safari detected:', isIOSSafari);
+        // Show iOS instructions on first visit to iOS Safari
+        if (isIOSSafari && !isStandalone && !sessionStorage.getItem('iosInstructionsSeen')) {
+            setTimeout(() => {
+                iosInstructions.classList.add('active');
+            }, 2000);
+        }
 
-        // Simple fullscreen toggle - works on ALL browsers including iOS Safari
+        iosCloseBtn.addEventListener('click', function() {
+            iosInstructions.classList.remove('active');
+            sessionStorage.setItem('iosInstructionsSeen', 'true');
+        });
+
+        // Update fullscreen button based on platform
+        function setupFullscreenButton() {
+            if (isIOSSafari) {
+                if (isStandalone) {
+                    // Running from Home Screen - fullscreen should work
+                    fullscreenButton.textContent = 'Fullscreen';
+                    fullscreenButton.classList.remove('ios-mode');
+                    return true; // Attach normal fullscreen handler
+                } else {
+                    // Running in Safari browser
+                    fullscreenButton.textContent = '📲 Add to Home Screen';
+                    fullscreenButton.classList.add('ios-mode');
+                    
+                    // Change button behavior for iOS Safari
+                    fullscreenButton.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        iosInstructions.classList.add('active');
+                    });
+                    
+                    return false; // Don't attach normal fullscreen handler
+                }
+            }
+            return true; // Attach normal fullscreen handler for non-iOS
+        }
+
+        // Normal fullscreen function for non-iOS or standalone mode
         function toggleFullscreen() {
-            if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+            if (!document.fullscreenElement && 
+                !document.webkitFullscreenElement && 
+                !document.mozFullScreenElement && 
+                !document.msFullscreenElement) {
+                
                 // ENTER FULLSCREEN
                 if (container.requestFullscreen) {
                     container.requestFullscreen();
@@ -1585,20 +1772,6 @@
                     container.mozRequestFullScreen();
                 } else if (container.msRequestFullscreen) {
                     container.msRequestFullscreen();
-                }
-                
-                // For iOS Safari, we need to handle orientation
-                if (isIOSSafari) {
-                    // iOS Safari requires specific handling
-                    document.body.style.overflow = 'hidden';
-                    document.documentElement.style.overflow = 'hidden';
-                    
-                    // Force landscape on mobile
-                    if (window.innerHeight > window.innerWidth) {
-                        if (screen.orientation && screen.orientation.lock) {
-                            screen.orientation.lock('landscape').catch(e => console.log('Orientation lock failed:', e));
-                        }
-                    }
                 }
             } else {
                 // EXIT FULLSCREEN
@@ -1613,24 +1786,28 @@
                 } else if (document.msExitFullscreen) {
                     document.msExitFullscreen();
                 }
-                
-                if (isIOSSafari) {
-                    document.body.style.overflow = 'auto';
-                    document.documentElement.style.overflow = 'auto';
-                }
             }
         }
 
         // Update button text based on fullscreen state
         function updateFullscreenButton() {
-            const isFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement);
-            fullscreenButton.textContent = isFullscreen ? 'Exit Fullscreen' : 'Fullscreen';
+            const isFullscreen = !!(document.fullscreenElement || 
+                                   document.webkitFullscreenElement || 
+                                   document.mozFullScreenElement || 
+                                   document.msFullscreenElement);
             
-            // For iOS Safari, we need to manually handle the button state
-            if (isIOSSafari && isFullscreen) {
+            if (isFullscreen) {
+                fullscreenButton.textContent = 'Exit Fullscreen';
                 fullscreenButton.style.display = 'none';
             } else {
                 fullscreenButton.style.display = 'block';
+                
+                // Don't update text for iOS Safari (it shows Add to Home Screen)
+                if (!isIOSSafari || isStandalone) {
+                    fullscreenButton.textContent = 'Fullscreen';
+                } else {
+                    fullscreenButton.textContent = '📲 Add to Home Screen';
+                }
             }
         }
 
@@ -1640,12 +1817,14 @@
         document.addEventListener('mozfullscreenchange', updateFullscreenButton);
         document.addEventListener('MSFullscreenChange', updateFullscreenButton);
 
-        // Handle button click
-        fullscreenButton.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            toggleFullscreen();
-        });
+        // Only attach normal fullscreen handler if not iOS Safari browser
+        if (setupFullscreenButton()) {
+            fullscreenButton.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                toggleFullscreen();
+            });
+        }
 
         // Handle resize for proper scaling
         function handleResize() {
@@ -1704,6 +1883,14 @@
                 const safetyMargin = 2;
                 container.style.padding = safetyMargin + 'px';
             }
+        }
+
+        // Handle orientation for standalone mode
+        if (isStandalone && screen.orientation && screen.orientation.lock) {
+            // Lock to landscape in standalone mode
+            screen.orientation.lock('landscape').catch(e => {
+                console.log('Orientation lock failed (may not be supported):', e);
+            });
         }
 
         // Handle orientation changes
