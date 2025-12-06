@@ -9,10 +9,6 @@
   Access-Control-Expose-Headers: *
   Cross-Origin-Resource-Policy: cross-origin
 
-/Build/*
-  Access-Control-Allow-Origin: *
-  Cross-Origin-Embedder-Policy: credentialless
-
 /*.webm
   Access-Control-Allow-Origin: *
   Content-Type: video/webm
@@ -21,4 +17,9 @@
 /*.png
   Access-Control-Allow-Origin: *
   Content-Type: image/png
+  Cross-Origin-Resource-Policy: cross-origin
+
+/*.jpg
+  Access-Control-Allow-Origin: *
+  Content-Type: image/jpeg
   Cross-Origin-Resource-Policy: cross-origin
