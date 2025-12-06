@@ -6,10 +6,6 @@
     <meta http-equiv="Cross-Origin-Embedder-Policy" content="require-corp">
     <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <!-- Cache control for GitHub Pages -->
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
     <title>Neou.io | An Outer Worldly Adventure</title>
     <link rel="icon" href="data:;base64,iVBORw0KGgo="> <!-- Suppress favicon 404 -->
     <style>
@@ -150,6 +146,7 @@
 
         #unity-container {
             width: 100%;
+            height: 100%;
             position: relative;
             display: flex;
             justify-content: center;
@@ -158,11 +155,8 @@
             border-radius: 8px;
             overflow: hidden;
             box-shadow: 0 0 20px rgba(80, 120, 255, 0.3);
-            /* Fixed aspect ratio for 1920x1080 (16:9) */
-            aspect-ratio: 16 / 9;
-            max-width: 1920px;
-            max-height: 1080px;
-            margin: 0 auto;
+            /* Add safe area compensation */
+            padding: 2px; /* Small compensation to prevent cutting */
         }
 
         #unity-canvas {
@@ -171,9 +165,9 @@
             object-fit: contain;
             display: block;
             background: #000;
-            /* Ensure exact 1920x1080 rendering */
-            max-width: 1920px;
-            max-height: 1080px;
+            /* Ensure no scaling beyond safe boundaries */
+            max-width: calc(100% - 4px);
+            max-height: calc(100% - 4px);
         }
 
         /* How to play image */
@@ -264,47 +258,15 @@
                 font-size: 10px;
             }
 
-            /* Force landscape orientation for mobile fullscreen */
-            #unity-container.landscape-lock {
-                transform: rotate(90deg);
-                transform-origin: center;
-                width: 100vh;
-                height: 100vw;
-                max-width: none;
-                max-height: none;
-                position: fixed;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%) rotate(90deg);
-                z-index: 9999;
+            /* More compensation on mobile if needed */
+            #unity-container {
+                padding: 3px;
             }
 
-                #unity-container.landscape-lock #unity-canvas {
-                    width: 100vh;
-                    height: 100vw;
-                    max-width: none;
-                    max-height: none;
-                }
-
-            /* Safari-specific fullscreen fix */
-            #unity-container.fullscreen-active {
-                width: 100vh !important;
-                height: 100vw !important;
-                max-width: none !important;
-                max-height: none !important;
-                position: fixed !important;
-                top: 50% !important;
-                left: 50% !important;
-                transform: translate(-50%, -50%) rotate(90deg) !important;
-                z-index: 9999 !important;
+            #unity-canvas {
+                max-width: calc(100% - 6px);
+                max-height: calc(100% - 6px);
             }
-
-                #unity-container.fullscreen-active #unity-canvas {
-                    width: 100vh !important;
-                    height: 100vw !important;
-                    max-width: none !important;
-                    max-height: none !important;
-                }
         }
 
         /* Enhanced fullscreen styles with safe area support */
@@ -313,9 +275,7 @@
         :-moz-full-screen #unity-container {
             width: 100vw;
             height: 100vh;
-            max-width: none;
-            max-height: none;
-            aspect-ratio: auto;
+            padding: 0; /* Remove padding in fullscreen */
         }
 
         :fullscreen #unity-canvas,
@@ -324,31 +284,8 @@
             width: 100%;
             height: 100%;
             object-fit: contain;
-            max-width: none;
-            max-height: none;
-        }
-
-        /* Mobile fullscreen landscape lock */
-        @media (max-width: 768px) {
-            :fullscreen #unity-container,
-            :-webkit-full-screen #unity-container,
-            :-moz-full-screen #unity-container {
-                transform: rotate(90deg);
-                transform-origin: center;
-                width: 100vh !important;
-                height: 100vw !important;
-                position: fixed;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%) rotate(90deg) !important;
-            }
-
-            :fullscreen #unity-canvas,
-            :-webkit-full-screen #unity-canvas,
-            :-moz-full-screen #unity-canvas {
-                width: 100vh !important;
-                height: 100vw !important;
-            }
+            max-width: 100vw;
+            max-height: 100vh;
         }
 
         /* Support for safe area insets on modern browsers */
@@ -366,19 +303,6 @@
         :-webkit-full-screen #fullscreen-button,
         :-moz-full-screen #fullscreen-button {
             display: none;
-        }
-
-        /* Safari fallback fullscreen styles */
-        .safari-fullscreen {
-            position: fixed !important;
-            top: 0 !important;
-            left: 0 !important;
-            width: 100vw !important;
-            height: 100vh !important;
-            max-width: none !important;
-            max-height: none !important;
-            z-index: 9999 !important;
-            background: #000 !important;
         }
     </style>
     <!-- Use Firebase modular API -->
@@ -1519,288 +1443,6 @@
         };
 
     </script>
-
-    <!-- ============================================================================
-    UNITY VIDEO PATH FIXER - MUST BE BEFORE UNITY LOADS
-    ============================================================================ -->
-    <script>
-        (function () {
-            console.log('🔧 Applying Unity video path fixes...');
-
-            // Store original functions Unity uses
-            const originalXMLHttpRequest = window.XMLHttpRequest;
-            const originalFetch = window.fetch;
-            const originalCreateElement = document.createElement;
-            const originalImage = window.Image;
-
-            // 1. PATCH XMLHttpRequest (Unity uses this for loading)
-            class PatchedXMLHttpRequest extends originalXMLHttpRequest {
-                open(method, url, async = true, user, password) {
-                    if (url && (url.includes('github.io') || url.includes('neou.io/videos/'))) {
-                        // Convert to relative path
-                        const urlObj = new URL(url, window.location.origin);
-                        const pathname = urlObj.pathname;
-
-                        // Keep it relative to current origin
-                        const newUrl = pathname.startsWith('/') ? pathname : '/' + pathname;
-
-                        console.log('🔄 XMLHttpRequest: Converting', url, '→', newUrl);
-                        url = newUrl;
-                    }
-                    return super.open(method, url, async, user, password);
-                }
-            }
-            window.XMLHttpRequest = PatchedXMLHttpRequest;
-
-            // 2. PATCH fetch API
-            window.fetch = function (input, init) {
-                let url = typeof input === 'string' ? input : input.url;
-
-                if (url && (url.includes('github.io') || url.includes('neou.io/videos/'))) {
-                    const urlObj = new URL(url, window.location.origin);
-                    const newUrl = urlObj.pathname;
-
-                    console.log('🔄 fetch: Converting', url, '→', newUrl);
-
-                    if (typeof input === 'string') {
-                        input = newUrl;
-                    } else {
-                        input = { ...input, url: newUrl };
-                    }
-
-                    // Add CORS headers
-                    init = init || {};
-                    init.mode = 'cors';
-                    init.credentials = 'omit';
-                }
-
-                return originalFetch.call(this, input, init);
-            };
-
-            // 3. PATCH createElement for video/img tags
-            document.createElement = function (tagName) {
-                const element = originalCreateElement.call(document, tagName);
-
-                if (tagName.toLowerCase() === 'video' || tagName.toLowerCase() === 'img') {
-                    // Force CORS attribute
-                    element.crossOrigin = 'anonymous';
-
-                    // Patch src setter
-                    const originalSetAttribute = element.setAttribute;
-                    element.setAttribute = function (name, value) {
-                        if (name === 'src' && value &&
-                            (value.includes('github.io') || value.includes('neou.io/videos/'))) {
-
-                            // Convert to relative path
-                            const urlObj = new URL(value, window.location.origin);
-                            value = urlObj.pathname;
-
-                            console.log('🔄 createElement: Fixed src to', value);
-                        }
-                        return originalSetAttribute.call(this, name, value);
-                    };
-
-                    // Also patch the .src property directly
-                    const originalSrcSetter = Object.getOwnPropertyDescriptor(
-                        HTMLMediaElement.prototype, 'src'
-                    )?.set || Object.getOwnPropertyDescriptor(
-                        HTMLImageElement.prototype, 'src'
-                    )?.set;
-
-                    if (originalSrcSetter) {
-                        Object.defineProperty(element, 'src', {
-                            set: function (value) {
-                                if (value && (value.includes('github.io') || value.includes('neou.io/videos/'))) {
-                                    const urlObj = new URL(value, window.location.origin);
-                                    value = urlObj.pathname;
-                                    console.log('🔄 .src setter: Fixed to', value);
-                                }
-                                this.crossOrigin = 'anonymous';
-                                return originalSrcSetter.call(this, value);
-                            },
-                            get: Object.getOwnPropertyDescriptor(
-                                tagName === 'video' ? HTMLMediaElement.prototype : HTMLImageElement.prototype,
-                                'src'
-                            ).get
-                        });
-                    }
-                }
-
-                return element;
-            };
-
-            // 4. PATCH Image constructor
-            window.Image = class PatchedImage extends originalImage {
-                constructor(width, height) {
-                    super(width, height);
-                    this.crossOrigin = 'anonymous';
-
-                    // Patch .src property
-                    const originalSrcSetter = Object.getOwnPropertyDescriptor(
-                        HTMLImageElement.prototype, 'src'
-                    ).set;
-
-                    Object.defineProperty(this, 'src', {
-                        set: function (value) {
-                            if (value && (value.includes('github.io') || value.includes('neou.io/videos/'))) {
-                                const urlObj = new URL(value, window.location.origin);
-                                value = urlObj.pathname;
-                                console.log('🔄 Image.src: Fixed to', value);
-                            }
-                            return originalSrcSetter.call(this, value);
-                        },
-                        get: Object.getOwnPropertyDescriptor(HTMLImageElement.prototype, 'src').get
-                    });
-                }
-            };
-
-            // 5. PATCH WebGL texture loading (Unity internal)
-            if (typeof WebGLRenderingContext !== 'undefined') {
-                const originalTexImage2D = WebGLRenderingContext.prototype.texImage2D;
-                WebGLRenderingContext.prototype.texImage2D = function (...args) {
-                    // Check if last argument is an image/video element
-                    const lastArg = args[args.length - 1];
-
-                    if (lastArg && lastArg.src &&
-                        (lastArg.src.includes('github.io') || lastArg.src.includes('neou.io/videos/'))) {
-
-                        console.log('⚠️ WebGL trying to load from wrong URL:', lastArg.src);
-
-                        // Try to fix it
-                        try {
-                            const urlObj = new URL(lastArg.src, window.location.origin);
-                            lastArg.src = urlObj.pathname;
-                            lastArg.crossOrigin = 'anonymous';
-                            console.log('🔄 WebGL: Fixed texture source to', lastArg.src);
-                        } catch (e) {
-                            console.warn('Could not fix WebGL texture URL:', e.message);
-                        }
-                    }
-
-                    try {
-                        return originalTexImage2D.apply(this, args);
-                    } catch (e) {
-                        console.error('WebGL texImage2D error:', e.message);
-                        // Create 1x1 white pixel fallback
-                        const fallback = new Uint8Array([255, 255, 255, 255]);
-                        return originalTexImage2D.call(
-                            this,
-                            args[0], args[1], 1, 1, 0,
-                            args[5] || this.RGBA, args[6] || this.UNSIGNED_BYTE,
-                            fallback
-                        );
-                    }
-                };
-            }
-
-            console.log('✅ Unity video path fixes applied');
-
-            // 6. Add a message handler for Unity
-            window.UnityVideoFixer = {
-                getVideoUrl: function (filename) {
-                    return 'videos/' + filename;
-                },
-                fixUrl: function (url) {
-                    if (url.includes('github.io') || url.includes('neou.io/videos/')) {
-                        const urlObj = new URL(url, window.location.origin);
-                        return urlObj.pathname;
-                    }
-                    return url;
-                }
-            };
-        })();
-    </script>
-
-    <!-- ============================================================================
-    SAFARI-SPECIFIC VIDEO FIX
-    ============================================================================ -->
-    <script>
-        (function () {
-            const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-
-            if (isSafari) {
-                console.log('🦁 Safari detected - applying extra fixes');
-
-                // Preload videos with cache busters
-                const videoFiles = ['Thestartvid.webm', 'Insidespaceshipvid.webm'];
-
-                videoFiles.forEach(filename => {
-                    const video = document.createElement('video');
-                    video.style.display = 'none';
-                    video.crossOrigin = 'anonymous';
-                    video.preload = 'auto';
-
-                    const source = document.createElement('source');
-                    source.src = `videos/${filename}?safari=${Date.now()}`;
-                    source.type = 'video/webm';
-
-                    video.appendChild(source);
-                    document.body.appendChild(video);
-
-                    // Try to load it
-                    video.load().catch(e => {
-                        console.log('Safari preload attempt for', filename, ':', e.message);
-                    });
-                });
-
-                // Monitor network requests
-                const originalSend = XMLHttpRequest.prototype.send;
-                XMLHttpRequest.prototype.send = function (body) {
-                    if (this._url && this._url.includes('videos/')) {
-                        console.log('Safari XHR loading video:', this._url);
-                        this.setRequestHeader('Accept', 'video/webm,video/*;q=0.9,*/*;q=0.8');
-                    }
-                    return originalSend.call(this, body);
-                };
-            }
-        })();
-    </script>
-
-    <!-- ============================================================================
-    VIDEO TEST SCRIPT
-    ============================================================================ -->
-    <script>
-        // Test after page loads
-        window.addEventListener('load', function () {
-            console.log('🧪 Testing video access...');
-
-            // Test 1: Direct video element
-            const testVideo = document.createElement('video');
-            testVideo.crossOrigin = 'anonymous';
-            testVideo.preload = 'auto';
-
-            const source = document.createElement('source');
-            source.src = 'videos/Thestartvid.webm';
-            source.type = 'video/webm';
-
-            testVideo.appendChild(source);
-            document.body.appendChild(testVideo);
-
-            testVideo.onloadeddata = () => {
-                console.log('✅ Test video loaded successfully!');
-                console.log('Duration:', testVideo.duration, 'seconds');
-                testVideo.remove();
-            };
-
-            testVideo.onerror = (e) => {
-                console.error('❌ Test video failed:', e);
-                testVideo.remove();
-            };
-
-            // Test 2: Fetch with CORS
-            fetch('videos/Thestartvid.webm', { method: 'HEAD' })
-                .then(res => {
-                    console.log('✅ Fetch test:', {
-                        status: res.status,
-                        cors: res.headers.get('access-control-allow-origin'),
-                        type: res.headers.get('content-type')
-                    });
-                })
-                .catch(err => {
-                    console.error('❌ Fetch failed:', err.message);
-                });
-        });
-    </script>
 </head>
 <body>
     <!-- Starfield background -->
@@ -1829,9 +1471,9 @@
                     <button id="fullscreen-button">Fullscreen</button>
                 </div>
 
-                <!-- How to play image - FIXED PATH -->
+                <!-- How to play image -->
                 <div class="how-to-play">
-                    <img src="videos/HowToPlay.png" alt="How to Play" crossorigin="anonymous">
+                    <img src="https://neou-moon.github.io/neou-videos/HowToPlay.png" alt="How to Play">
                 </div>
             </div>
 
@@ -1886,200 +1528,13 @@
         fullscreenButton.style.left = '50%';
         fullscreenButton.style.transform = 'translateX(-50%)';
 
-        // Check browser type
-        const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-        const isMobile = window.innerWidth <= 768;
-
-        // Safari-safe fullscreen function
-        function toggleFullscreen() {
-            if (!document.fullscreenElement &&
-                !document.webkitFullscreenElement &&
-                !document.mozFullScreenElement &&
-                !container.classList.contains('fullscreen-active')) {
-
-                // ENTER FULLSCREEN
-                if (container.requestFullscreen) {
-                    container.requestFullscreen().catch(err => {
-                        console.log("Standard fullscreen error:", err);
-                        safariFullscreenFallback(true);
-                    });
-                } else if (container.webkitRequestFullscreen) {
-                    container.webkitRequestFullscreen().catch(err => {
-                        console.log("Webkit fullscreen error:", err);
-                        safariFullscreenFallback(true);
-                    });
-                } else if (container.mozRequestFullScreen) {
-                    container.mozRequestFullScreen().catch(err => {
-                        console.log("Moz fullscreen error:", err);
-                        safariFullscreenFallback(true);
-                    });
-                } else {
-                    // Fallback for browsers that don't support Fullscreen API
-                    safariFullscreenFallback(true);
-                }
+        fullscreenButton.addEventListener("click", () => {
+            if (!document.fullscreenElement) {
+                container.requestFullscreen().catch(err => console.error("Fullscreen error:", err));
             } else {
-                // EXIT FULLSCREEN
-                if (document.exitFullscreen) {
-                    document.exitFullscreen().catch(err => {
-                        console.log("Exit fullscreen error:", err);
-                        safariFullscreenFallback(false);
-                    });
-                } else if (document.webkitExitFullscreen) {
-                    document.webkitExitFullscreen().catch(err => {
-                        console.log("Webkit exit fullscreen error:", err);
-                        safariFullscreenFallback(false);
-                    });
-                } else if (document.mozCancelFullScreen) {
-                    document.mozCancelFullScreen().catch(err => {
-                        console.log("Moz exit fullscreen error:", err);
-                        safariFullscreenFallback(false);
-                    });
-                } else {
-                    safariFullscreenFallback(false);
-                }
+                document.exitFullscreen();
             }
-        }
-
-        // Safari fallback method
-        function safariFullscreenFallback(enter) {
-            if (enter) {
-                // ENTER fullscreen fallback
-                if (isMobile) {
-                    container.classList.add('fullscreen-active');
-                    container.classList.add('safari-fullscreen');
-                    document.body.style.overflow = 'hidden';
-
-                    // Try to lock orientation on iOS
-                    if (isIOS && window.screen.orientation && window.screen.orientation.lock) {
-                        window.screen.orientation.lock('landscape').catch(e => {
-                            console.log("Orientation lock not supported:", e);
-                        });
-                    }
-
-                    // Hide fullscreen button
-                    fullscreenButton.style.display = 'none';
-
-                    // Dispatch event for resize handling
-                    window.dispatchEvent(new Event('resize'));
-                } else {
-                    // For desktop Safari, use CSS fullscreen simulation
-                    container.classList.add('safari-fullscreen');
-                    fullscreenButton.style.display = 'none';
-                    document.body.style.overflow = 'hidden';
-                }
-
-                // Set a flag so we know we're in fallback mode
-                container.setAttribute('data-safari-fallback', 'true');
-            } else {
-                // EXIT fullscreen fallback
-                container.classList.remove('fullscreen-active');
-                container.classList.remove('safari-fullscreen');
-
-                // Restore normal styling
-                container.removeAttribute('data-safari-fallback');
-                fullscreenButton.style.display = 'block';
-                document.body.style.overflow = '';
-
-                // Unlock orientation
-                if (isIOS && window.screen.orientation && window.screen.orientation.unlock) {
-                    window.screen.orientation.unlock();
-                }
-
-                // Dispatch event for resize handling
-                window.dispatchEvent(new Event('resize'));
-            }
-        }
-
-        // Enhanced event listener for fullscreen button
-        fullscreenButton.addEventListener("click", function (event) {
-            event.preventDefault();
-            event.stopPropagation();
-
-            // For Safari, use direct approach
-            if (isSafari) {
-                toggleFullscreen();
-            } else {
-                // For other browsers, use your existing logic
-                if (!document.fullscreenElement) {
-                    container.requestFullscreen().then(() => {
-                        // Apply mobile landscape lock after entering fullscreen
-                        setTimeout(applyMobileLandscapeLock, 100);
-                    }).catch(err => {
-                        console.error("Fullscreen error:", err);
-                        // Fallback for Safari-like behavior
-                        safariFullscreenFallback(true);
-                    });
-                } else {
-                    document.exitFullscreen().then(() => {
-                        // Remove landscape lock after exiting fullscreen
-                        setTimeout(applyMobileLandscapeLock, 100);
-                    }).catch(err => {
-                        console.error("Exit fullscreen error:", err);
-                        safariFullscreenFallback(false);
-                    });
-                }
-            }
-
-            // Prevent default behavior
-            return false;
         });
-
-        // Also allow double-tap for mobile fullscreen (common pattern)
-        if (isMobile) {
-            let lastTap = 0;
-            container.addEventListener('touchend', function (event) {
-                const currentTime = new Date().getTime();
-                const tapLength = currentTime - lastTap;
-
-                if (tapLength < 500 && tapLength > 0) {
-                    // Double tap detected
-                    toggleFullscreen();
-                    event.preventDefault();
-                }
-                lastTap = currentTime;
-            });
-        }
-
-        // Mobile landscape lock function (updated for Safari)
-        function applyMobileLandscapeLock() {
-            if (isMobile && (document.fullscreenElement ||
-                document.webkitFullscreenElement ||
-                document.mozFullScreenElement ||
-                container.classList.contains('fullscreen-active'))) {
-
-                // Apply landscape lock styles
-                if (!isSafari) {
-                    container.classList.add('landscape-lock');
-                }
-
-                // Try to lock orientation if supported (may fail on Safari without HTTPS)
-                if (screen.orientation && screen.orientation.lock) {
-                    try {
-                        screen.orientation.lock('landscape').catch(error => {
-                            console.log('Orientation lock not supported:', error);
-                        });
-                    } catch (e) {
-                        console.log('Orientation lock error:', e);
-                    }
-                }
-
-                // Dispatch resize event to update layout
-                window.dispatchEvent(new Event('resize'));
-            } else {
-                // Remove landscape lock
-                container.classList.remove('landscape-lock');
-
-                // Unlock orientation if supported
-                if (screen.orientation && screen.orientation.unlock) {
-                    try {
-                        screen.orientation.unlock();
-                    } catch (e) {
-                        console.log('Orientation unlock error:', e);
-                    }
-                }
-            }
-        }
 
         // Handle resize and aspect ratio properly
         function handleResize() {
@@ -2089,17 +1544,6 @@
             const windowAspectRatio = windowWidth / windowHeight;
 
             console.log(`Window: ${windowWidth}x${windowHeight}, Aspect: ${windowAspectRatio.toFixed(2)}`);
-
-            // If in fullscreen on mobile with landscape lock, use different calculations
-            if (container.classList.contains('landscape-lock') ||
-                container.classList.contains('fullscreen-active') ||
-                container.classList.contains('safari-fullscreen')) {
-
-                // For landscape-locked mobile fullscreen
-                canvas.style.width = '100%';
-                canvas.style.height = '100%';
-                return;
-            }
 
             let targetWidth = windowWidth;
             let targetHeight = windowHeight;
@@ -2135,33 +1579,6 @@
             canvas.style.maxHeight = `calc(100% - ${safetyMargin * 2}px)`;
         }
 
-        // Fullscreen change handlers
-        function handleFullscreenChange() {
-            const isFullscreen = !!(document.fullscreenElement ||
-                document.webkitFullscreenElement ||
-                document.mozFullScreenElement ||
-                container.classList.contains('fullscreen-active') ||
-                container.classList.contains('safari-fullscreen'));
-
-            if (isFullscreen) {
-                container.style.padding = '0';
-                canvas.style.maxWidth = '100%';
-                canvas.style.maxHeight = '100%';
-                fullscreenButton.style.display = 'none';
-                // Apply mobile landscape lock
-                applyMobileLandscapeLock();
-            } else {
-                applySafeAreaCompensation();
-                fullscreenButton.style.display = 'block';
-                // Remove landscape lock
-                container.classList.remove('landscape-lock');
-                container.classList.remove('fullscreen-active');
-                container.classList.remove('safari-fullscreen');
-            }
-
-            handleResize();
-        }
-
         window.addEventListener('load', function () {
             handleResize();
             applySafeAreaCompensation();
@@ -2174,14 +1591,45 @@
             setTimeout(function () {
                 handleResize();
                 applySafeAreaCompensation();
-                // Check if we need to apply landscape lock
-                applyMobileLandscapeLock();
             }, 100);
         });
 
-        document.addEventListener('fullscreenchange', handleFullscreenChange);
-        document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
-        document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+        document.addEventListener('fullscreenchange', function () {
+            setTimeout(function () {
+                handleResize();
+                if (document.fullscreenElement) {
+                    container.style.padding = '0';
+                    canvas.style.maxWidth = '100%';
+                    canvas.style.maxHeight = '100%';
+                } else {
+                    applySafeAreaCompensation();
+                }
+            }, 100);
+        });
+        document.addEventListener('webkitfullscreenchange', function () {
+            setTimeout(function () {
+                handleResize();
+                if (document.webkitFullscreenElement) {
+                    container.style.padding = '0';
+                    canvas.style.maxWidth = '100%';
+                    canvas.style.maxHeight = '100%';
+                } else {
+                    applySafeAreaCompensation();
+                }
+            }, 100);
+        });
+        document.addEventListener('mozfullscreenchange', function () {
+            setTimeout(function () {
+                handleResize();
+                if (document.mozFullScreenElement) {
+                    container.style.padding = '0';
+                    canvas.style.maxWidth = '100%';
+                    canvas.style.maxHeight = '100%';
+                } else {
+                    applySafeAreaCompensation();
+                }
+            }, 100);
+        });
 
         const possibleBuildPaths = [
             "Build/NeouWebGL.loader.js",
