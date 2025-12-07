@@ -6,6 +6,10 @@
     <meta http-equiv="Cross-Origin-Embedder-Policy" content="require-corp">
     <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- Cache control for GitHub Pages -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>Neou.io | An Outer Worldly Adventure</title>
     <link rel="icon" href="data:;base64,iVBORw0KGgo="> <!-- Suppress favicon 404 -->
     
@@ -155,7 +159,6 @@
 
         #unity-container {
             width: 100%;
-            height: 100%;
             position: relative;
             display: flex;
             justify-content: center;
@@ -164,8 +167,11 @@
             border-radius: 8px;
             overflow: hidden;
             box-shadow: 0 0 20px rgba(80, 120, 255, 0.3);
-            /* Add safe area compensation */
-            padding: 2px; /* Small compensation to prevent cutting */
+            /* Fixed aspect ratio for 1920x1080 (16:9) */
+            aspect-ratio: 16 / 9;
+            max-width: 1920px;
+            max-height: 1080px;
+            margin: 0 auto;
         }
 
         #unity-canvas {
@@ -174,9 +180,9 @@
             object-fit: contain;
             display: block;
             background: #000;
-            /* Ensure no scaling beyond safe boundaries */
-            max-width: calc(100% - 4px);
-            max-height: calc(100% - 4px);
+            /* Ensure exact 1920x1080 rendering */
+            max-width: 1920px;
+            max-height: 1080px;
         }
 
         /* How to play image */
@@ -338,93 +344,91 @@
                 font-size: 10px;
             }
 
-            /* More compensation on mobile if needed */
-            #unity-container {
-                padding: 3px;
+            /* Force landscape orientation for mobile fullscreen - FROM OLD SCRIPT */
+            #unity-container.landscape-lock {
+                transform: rotate(90deg);
+                transform-origin: center;
+                width: 100vh;
+                height: 100vw;
+                max-width: none;
+                max-height: none;
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%) rotate(90deg);
+                z-index: 9999;
             }
 
-            #unity-canvas {
-                max-width: calc(100% - 6px);
-                max-height: calc(100% - 6px);
+                #unity-container.landscape-lock #unity-canvas {
+                    width: 100vh;
+                    height: 100vw;
+                    max-width: none;
+                    max-height: none;
+                }
+
+            /* Safari-specific fullscreen fix - FROM OLD SCRIPT */
+            #unity-container.fullscreen-active {
+                width: 100vh !important;
+                height: 100vw !important;
+                max-width: none !important;
+                max-height: none !important;
+                position: fixed !important;
+                top: 50% !important;
+                left: 50% !important;
+                transform: translate(-50%, -50%) rotate(90deg) !important;
+                z-index: 9999 !important;
             }
-            
-            .ios-instructions-content {
-                margin: 20px;
-                padding: 20px;
-            }
-            
-            .ios-instructions h3 {
-                font-size: 1.3rem;
-            }
-            
-            .ios-steps {
-                padding-left: 15px;
-            }
-            
-            .ios-steps li {
-                font-size: 0.9rem;
-                margin-bottom: 12px;
-            }
+
+                #unity-container.fullscreen-active #unity-canvas {
+                    width: 100vh !important;
+                    height: 100vw !important;
+                    max-width: none !important;
+                    max-height: none !important;
+                }
         }
 
-        /* Enhanced fullscreen styles */
+        /* Enhanced fullscreen styles with safe area support */
         :fullscreen #unity-container,
         :-webkit-full-screen #unity-container,
         :-moz-full-screen #unity-container {
-            width: 100vw !important;
-            height: 100vh !important;
-            padding: 0 !important;
-            margin: 0 !important;
-            background: #000 !important;
-            position: fixed !important;
-            top: 0 !important;
-            left: 0 !important;
-            z-index: 9999 !important;
-            border-radius: 0 !important;
-            display: flex !important;
-            justify-content: center !important;
-            align-items: center !important;
+            width: 100vw;
+            height: 100vh;
+            max-width: none;
+            max-height: none;
+            aspect-ratio: auto;
         }
 
         :fullscreen #unity-canvas,
         :-webkit-full-screen #unity-canvas,
         :-moz-full-screen #unity-canvas {
-            width: 100% !important;
-            height: 100% !important;
-            object-fit: contain !important;
-            max-width: 100vw !important;
-            max-height: 100vh !important;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            max-width: none;
+            max-height: none;
         }
 
-        /* Hide everything except game in fullscreen */
-        :fullscreen body > *:not(#unity-container),
-        :-webkit-full-screen body > *:not(#unity-container),
-        :-moz-full-screen body > *:not(#unity-container) {
-            display: none !important;
-        }
-
-        /* Show only the game container in fullscreen */
-        :fullscreen .main-container,
-        :-webkit-full-screen .main-container,
-        :-moz-full-screen .main-container {
-            display: block !important;
-            height: 100vh !important;
-            width: 100vw !important;
-            padding: 0 !important;
-            margin: 0 !important;
-        }
-
-            :fullscreen .main-container > *:not(#unity-container),
-            :-webkit-full-screen .main-container > *:not(#unity-container),
-            :-moz-full-screen .main-container > *:not(#unity-container) {
-                display: none !important;
+        /* Mobile fullscreen landscape lock */
+        @media (max-width: 768px) {
+            :fullscreen #unity-container,
+            :-webkit-full-screen #unity-container,
+            :-moz-full-screen #unity-container {
+                transform: rotate(90deg);
+                transform-origin: center;
+                width: 100vh !important;
+                height: 100vw !important;
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%) rotate(90deg) !important;
             }
 
-        /* Hide fullscreen button when in fullscreen mode */
-        :fullscreen #fullscreen-button,
-        :-webkit-full-screen #fullscreen-button,
-        :-moz-full-screen #fullscreen-button {
-            display: none !important;
+            :fullscreen #unity-canvas,
+            :-webkit-full-screen #unity-canvas,
+            :-moz-full-screen #unity-canvas {
+                width: 100vh !important;
+                height: 100vw !important;
+            }
         }
 
         /* Support for safe area insets on modern browsers */
@@ -435,6 +439,26 @@
                 padding-left: max(2px, env(safe-area-inset-left));
                 padding-right: max(2px, env(safe-area-inset-right));
             }
+        }
+
+        /* Hide fullscreen button when in fullscreen mode */
+        :fullscreen #fullscreen-button,
+        :-webkit-full-screen #fullscreen-button,
+        :-moz-full-screen #fullscreen-button {
+            display: none;
+        }
+
+        /* Safari fallback fullscreen styles - FROM OLD SCRIPT */
+        .safari-fullscreen {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            max-width: none !important;
+            max-height: none !important;
+            z-index: 9999 !important;
+            background: #000 !important;
         }
     </style>
     <!-- Use Firebase modular API -->
@@ -1619,7 +1643,7 @@
                     <button id="fullscreen-button">Fullscreen</button>
                 </div>
 
-                <!-- How to play image -->
+                <!-- How to play image - FIXED PATH -->
                 <div class="how-to-play">
                     <img src="videos/HowToPlay.png" alt="How to Play" crossorigin="anonymous">
                 </div>
@@ -1712,10 +1736,6 @@
         var iosInstructions = document.getElementById('ios-instructions');
         var iosCloseBtn = document.getElementById('ios-close-btn');
 
-        // ============================================================================
-        // SIMPLIFIED FULLSCREEN HANDLING - FIXED!
-        // ============================================================================
-
         // Show iOS instructions on first visit to iOS Safari
         if (isIOSSafari && !isStandalone && !sessionStorage.getItem('iosInstructionsSeen')) {
             setTimeout(() => {
@@ -1734,68 +1754,150 @@
             iosInstructions.classList.add('active');
         }
 
-        // Normal fullscreen function - THIS SHOULD WORK IN PWA TOO!
+        // Move fullscreen button to top center (from old script)
+        fullscreenButton.style.left = '50%';
+        fullscreenButton.style.transform = 'translateX(-50%)';
+
+        // ============================================================================
+        // COMBINED FULLSCREEN HANDLING - WORKS IN PWA AND BROWSER
+        // ============================================================================
+
+        // Safari-safe fullscreen function (from old script - WORKING VERSION)
         function toggleFullscreen() {
             console.log('toggleFullscreen called, isStandalone:', isStandalone);
             
-            if (!document.fullscreenElement && 
-                !document.webkitFullscreenElement && 
-                !document.mozFullScreenElement && 
-                !document.msFullscreenElement) {
-                
-                console.log('ENTERING FULLSCREEN');
+            if (!document.fullscreenElement &&
+                !document.webkitFullscreenElement &&
+                !document.mozFullScreenElement &&
+                !container.classList.contains('fullscreen-active')) {
+
                 // ENTER FULLSCREEN
                 if (container.requestFullscreen) {
-                    container.requestFullscreen();
+                    container.requestFullscreen().catch(err => {
+                        console.log("Standard fullscreen error:", err);
+                        safariFullscreenFallback(true);
+                    });
                 } else if (container.webkitRequestFullscreen) {
-                    container.webkitRequestFullscreen();
-                } else if (container.webkitEnterFullscreen) {
-                    container.webkitEnterFullscreen();
+                    container.webkitRequestFullscreen().catch(err => {
+                        console.log("Webkit fullscreen error:", err);
+                        safariFullscreenFallback(true);
+                    });
                 } else if (container.mozRequestFullScreen) {
-                    container.mozRequestFullScreen();
-                } else if (container.msRequestFullscreen) {
-                    container.msRequestFullscreen();
+                    container.mozRequestFullScreen().catch(err => {
+                        console.log("Moz fullscreen error:", err);
+                        safariFullscreenFallback(true);
+                    });
+                } else {
+                    // Fallback for browsers that don't support Fullscreen API
+                    safariFullscreenFallback(true);
                 }
             } else {
-                console.log('EXITING FULLSCREEN');
                 // EXIT FULLSCREEN
                 if (document.exitFullscreen) {
-                    document.exitFullscreen();
+                    document.exitFullscreen().catch(err => {
+                        console.log("Exit fullscreen error:", err);
+                        safariFullscreenFallback(false);
+                    });
                 } else if (document.webkitExitFullscreen) {
-                    document.webkitExitFullscreen();
-                } else if (document.webkitCancelFullScreen) {
-                    document.webkitCancelFullScreen();
+                    document.webkitExitFullscreen().catch(err => {
+                        console.log("Webkit exit fullscreen error:", err);
+                        safariFullscreenFallback(false);
+                    });
                 } else if (document.mozCancelFullScreen) {
-                    document.mozCancelFullScreen();
-                } else if (document.msExitFullscreen) {
-                    document.msExitFullscreen();
+                    document.mozCancelFullScreen().catch(err => {
+                        console.log("Moz exit fullscreen error:", err);
+                        safariFullscreenFallback(false);
+                    });
+                } else {
+                    safariFullscreenFallback(false);
                 }
             }
         }
 
-        // Update button text based on fullscreen state
-        function updateFullscreenButton() {
-            const isFullscreen = !!(document.fullscreenElement || 
-                                   document.webkitFullscreenElement || 
-                                   document.mozFullScreenElement || 
-                                   document.msFullscreenElement);
-            
-            console.log('updateFullscreenButton called, isFullscreen:', isFullscreen);
-            
-            if (isFullscreen) {
-                fullscreenButton.textContent = 'Exit Fullscreen';
-                fullscreenButton.style.display = 'none';
-            } else {
-                fullscreenButton.style.display = 'block';
-                
-                // Update text based on platform
-                if (isIOSSafari && !isStandalone) {
-                    fullscreenButton.textContent = '📲 Add to Home Screen';
+        // Safari fallback method (from old script - WORKING VERSION)
+        function safariFullscreenFallback(enter) {
+            if (enter) {
+                // ENTER fullscreen fallback
+                if (window.innerWidth <= 768) { // mobile
+                    container.classList.add('fullscreen-active');
+                    container.classList.add('safari-fullscreen');
+                    document.body.style.overflow = 'hidden';
+
+                    // Try to lock orientation on iOS
+                    if (isIOS && window.screen.orientation && window.screen.orientation.lock) {
+                        window.screen.orientation.lock('landscape').catch(e => {
+                            console.log("Orientation lock not supported:", e);
+                        });
+                    }
+
+                    // Hide fullscreen button but keep it for exit
+                    fullscreenButton.style.display = 'block';
+                    fullscreenButton.textContent = 'Exit Fullscreen';
+
+                    // Dispatch event for resize handling
+                    window.dispatchEvent(new Event('resize'));
                 } else {
-                    fullscreenButton.textContent = 'Fullscreen';
+                    // For desktop Safari, use CSS fullscreen simulation
+                    container.classList.add('safari-fullscreen');
+                    fullscreenButton.textContent = 'Exit Fullscreen';
+                    document.body.style.overflow = 'hidden';
                 }
+
+                // Set a flag so we know we're in fallback mode
+                container.setAttribute('data-safari-fallback', 'true');
+            } else {
+                // EXIT fullscreen fallback
+                container.classList.remove('fullscreen-active');
+                container.classList.remove('safari-fullscreen');
+
+                // Restore normal styling
+                container.removeAttribute('data-safari-fallback');
+                fullscreenButton.textContent = 'Fullscreen';
+                document.body.style.overflow = '';
+
+                // Unlock orientation
+                if (isIOS && window.screen.orientation && window.screen.orientation.unlock) {
+                    window.screen.orientation.unlock();
+                }
+
+                // Dispatch event for resize handling
+                window.dispatchEvent(new Event('resize'));
             }
         }
+
+        // Enhanced event listener for fullscreen button (from old script)
+        fullscreenButton.addEventListener("click", function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+
+            // For Safari, use the working toggleFullscreen function
+            if (isSafari || isIOSSafari) {
+                toggleFullscreen();
+            } else {
+                // For other browsers
+                if (!document.fullscreenElement) {
+                    container.requestFullscreen().then(() => {
+                        // Apply mobile landscape lock after entering fullscreen
+                        setTimeout(applyMobileLandscapeLock, 100);
+                    }).catch(err => {
+                        console.error("Fullscreen error:", err);
+                        // Fallback for Safari-like behavior
+                        safariFullscreenFallback(true);
+                    });
+                } else {
+                    document.exitFullscreen().then(() => {
+                        // Remove landscape lock after exiting fullscreen
+                        setTimeout(applyMobileLandscapeLock, 100);
+                    }).catch(err => {
+                        console.error("Exit fullscreen error:", err);
+                        safariFullscreenFallback(false);
+                    });
+                }
+            }
+
+            // Prevent default behavior
+            return false;
+        });
 
         // Setup the fullscreen button correctly
         function setupFullscreenButton() {
@@ -1820,6 +1922,24 @@
             }
         }
 
+        // Update button text based on fullscreen state
+        function updateFullscreenButton() {
+            const isFullscreen = !!(document.fullscreenElement || 
+                                   document.webkitFullscreenElement || 
+                                   document.mozFullScreenElement || 
+                                   document.msFullscreenElement ||
+                                   container.classList.contains('fullscreen-active') ||
+                                   container.classList.contains('safari-fullscreen'));
+            
+            console.log('updateFullscreenButton called, isFullscreen:', isFullscreen);
+            
+            if (isFullscreen) {
+                fullscreenButton.textContent = 'Exit Fullscreen';
+            } else {
+                fullscreenButton.textContent = 'Fullscreen';
+            }
+        }
+
         // Handle fullscreen change events
         document.addEventListener('fullscreenchange', updateFullscreenButton);
         document.addEventListener('webkitfullscreenchange', updateFullscreenButton);
@@ -1829,26 +1949,78 @@
         // Initialize button
         setupFullscreenButton();
 
-        // Handle resize for proper scaling
+        // Mobile landscape lock function (from old script)
+        function applyMobileLandscapeLock() {
+            const isMobile = window.innerWidth <= 768;
+            const isFullscreen = !!(document.fullscreenElement ||
+                document.webkitFullscreenElement ||
+                document.mozFullScreenElement ||
+                container.classList.contains('fullscreen-active'));
+
+            if (isMobile && isFullscreen) {
+
+                // Apply landscape lock styles
+                if (!isSafari) {
+                    container.classList.add('landscape-lock');
+                }
+
+                // Try to lock orientation if supported (may fail on Safari without HTTPS)
+                if (screen.orientation && screen.orientation.lock) {
+                    try {
+                        screen.orientation.lock('landscape').catch(error => {
+                            console.log('Orientation lock not supported:', error);
+                        });
+                    } catch (e) {
+                        console.log('Orientation lock error:', e);
+                    }
+                }
+
+                // Dispatch resize event to update layout
+                window.dispatchEvent(new Event('resize'));
+            } else {
+                // Remove landscape lock
+                container.classList.remove('landscape-lock');
+
+                // Unlock orientation if supported
+                if (screen.orientation && screen.orientation.unlock) {
+                    try {
+                        screen.orientation.unlock();
+                    } catch (e) {
+                        console.log('Orientation unlock error:', e);
+                    }
+                }
+            }
+        }
+
+        // Handle resize for proper scaling (from old script)
         function handleResize() {
             const windowWidth = window.innerWidth;
             const windowHeight = window.innerHeight;
             const gameAspectRatio = 16 / 9;
             const windowAspectRatio = windowWidth / windowHeight;
 
+            console.log(`Window: ${windowWidth}x${windowHeight}, Aspect: ${windowAspectRatio.toFixed(2)}`);
+
+            // If in fullscreen on mobile with landscape lock, use different calculations
+            if (container.classList.contains('landscape-lock') ||
+                container.classList.contains('fullscreen-active') ||
+                container.classList.contains('safari-fullscreen')) {
+
+                // For landscape-locked mobile fullscreen
+                canvas.style.width = '100%';
+                canvas.style.height = '100%';
+                return;
+            }
+
             let targetWidth = windowWidth;
             let targetHeight = windowHeight;
 
-            // Different compensation for fullscreen vs normal
-            const isFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement);
-            const compensation = isFullscreen ? 0 : 4;
+            const compensation = 4;
 
             if (windowAspectRatio > gameAspectRatio) {
-                // Window is wider than game
                 targetHeight = windowHeight - compensation;
                 targetWidth = targetHeight * gameAspectRatio;
             } else {
-                // Window is taller than game
                 targetWidth = windowWidth - compensation;
                 targetHeight = targetWidth / gameAspectRatio;
             }
@@ -1856,31 +2028,24 @@
             targetWidth = Math.max(targetWidth, 100);
             targetHeight = Math.max(targetHeight, 100);
 
-            // Apply fixed 1920x1080 base scaling
-            const baseWidth = 1920;
-            const baseHeight = 1080;
+            canvas.style.width = targetWidth + 'px';
+            canvas.style.height = targetHeight + 'px';
 
-            // Calculate scale based on available space
-            const scaleX = targetWidth / baseWidth;
-            const scaleY = targetHeight / baseHeight;
-            const scale = Math.min(scaleX, scaleY);
-
-            // Apply scaling
-            canvas.style.width = (baseWidth * scale) + 'px';
-            canvas.style.height = (baseHeight * scale) + 'px';
-
-            // Center the canvas
             container.style.justifyContent = 'center';
             container.style.alignItems = 'center';
+
+            console.log(`Adjusted size: ${targetWidth}x${targetHeight}`);
         }
 
         // Apply safe area compensation
         function applySafeAreaCompensation() {
-            const isFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement);
+            const isFullscreen = !!(document.fullscreenElement || 
+                                   document.webkitFullscreenElement || 
+                                   container.classList.contains('fullscreen-active'));
             
             if (isFullscreen) {
                 // In fullscreen, use safe area insets
-                container.style.padding = 'env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)';
+                container.style.padding = '0';
             } else {
                 // Normal mode with small compensation
                 const safetyMargin = 2;
@@ -1896,11 +2061,29 @@
             });
         }
 
+        // Also allow double-tap for mobile fullscreen (from old script)
+        const isMobile = window.innerWidth <= 768;
+        if (isMobile) {
+            let lastTap = 0;
+            container.addEventListener('touchend', function (event) {
+                const currentTime = new Date().getTime();
+                const tapLength = currentTime - lastTap;
+
+                if (tapLength < 500 && tapLength > 0) {
+                    // Double tap detected
+                    toggleFullscreen();
+                    event.preventDefault();
+                }
+                lastTap = currentTime;
+            });
+        }
+
         // Handle orientation changes
         window.addEventListener('orientationchange', function() {
             setTimeout(function() {
                 handleResize();
                 applySafeAreaCompensation();
+                applyMobileLandscapeLock();
             }, 150);
         });
 
