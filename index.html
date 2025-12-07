@@ -5,12 +5,13 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta http-equiv="Cross-Origin-Embedder-Policy" content="require-corp">
     <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     
-    <!-- PWA Meta Tags -->
+    <!-- PWA Meta Tags - CRITICAL for iOS -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Neou.io">
+    <meta name="mobile-web-app-capable" content="yes">
     <link rel="apple-touch-icon" href="icons/icon-192.png">
     
     <title>Neou.io | An Outer Worldly Adventure</title>
@@ -34,6 +35,13 @@
             color: white;
             position: relative;
             -webkit-tap-highlight-color: transparent;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* iOS PWA already runs in fullscreen, so we need to style accordingly */
+        body.pwa-fullscreen-mode {
+            padding: 0;
+            overflow: hidden;
         }
 
         /* Space background with stars */
@@ -233,7 +241,7 @@
             transform: translateY(-2px);
         }
 
-        /* Header with title */
+        /* Header with title - HIDDEN in PWA fullscreen mode */
         .header {
             text-align: center;
             padding: 10px 0;
@@ -241,6 +249,11 @@
             z-index: 5;
             background: rgba(0, 0, 0, 0.5);
             backdrop-filter: blur(5px);
+            transition: all 0.3s;
+        }
+
+        body.pwa-fullscreen-mode .header {
+            display: none !important;
         }
 
         .game-title {
@@ -268,6 +281,11 @@
             padding: 0;
         }
 
+        /* Hide ads in PWA fullscreen mode */
+        body.pwa-fullscreen-mode .ad-side {
+            display: none !important;
+        }
+
         .content-wrapper {
             display: flex;
             flex: 1;
@@ -277,7 +295,7 @@
             padding: 0 10px;
         }
 
-        /* Ad containers */
+        /* Ad containers - HIDDEN in PWA mode */
         .ad-side {
             flex: 0 0 160px;
             display: flex;
@@ -315,13 +333,23 @@
             text-orientation: mixed;
         }
 
-        /* Game container */
+        /* Game container - FULL SCREEN in PWA mode */
         .game-area {
             flex: 1;
             display: flex;
             flex-direction: column;
             align-items: center;
             padding: 10px;
+        }
+
+        body.pwa-fullscreen-mode .game-area {
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 9999;
         }
 
         #unity-container {
@@ -335,8 +363,15 @@
             border-radius: 8px;
             overflow: hidden;
             box-shadow: 0 0 20px rgba(80, 120, 255, 0.3);
-            /* Add safe area compensation */
-            padding: 2px; /* Small compensation to prevent cutting */
+            padding: 2px;
+        }
+
+        body.pwa-fullscreen-mode #unity-container {
+            width: 100vw;
+            height: 100vh;
+            border-radius: 0;
+            box-shadow: none;
+            padding: 0;
         }
 
         #unity-canvas {
@@ -345,15 +380,27 @@
             object-fit: contain;
             display: block;
             background: #000;
-            /* Ensure no scaling beyond safe boundaries */
             max-width: calc(100% - 4px);
             max-height: calc(100% - 4px);
         }
 
-        /* How to play image */
+        body.pwa-fullscreen-mode #unity-canvas {
+            width: 100vw;
+            height: 100vh;
+            object-fit: cover;
+            max-width: 100vw;
+            max-height: 100vh;
+        }
+
+        /* How to play image - HIDDEN in PWA fullscreen mode */
         .how-to-play {
             margin-top: 15px;
             text-align: center;
+            transition: all 0.3s;
+        }
+
+        body.pwa-fullscreen-mode .how-to-play {
+            display: none !important;
         }
 
         .how-to-play img {
@@ -382,35 +429,43 @@
             padding: 20px;
         }
 
+        /* FULLSCREEN BUTTON - COMPLETELY DIFFERENT LOGIC FOR iOS PWA */
         #fullscreen-button {
             position: absolute;
             top: 10px;
             left: 50%;
             transform: translateX(-50%);
             z-index: 20;
-            padding: 2px 14px; /* Super thin - 2px top/bottom */
+            padding: 2px 14px;
             background: rgba(255, 255, 255, 0.9);
             border: none;
-            border-radius: 2px; /* Very small radius */
+            border-radius: 2px;
             cursor: pointer;
             font-family: Arial, sans-serif;
-            font-size: 11px; /* Compact font */
+            font-size: 11px;
             backdrop-filter: blur(5px);
             white-space: nowrap;
-            line-height: 1.1; /* Very tight line height */
+            line-height: 1.1;
             transition: all 0.3s;
         }
 
-        #fullscreen-button:hover {
-            background: rgba(255, 255, 255, 1);
-            transform: translateX(-50%) scale(1.05);
+        body.pwa-fullscreen-mode #fullscreen-button {
+            display: none !important;
         }
 
-        /* Disabled state for iOS non-PWA */
-        #fullscreen-button.ios-disabled {
+        /* iOS Safari button state */
+        #fullscreen-button.ios-safari-disabled {
             background: rgba(255, 255, 255, 0.3);
             color: rgba(0, 0, 0, 0.5);
             cursor: not-allowed;
+        }
+
+        /* iOS PWA button state - THIS IS DIFFERENT! */
+        #fullscreen-button.ios-pwa-enabled {
+            background: rgba(76, 201, 240, 0.9);
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 0 10px rgba(76, 201, 240, 0.5);
         }
 
         /* Mobile-specific adjustments */
@@ -434,7 +489,7 @@
             }
 
             .ad-vertical {
-                display: none; /* Hide vertical ads on mobile */
+                display: none;
             }
 
             .game-title {
@@ -447,11 +502,10 @@
 
             #fullscreen-button {
                 top: 5px;
-                padding: 1px 10px; /* Ultra thin on mobile */
+                padding: 1px 10px;
                 font-size: 10px;
             }
 
-            /* More compensation on mobile if needed */
             #unity-container {
                 padding: 3px;
             }
@@ -478,64 +532,73 @@
             }
         }
 
-        /* Enhanced fullscreen styles with safe area support */
-        :fullscreen #unity-container,
-        :-webkit-full-screen #unity-container,
-        :-moz-full-screen #unity-container {
-            width: 100vw;
-            height: 100vh;
-            padding: 0; /* Remove padding in fullscreen */
-        }
-
-        :fullscreen #unity-canvas,
-        :-webkit-full-screen #unity-canvas,
-        :-moz-full-screen #unity-canvas {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            max-width: 100vw;
-            max-height: 100vh;
-        }
-
-        /* Support for safe area insets on modern browsers */
+        /* Support for safe area insets on modern browsers - CRITICAL for iOS PWA */
         @supports (padding: max(0px)) {
-            #unity-container {
-                padding-top: max(2px, env(safe-area-inset-top));
-                padding-bottom: max(2px, env(safe-area-inset-bottom));
-                padding-left: max(2px, env(safe-area-inset-left));
-                padding-right: max(2px, env(safe-area-inset-right));
-            }
-        }
-
-        /* Hide fullscreen button when in fullscreen mode */
-        :fullscreen #fullscreen-button,
-        :-webkit-full-screen #fullscreen-button,
-        :-moz-full-screen #fullscreen-button {
-            display: none;
-        }
-
-        /* PWA specific styles */
-        body.pwa-mode {
-            padding-top: env(safe-area-inset-top);
-            padding-bottom: env(safe-area-inset-bottom);
-        }
-
-        body.pwa-mode .header {
-            padding-top: max(10px, env(safe-area-inset-top));
-        }
-
-        /* Standalone PWA specific adjustments */
-        @media all and (display-mode: standalone) {
-            body {
-                user-select: none;
-                -webkit-user-select: none;
+            body.pwa-fullscreen-mode #unity-container {
+                padding-top: env(safe-area-inset-top);
+                padding-bottom: env(safe-area-inset-bottom);
+                padding-left: env(safe-area-inset-left);
+                padding-right: env(safe-area-inset-right);
             }
             
-            #fullscreen-button {
+            body.pwa-fullscreen-mode #fullscreen-button {
                 top: max(10px, env(safe-area-inset-top));
             }
         }
+
+        /* iOS notch/safe area handling */
+        .safe-area-top {
+            height: env(safe-area-inset-top);
+            background: #000;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 9998;
+            display: none;
+        }
+
+        .safe-area-bottom {
+            height: env(safe-area-inset-bottom);
+            background: #000;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            z-index: 9998;
+            display: none;
+        }
+
+        body.pwa-fullscreen-mode .safe-area-top,
+        body.pwa-fullscreen-mode .safe-area-bottom {
+            display: block;
+        }
+
+        /* PWA fullscreen toggle button */
+        .pwa-fullscreen-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(76, 201, 240, 0.9);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 20px;
+            cursor: pointer;
+            z-index: 10000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        body.pwa-fullscreen-mode .pwa-fullscreen-toggle {
+            display: flex;
+        }
     </style>
+    
     <!-- Use Firebase modular API -->
     <script type="module">
         // Your existing Firebase code remains exactly the same
@@ -1411,8 +1474,6 @@
         // PARTY SYSTEM FUNCTIONS - DIRECT DATABASE ACCESS
         // ============================================================================
 
-        // Add these to your existing Firebase functions
-
         window.FirebaseKickFromParty = function (partyId, targetUid, callbackObjectName) {
             console.log(`Kicking ${targetUid} from party ${partyId}`);
 
@@ -1424,7 +1485,6 @@
                 return;
             }
 
-            // DIRECT DATABASE ACCESS - No Cloud Function needed
             const updates = {};
             updates[`parties/${partyId}/members/${targetUid}`] = null;
 
@@ -1454,7 +1514,6 @@
                 return;
             }
 
-            // Get leader username for the notification
             get(ref(db, `users/${auth.currentUser.uid}/username`)).then((snapshot) => {
                 const leaderUsername = snapshot.val() || 'Unknown';
 
@@ -1467,7 +1526,7 @@
                     timestamp: Date.now(),
                     type: 'joinMatch',
                     isPartyMatch: true,
-                    scene: "PartyLoadingMatch" // SPECIFIC SCENE FOR PARTIES
+                    scene: "PartyLoadingMatch"
                 };
 
                 return update(ref(db), updates);
@@ -1582,7 +1641,6 @@
         window.FirebaseLeaveParty = function (uid, partyId, callbackObjectName) {
             console.log(`Leaving party ${partyId} for ${uid}`);
 
-            // Use a transaction to safely handle party cleanup
             const partyRef = ref(db, `parties/${partyId}`);
 
             get(partyRef).then((snapshot) => {
@@ -1597,7 +1655,6 @@
                 const updates = {};
                 updates[`parties/${partyId}/members/${uid}`] = null;
 
-                // Check if we're the last member
                 const members = snapshot.val().members || {};
                 let remainingMembers = 0;
                 Object.keys(members).forEach(memberUid => {
@@ -1606,10 +1663,8 @@
                     }
                 });
 
-                // If we're the last member, delete the entire party
                 if (remainingMembers === 0) {
                     console.log(`Deleting empty party ${partyId}`);
-                    // Use remove() for the entire party instead of setting to null in updates
                     remove(partyRef).then(() => {
                         console.log('Left party and deleted empty party successfully');
                         if (unityInstance) {
@@ -1622,7 +1677,6 @@
                         }
                     });
                 } else {
-                    // Just remove ourselves from members
                     update(ref(db), updates)
                         .then(() => {
                             console.log('Left party successfully');
@@ -1676,16 +1730,20 @@
     </script>
 </head>
 <body>
+    <!-- Safe area spacers for iOS notch -->
+    <div class="safe-area-top"></div>
+    <div class="safe-area-bottom"></div>
+
     <!-- iOS Warning Banner -->
     <div class="ios-warning-banner" id="iosWarningBanner">
         <div class="ios-warning-content">
-            <h3 class="ios-warning-title">🚨 iOS Fullscreen Limitation</h3>
+            <h3 class="ios-warning-title">🚨 iOS Safari Limitation</h3>
             <p class="ios-warning-text">
-                iOS Safari restricts WebGL fullscreen. For the best experience, add Neou.io to your Home Screen as a PWA.
+                For fullscreen gameplay on iOS, please install Neou.io as a PWA.
             </p>
             <div class="ios-warning-actions">
                 <button class="ios-install-button" id="showInstallInstructions">
-                    📲 How to Install
+                    📲 Install Instructions
                 </button>
                 <button class="ios-dismiss-button" id="dismissWarning">
                     Dismiss
@@ -1704,7 +1762,7 @@
                 <div class="step-content">
                     <div class="step-title">Tap the Share Button</div>
                     <div class="step-description">
-                        In Safari, tap the share icon (📤) at the bottom of the screen
+                        In Safari, tap the share icon (📤) at the bottom
                     </div>
                 </div>
             </div>
@@ -1734,7 +1792,7 @@
                 <div class="step-content">
                     <div class="step-title">Launch from Home Screen</div>
                     <div class="step-description">
-                        Find the Neou.io icon on your home screen and tap it to launch in fullscreen PWA mode
+                        Find Neou.io on your home screen and tap to launch in fullscreen mode
                     </div>
                 </div>
             </div>
@@ -1744,6 +1802,11 @@
             </button>
         </div>
     </div>
+
+    <!-- PWA Fullscreen Toggle Button -->
+    <button class="pwa-fullscreen-toggle" id="pwaFullscreenToggle">
+        ⬜
+    </button>
 
     <!-- Starfield background -->
     <div class="stars" id="stars"></div>
@@ -1787,19 +1850,27 @@
 
     <script>
         // ============================================================================
-        // iOS & PWA DETECTION AND HANDLING
+        // iOS & PWA DETECTION - IMPROVED
         // ============================================================================
 
-        // Detect iOS Safari
+        // Detect iOS
         function isIOS() {
             return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
         }
 
-        // Detect if in standalone PWA mode
+        // Detect if in standalone PWA mode - MORE RELIABLE
         function isStandalonePWA() {
-            return (window.matchMedia('(display-mode: standalone)').matches) || 
-                   (window.navigator.standalone) || 
-                   (document.referrer.includes('android-app://'));
+            // Check multiple indicators
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+            const isNavigatorStandalone = window.navigator.standalone;
+            const isFullscreenPWA = window.innerHeight === screen.height;
+            
+            // iOS specific check
+            const iOSPWA = isIOS() && 
+                          (isNavigatorStandalone === true || 
+                           window.navigator.userAgent.indexOf('Safari') === -1);
+            
+            return isStandalone || isNavigatorStandalone || iOSPWA || isFullscreenPWA;
         }
 
         // Detect if iOS Safari (not PWA)
@@ -1807,7 +1878,70 @@
             return isIOS() && !isStandalonePWA();
         }
 
-        // Check if fullscreen is supported in current context
+        // ============================================================================
+        // PWA FULLSCREEN HANDLING - THE KEY DIFFERENCE
+        // ============================================================================
+
+        // For iOS PWA, we need to simulate fullscreen by adjusting CSS
+        let isPwaFullscreen = false;
+        const pwaFullscreenToggle = document.getElementById('pwaFullscreenToggle');
+        const body = document.body;
+
+        function togglePwaFullscreen() {
+            if (!isStandalonePWA()) return;
+            
+            isPwaFullscreen = !isPwaFullscreen;
+            
+            if (isPwaFullscreen) {
+                // Enter "fullscreen" mode in PWA
+                body.classList.add('pwa-fullscreen-mode');
+                pwaFullscreenToggle.innerHTML = '⛶'; // Exit icon
+                
+                // Force resize Unity canvas
+                setTimeout(() => {
+                    if (unityInstance && unityInstance.Module && unityInstance.Module.SetFullscreen) {
+                        try {
+                            // Try to tell Unity we're in fullscreen
+                            unityInstance.Module.SetFullscreen(1);
+                        } catch (e) {
+                            console.log('Unity fullscreen API not available');
+                        }
+                    }
+                    
+                    // Manually trigger resize
+                    handleResize();
+                }, 100);
+                
+                console.log('PWA fullscreen mode activated');
+            } else {
+                // Exit "fullscreen" mode in PWA
+                body.classList.remove('pwa-fullscreen-mode');
+                pwaFullscreenToggle.innerHTML = '⬜'; // Enter icon
+                
+                // Force resize Unity canvas
+                setTimeout(() => {
+                    if (unityInstance && unityInstance.Module && unityInstance.Module.SetFullscreen) {
+                        try {
+                            unityInstance.Module.SetFullscreen(0);
+                        } catch (e) {
+                            console.log('Unity fullscreen API not available');
+                        }
+                    }
+                    
+                    handleResize();
+                }, 100);
+                
+                console.log('PWA fullscreen mode deactivated');
+            }
+            
+            // Save preference
+            localStorage.setItem('pwaFullscreen', isPwaFullscreen ? 'true' : 'false');
+        }
+
+        // ============================================================================
+        // STANDARD FULLSCREEN API (for non-iOS)
+        // ============================================================================
+
         function isFullscreenSupported() {
             const element = document.getElementById('unity-container');
             return element && (
@@ -1818,102 +1952,27 @@
             );
         }
 
-        // ============================================================================
-        // PWA INSTALL HANDLING
-        // ============================================================================
-
-        // Create deferred prompt for PWA installation
-        let deferredPrompt;
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            console.log('PWA install prompt available');
-        });
-
-        // Show PWA install instructions
-        document.getElementById('showInstallInstructions').addEventListener('click', () => {
-            document.getElementById('pwaInstructionsModal').style.display = 'flex';
-        });
-
-        // Close instructions modal
-        document.getElementById('closeInstructions').addEventListener('click', () => {
-            document.getElementById('pwaInstructionsModal').style.display = 'none';
-        });
-
-        // Dismiss warning banner
-        document.getElementById('dismissWarning').addEventListener('click', () => {
-            document.getElementById('iosWarningBanner').style.display = 'none';
-            // Store dismissal in localStorage
-            localStorage.setItem('iosWarningDismissed', 'true');
-        });
-
-        // ============================================================================
-        // FULLSCREEN HANDLING
-        // ============================================================================
-
-        var unityInstance = null;
-        var container = document.querySelector("#unity-container");
-        var canvas = document.querySelector("#unity-canvas");
-        var loadingOverlay = document.querySelector("#loading-overlay");
-        var fullscreenButton = document.querySelector("#fullscreen-button");
-        var iosWarningBanner = document.querySelector("#iosWarningBanner");
-
-        // Initialize based on platform
-        function initializePlatform() {
-            if (isIOSSafari()) {
-                console.log('iOS Safari detected - fullscreen disabled');
-                // Show iOS warning banner (if not dismissed)
-                if (!localStorage.getItem('iosWarningDismissed')) {
-                    iosWarningBanner.style.display = 'block';
-                }
-                
-                // Disable fullscreen button for iOS Safari
-                fullscreenButton.classList.add('ios-disabled');
-                fullscreenButton.title = 'Fullscreen requires adding to Home Screen as PWA on iOS';
-                
-                // Change button text to indicate limitation
-                fullscreenButton.textContent = 'Add to Home Screen for Fullscreen';
-            } else if (isStandalonePWA()) {
-                console.log('PWA mode detected - fullscreen enabled');
-                document.body.classList.add('pwa-mode');
-                // Fullscreen should work in PWA mode
-            } else {
-                console.log('Desktop or Android - fullscreen enabled');
-                // Fullscreen should work
-            }
-        }
-
-        // Enhanced fullscreen function
-        async function toggleFullscreen() {
-            // If iOS Safari, show install instructions instead
-            if (isIOSSafari()) {
-                document.getElementById('pwaInstructionsModal').style.display = 'flex';
-                return;
-            }
-
-            if (!isFullscreenSupported()) {
-                console.warn('Fullscreen not supported in this context');
-                return;
-            }
-
-            try {
-                if (!document.fullscreenElement) {
-                    // Enter fullscreen
-                    const element = container;
-                    
-                    if (element.requestFullscreen) {
-                        await element.requestFullscreen();
-                    } else if (element.webkitRequestFullscreen) {
-                        await element.webkitRequestFullscreen();
-                    } else if (element.mozRequestFullScreen) {
-                        await element.mozRequestFullScreen();
-                    } else if (element.msRequestFullscreen) {
-                        await element.msRequestFullscreen();
+        async function toggleStandardFullscreen() {
+            const container = document.getElementById('unity-container');
+            
+            if (!document.fullscreenElement) {
+                // Enter fullscreen
+                try {
+                    if (container.requestFullscreen) {
+                        await container.requestFullscreen();
+                    } else if (container.webkitRequestFullscreen) {
+                        await container.webkitRequestFullscreen();
+                    } else if (container.mozRequestFullScreen) {
+                        await container.mozRequestFullScreen();
+                    } else if (container.msRequestFullscreen) {
+                        await container.msRequestFullscreen();
                     }
-                    
-                    console.log('Entered fullscreen mode');
-                } else {
-                    // Exit fullscreen
+                } catch (error) {
+                    console.error('Fullscreen error:', error);
+                }
+            } else {
+                // Exit fullscreen
+                try {
                     if (document.exitFullscreen) {
                         await document.exitFullscreen();
                     } else if (document.webkitExitFullscreen) {
@@ -1923,51 +1982,135 @@
                     } else if (document.msExitFullscreen) {
                         await document.msExitFullscreen();
                     }
-                    
-                    console.log('Exited fullscreen mode');
-                }
-            } catch (error) {
-                console.error('Fullscreen error:', error);
-                
-                // If fullscreen fails, check if we're in a context where it might be blocked
-                if (isIOS() && !isStandalonePWA()) {
-                    // Show PWA instructions for iOS
-                    document.getElementById('pwaInstructionsModal').style.display = 'flex';
+                } catch (error) {
+                    console.error('Exit fullscreen error:', error);
                 }
             }
         }
 
-        // Move fullscreen button to top center
-        fullscreenButton.style.left = '50%';
-        fullscreenButton.style.transform = 'translateX(-50%)';
-
-        // Updated fullscreen button click handler
-        fullscreenButton.addEventListener("click", toggleFullscreen);
-
         // ============================================================================
-        // RESIZE AND LAYOUT HANDLING
+        // UNIFIED FULLSCREEN HANDLER
         // ============================================================================
 
-        // Handle resize and aspect ratio properly
+        async function toggleFullscreen() {
+            if (isIOSSafari()) {
+                // iOS Safari - show install instructions
+                document.getElementById('pwaInstructionsModal').style.display = 'flex';
+                return;
+            }
+            
+            if (isStandalonePWA()) {
+                // iOS PWA - use CSS-based fullscreen simulation
+                togglePwaFullscreen();
+                return;
+            }
+            
+            // Desktop/Android - use standard fullscreen API
+            toggleStandardFullscreen();
+        }
+
+        // ============================================================================
+        // INITIALIZATION
+        // ============================================================================
+
+        var unityInstance = null;
+        var container = document.querySelector("#unity-container");
+        var canvas = document.querySelector("#unity-canvas");
+        var loadingOverlay = document.querySelector("#loading-overlay");
+        var fullscreenButton = document.querySelector("#fullscreen-button");
+        var iosWarningBanner = document.querySelector("#iosWarningBanner");
+
+        function initializePlatform() {
+            console.log('Platform detection:', {
+                isIOS: isIOS(),
+                isStandalonePWA: isStandalonePWA(),
+                isIOSSafari: isIOSSafari(),
+                userAgent: navigator.userAgent
+            });
+            
+            if (isIOSSafari()) {
+                console.log('iOS Safari detected');
+                if (!localStorage.getItem('iosWarningDismissed')) {
+                    iosWarningBanner.style.display = 'block';
+                }
+                
+                fullscreenButton.classList.add('ios-safari-disabled');
+                fullscreenButton.textContent = 'Install as PWA for Fullscreen';
+                fullscreenButton.title = 'iOS Safari blocks WebGL fullscreen. Install as PWA.';
+                
+            } else if (isStandalonePWA()) {
+                console.log('PWA mode detected');
+                
+                const savedFullscreen = localStorage.getItem('pwaFullscreen');
+                if (savedFullscreen === 'true') {
+                    isPwaFullscreen = true;
+                    body.classList.add('pwa-fullscreen-mode');
+                    pwaFullscreenToggle.innerHTML = '⛶';
+                }
+                
+                fullscreenButton.classList.add('ios-pwa-enabled');
+                fullscreenButton.textContent = 'Toggle Fullscreen';
+                fullscreenButton.title = 'Toggle fullscreen mode in PWA';
+                
+            } else {
+                console.log('Desktop/Android detected');
+                fullscreenButton.textContent = 'Fullscreen';
+                fullscreenButton.title = 'Enter fullscreen mode';
+            }
+        }
+
+        // ============================================================================
+        // EVENT LISTENERS
+        // ============================================================================
+
+        document.getElementById('showInstallInstructions').addEventListener('click', () => {
+            document.getElementById('pwaInstructionsModal').style.display = 'flex';
+        });
+
+        document.getElementById('closeInstructions').addEventListener('click', () => {
+            document.getElementById('pwaInstructionsModal').style.display = 'none';
+        });
+
+        document.getElementById('dismissWarning').addEventListener('click', () => {
+            document.getElementById('iosWarningBanner').style.display = 'none';
+            localStorage.setItem('iosWarningDismissed', 'true');
+        });
+
+        pwaFullscreenToggle.addEventListener('click', togglePwaFullscreen);
+        fullscreenButton.addEventListener('click', toggleFullscreen);
+
+        // ============================================================================
+        // RESIZE HANDLING
+        // ============================================================================
+
         function handleResize() {
             const windowWidth = window.innerWidth;
             const windowHeight = window.innerHeight;
             const gameAspectRatio = 16 / 9;
             const windowAspectRatio = windowWidth / windowHeight;
 
-            console.log(`Window: ${windowWidth}x${windowHeight}, Aspect: ${windowAspectRatio.toFixed(2)}`);
-
             let targetWidth = windowWidth;
             let targetHeight = windowHeight;
 
-            const compensation = 4;
-
-            if (windowAspectRatio > gameAspectRatio) {
-                targetHeight = windowHeight - compensation;
-                targetWidth = targetHeight * gameAspectRatio;
+            // In PWA fullscreen mode, use different logic
+            if (isStandalonePWA() && isPwaFullscreen) {
+                // Fill entire screen
+                targetWidth = windowWidth;
+                targetHeight = windowHeight;
+                canvas.style.objectFit = 'cover';
             } else {
-                targetWidth = windowWidth - compensation;
-                targetHeight = targetWidth / gameAspectRatio;
+                // Normal scaling with compensation
+                const compensation = 4;
+                
+                if (windowAspectRatio > gameAspectRatio) {
+                    targetHeight = windowHeight - compensation;
+                    targetWidth = targetHeight * gameAspectRatio;
+                } else {
+                    targetWidth = windowWidth - compensation;
+                    targetHeight = targetWidth / gameAspectRatio;
+                }
+                
+                canvas.style.objectFit = 'contain';
             }
 
             targetWidth = Math.max(targetWidth, 100);
@@ -1976,26 +2119,34 @@
             canvas.style.width = targetWidth + 'px';
             canvas.style.height = targetHeight + 'px';
 
-            container.style.justifyContent = 'center';
-            container.style.alignItems = 'center';
-
-            console.log(`Adjusted size: ${targetWidth}x${targetHeight}`);
+            // Update Unity if available
+            if (unityInstance && unityInstance.Module && unityInstance.Module.SetCanvasSize) {
+                try {
+                    unityInstance.Module.SetCanvasSize(targetWidth, targetHeight);
+                } catch (e) {
+                    console.log('Could not set Unity canvas size');
+                }
+            }
         }
 
         function applySafeAreaCompensation() {
             const safetyMargin = 2;
-
-            container.style.padding = safetyMargin + 'px';
-
-            canvas.style.maxWidth = `calc(100% - ${safetyMargin * 2}px)`;
-            canvas.style.maxHeight = `calc(100% - ${safetyMargin * 2}px)`;
+            
+            if (isStandalonePWA() && isPwaFullscreen) {
+                container.style.padding = '0';
+                canvas.style.maxWidth = '100%';
+                canvas.style.maxHeight = '100%';
+            } else {
+                container.style.padding = safetyMargin + 'px';
+                canvas.style.maxWidth = `calc(100% - ${safetyMargin * 2}px)`;
+                canvas.style.maxHeight = `calc(100% - ${safetyMargin * 2}px)`;
+            }
         }
 
         // ============================================================================
         // STARFIELD AND INITIALIZATION
         // ============================================================================
 
-        // Create starfield effect
         function createStars() {
             const starsContainer = document.getElementById('stars');
             const starCount = 200;
@@ -2004,14 +2155,9 @@
                 const star = document.createElement('div');
                 star.className = 'star';
 
-                // Random position
                 const x = Math.random() * 100;
                 const y = Math.random() * 100;
-
-                // Random size (0.5px to 2px)
                 const size = Math.random() * 1.5 + 0.5;
-
-                // Random opacity
                 const opacity = Math.random() * 0.7 + 0.3;
 
                 star.style.left = `${x}%`;
@@ -2024,15 +2170,23 @@
             }
         }
 
-        // Initialize everything
         function init() {
             createStars();
             initializePlatform();
             handleResize();
             applySafeAreaCompensation();
+            
+            if (isStandalonePWA() && localStorage.getItem('pwaFullscreen') === 'true') {
+                setTimeout(() => {
+                    togglePwaFullscreen();
+                }, 500);
+            }
         }
 
-        // Event listeners
+        // ============================================================================
+        // EVENT LISTENERS
+        // ============================================================================
+
         window.addEventListener('load', init);
         window.addEventListener('resize', function () {
             handleResize();
@@ -2045,43 +2199,10 @@
             }, 100);
         });
 
-        // Fullscreen change handlers
-        document.addEventListener('fullscreenchange', function () {
-            setTimeout(function () {
-                handleResize();
-                if (document.fullscreenElement) {
-                    container.style.padding = '0';
-                    canvas.style.maxWidth = '100%';
-                    canvas.style.maxHeight = '100%';
-                } else {
-                    applySafeAreaCompensation();
-                }
-            }, 100);
-        });
-        document.addEventListener('webkitfullscreenchange', function () {
-            setTimeout(function () {
-                handleResize();
-                if (document.webkitFullscreenElement) {
-                    container.style.padding = '0';
-                    canvas.style.maxWidth = '100%';
-                    canvas.style.maxHeight = '100%';
-                } else {
-                    applySafeAreaCompensation();
-                }
-            }, 100);
-        });
-        document.addEventListener('mozfullscreenchange', function () {
-            setTimeout(function () {
-                handleResize();
-                if (document.mozFullScreenElement) {
-                    container.style.padding = '0';
-                    canvas.style.maxWidth = '100%';
-                    canvas.style.maxHeight = '100%';
-                } else {
-                    applySafeAreaCompensation();
-                }
-            }, 100);
-        });
+        // Fullscreen change handlers for standard fullscreen
+        document.addEventListener('fullscreenchange', handleResize);
+        document.addEventListener('webkitfullscreenchange', handleResize);
+        document.addEventListener('mozfullscreenchange', handleResize);
 
         // ============================================================================
         // UNITY LOADING
@@ -2121,6 +2242,17 @@
                     unityInstance = instance;
                     loadingOverlay.style.display = 'none';
                     console.log('Unity instance initialized');
+                    
+                    // Important: Set up Unity fullscreen handler
+                    if (unityInstance.Module) {
+                        if (isStandalonePWA()) {
+                            unityInstance.Module.requestFullscreen = function() {
+                                togglePwaFullscreen();
+                                return Promise.resolve();
+                            };
+                        }
+                    }
+                    
                     setTimeout(function () {
                         handleResize();
                         applySafeAreaCompensation();
@@ -2132,8 +2264,6 @@
             };
             script.onerror = (error) => {
                 console.error(`Failed to load Unity script at ${buildScriptPath}:`, error.message);
-                console.error(`Check if the file exists at ${buildScriptPath} and is accessible. Possible issues: file missing, incorrect path, server permissions, or incorrect MIME type.`);
-                console.error(`Attempting next path (if available)...`);
                 tryLoadUnityScript(index + 1);
             };
             document.body.appendChild(script);
@@ -2148,6 +2278,14 @@
                 unityInstance.Module.audioContext.resume().then(() => console.log('Audio context resumed'));
             }
         }, { once: true });
+
+        // iOS PWA specific: Hide browser UI when scrolling
+        if (isStandalonePWA()) {
+            window.addEventListener('scroll', function() {
+                window.scrollTo(0, 0);
+            });
+        }
+
     </script>
 </body>
 </html>
