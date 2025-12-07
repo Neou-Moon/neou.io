@@ -299,11 +299,6 @@
             color: white;
             font-weight: bold;
         }
-        
-        /* Hide fullscreen button in PWA mode */
-        #fullscreen-button.hidden {
-            display: none !important;
-        }
 
         /* Mobile-specific adjustments */
         @media (max-width: 768px) {
@@ -1718,7 +1713,7 @@
         var iosCloseBtn = document.getElementById('ios-close-btn');
 
         // ============================================================================
-        // SIMPLIFIED FULLSCREEN HANDLING
+        // SIMPLIFIED FULLSCREEN HANDLING - FIXED!
         // ============================================================================
 
         // Show iOS instructions on first visit to iOS Safari
@@ -1733,65 +1728,22 @@
             sessionStorage.setItem('iosInstructionsSeen', 'true');
         });
 
-        // SIMPLE RULE: 
-        // 1. If in PWA mode (standalone), HIDE the fullscreen button - user is already fullscreen!
-        // 2. If in iOS Safari, show "Add to Home Screen" button
-        // 3. If on desktop/Android, show normal fullscreen button
-
-        function setupFullscreenButton() {
-            // Case 1: Running as PWA (from Home Screen) - HIDE button
-            if (isStandalone) {
-                console.log('Running as PWA - hiding fullscreen button');
-                fullscreenButton.classList.add('hidden');
-                fullscreenButton.removeEventListener('click', toggleFullscreen);
-                fullscreenButton.removeEventListener('click', showIOSInstructions);
-                return false;
-            }
-            
-            // Case 2: iOS Safari - show "Add to Home Screen" button
-            if (isIOSSafari) {
-                console.log('Running in iOS Safari - showing Add to Home Screen button');
-                fullscreenButton.textContent = '📲 Add to Home Screen';
-                fullscreenButton.classList.add('ios-mode');
-                fullscreenButton.classList.remove('hidden');
-                
-                // Remove any existing click listeners
-                fullscreenButton.removeEventListener('click', toggleFullscreen);
-                fullscreenButton.removeEventListener('click', showIOSInstructions);
-                
-                // Add new click listener for iOS instructions
-                fullscreenButton.addEventListener('click', showIOSInstructions);
-                return false;
-            }
-            
-            // Case 3: Desktop/Android - show normal fullscreen button
-            console.log('Running on desktop/Android - showing normal fullscreen button');
-            fullscreenButton.textContent = 'Fullscreen';
-            fullscreenButton.classList.remove('ios-mode');
-            fullscreenButton.classList.remove('hidden');
-            
-            // Remove any existing click listeners
-            fullscreenButton.removeEventListener('click', toggleFullscreen);
-            fullscreenButton.removeEventListener('click', showIOSInstructions);
-            
-            // Add normal fullscreen listener
-            fullscreenButton.addEventListener('click', toggleFullscreen);
-            return true;
-        }
-
         function showIOSInstructions(e) {
             e.preventDefault();
             e.stopPropagation();
             iosInstructions.classList.add('active');
         }
 
-        // Normal fullscreen function
+        // Normal fullscreen function - THIS SHOULD WORK IN PWA TOO!
         function toggleFullscreen() {
+            console.log('toggleFullscreen called, isStandalone:', isStandalone);
+            
             if (!document.fullscreenElement && 
                 !document.webkitFullscreenElement && 
                 !document.mozFullScreenElement && 
                 !document.msFullscreenElement) {
                 
+                console.log('ENTERING FULLSCREEN');
                 // ENTER FULLSCREEN
                 if (container.requestFullscreen) {
                     container.requestFullscreen();
@@ -1805,6 +1757,7 @@
                     container.msRequestFullscreen();
                 }
             } else {
+                console.log('EXITING FULLSCREEN');
                 // EXIT FULLSCREEN
                 if (document.exitFullscreen) {
                     document.exitFullscreen();
@@ -1822,13 +1775,12 @@
 
         // Update button text based on fullscreen state
         function updateFullscreenButton() {
-            // If in standalone mode, don't update - button is hidden
-            if (isStandalone) return;
-            
             const isFullscreen = !!(document.fullscreenElement || 
                                    document.webkitFullscreenElement || 
                                    document.mozFullScreenElement || 
                                    document.msFullscreenElement);
+            
+            console.log('updateFullscreenButton called, isFullscreen:', isFullscreen);
             
             if (isFullscreen) {
                 fullscreenButton.textContent = 'Exit Fullscreen';
@@ -1836,10 +1788,35 @@
             } else {
                 fullscreenButton.style.display = 'block';
                 
-                // Only update text if not iOS Safari
-                if (!isIOSSafari) {
+                // Update text based on platform
+                if (isIOSSafari && !isStandalone) {
+                    fullscreenButton.textContent = '📲 Add to Home Screen';
+                } else {
                     fullscreenButton.textContent = 'Fullscreen';
                 }
+            }
+        }
+
+        // Setup the fullscreen button correctly
+        function setupFullscreenButton() {
+            console.log('setupFullscreenButton called');
+            
+            // Remove all existing event listeners first
+            fullscreenButton.removeEventListener('click', toggleFullscreen);
+            fullscreenButton.removeEventListener('click', showIOSInstructions);
+            
+            if (isIOSSafari && !isStandalone) {
+                // iOS Safari browser - show Add to Home Screen button
+                console.log('Setting up for iOS Safari browser');
+                fullscreenButton.textContent = '📲 Add to Home Screen';
+                fullscreenButton.classList.add('ios-mode');
+                fullscreenButton.addEventListener('click', showIOSInstructions);
+            } else {
+                // PWA mode OR desktop/Android - show normal fullscreen button
+                console.log('Setting up for PWA/Desktop/Android');
+                fullscreenButton.textContent = 'Fullscreen';
+                fullscreenButton.classList.remove('ios-mode');
+                fullscreenButton.addEventListener('click', toggleFullscreen);
             }
         }
 
