@@ -1,0 +1,2169 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta http-equiv="Cross-Origin-Embedder-Policy" content="require-corp">
+    <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- Cache control for GitHub Pages -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Neou.io | An Outer Worldly Adventure</title>
+    <link rel="icon" href="data:;base64,iVBORw0KGgo="> <!-- Suppress favicon 404 -->
+    <!-- PWA Manifest - CRITICAL FOR iOS HOME SCREEN -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Neou.io">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000;
+            min-height: 100vh;
+            overflow-x: hidden;
+            font-family: Arial, sans-serif;
+            color: white;
+            position: relative;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+            /* Space background with stars */
+            body::before {
+                content: '';
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: radial-gradient(ellipse at center, rgba(8, 15, 30, 0.8) 0%, rgba(0, 0, 0, 1) 70%), url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"><defs><radialGradient id="grad"><stop offset="0%" stop-color="%23000B1A"/><stop offset="100%" stop-color="%23000000"/></radialGradient></defs><rect width="100%" height="100%" fill="url(%23grad)"/></svg>');
+                z-index: -2;
+            }
+
+        /* Starfield effect */
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .star {
+            position: absolute;
+            background-color: white;
+            border-radius: 50%;
+        }
+
+        /* Header with title */
+        .header {
+            text-align: center;
+            padding: 10px 0;
+            position: relative;
+            z-index: 5;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+        }
+
+        .game-title {
+            font-size: 3.5rem;
+            font-weight: bold;
+            margin: 0;
+            color: white;
+            text-shadow: 3px 3px 0 #000, -3px -3px 0 #000, 3px -3px 0 #000, -3px 3px 0 #000, 0 3px 0 #000, 3px 0 0 #000, 0 -3px 0 #000, -3px 0 0 #000, 2px 2px 5px rgba(0, 0, 0, 0.8);
+            letter-spacing: 2px;
+        }
+
+        .game-subtitle {
+            font-size: 1.2rem;
+            margin: 5px 0 0 0;
+            color: #a0d2ff;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+            font-style: italic;
+        }
+
+        /* Main content layout */
+        .main-container {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            padding: 0;
+        }
+
+        .content-wrapper {
+            display: flex;
+            flex: 1;
+            width: 100%;
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 0 10px;
+        }
+
+        /* Ad containers */
+        .ad-side {
+            flex: 0 0 160px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            padding: 10px 5px;
+        }
+
+        .ad-top {
+            width: 100%;
+            height: 90px;
+            margin-bottom: 10px;
+            background: rgba(30, 30, 60, 0.5);
+            border: 1px solid rgba(100, 150, 255, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #a0d2ff;
+            font-size: 14px;
+            border-radius: 4px;
+        }
+
+        .ad-vertical {
+            flex: 1;
+            min-height: 600px;
+            background: rgba(30, 30, 60, 0.5);
+            border: 1px solid rgba(100, 150, 255, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #a0d2ff;
+            font-size: 14px;
+            border-radius: 4px;
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+        }
+
+        /* Game container */
+        .game-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px;
+        }
+
+        #unity-container {
+            width: 100%;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #000;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(80, 120, 255, 0.3);
+            /* Fixed aspect ratio for 1920x1080 (16:9) */
+            aspect-ratio: 16 / 9;
+            max-width: 1920px;
+            max-height: 1080px;
+            margin: 0 auto;
+        }
+
+        #unity-canvas {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+            background: #000;
+            /* Ensure exact 1920x1080 rendering */
+            max-width: 1920px;
+            max-height: 1080px;
+        }
+
+        /* How to play image */
+        .how-to-play {
+            margin-top: 15px;
+            text-align: center;
+        }
+
+            .how-to-play img {
+                max-width: 100%;
+                height: auto;
+                border-radius: 8px;
+                box-shadow: 0 0 10px rgba(80, 120, 255, 0.5);
+            }
+
+        /* Loading and fullscreen button styles */
+        #loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-family: Arial, sans-serif;
+            font-size: min(4vw, 24px);
+            z-index: 10;
+            text-align: center;
+            padding: 20px;
+        }
+
+        #fullscreen-button {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 20;
+            padding: 2px 14px; /* Super thin - 2px top/bottom */
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 2px; /* Very small radius */
+            cursor: pointer;
+            font-family: Arial, sans-serif;
+            font-size: 11px; /* Compact font */
+            backdrop-filter: blur(5px);
+            white-space: nowrap;
+            line-height: 1.1; /* Very tight line height */
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* iOS Instructions Modal */
+        .ios-instructions {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+
+            .ios-instructions.active {
+                display: flex;
+            }
+
+        .ios-instructions-content {
+            background: rgba(30, 30, 60, 0.95);
+            border-radius: 12px;
+            padding: 25px;
+            max-width: 400px;
+            border: 2px solid rgba(100, 150, 255, 0.5);
+            box-shadow: 0 0 30px rgba(80, 120, 255, 0.4);
+        }
+
+        .ios-instructions h3 {
+            color: #a0d2ff;
+            margin-top: 0;
+            font-size: 1.5rem;
+        }
+
+        .ios-steps {
+            text-align: left;
+            margin: 20px 0;
+            padding-left: 20px;
+        }
+
+            .ios-steps li {
+                margin-bottom: 15px;
+                line-height: 1.4;
+            }
+
+        .ios-close-btn {
+            background: rgba(100, 150, 255, 0.9);
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+
+            .ios-close-btn:hover {
+                background: rgba(120, 170, 255, 0.9);
+            }
+
+        /* Different fullscreen button for iOS Safari */
+        #fullscreen-button.ios-mode {
+            background: rgba(100, 150, 255, 0.9);
+            color: white;
+            font-weight: bold;
+        }
+
+        /* Mobile-specific adjustments */
+        @media (max-width: 768px) {
+            .content-wrapper {
+                flex-direction: column;
+                padding: 0 5px;
+            }
+
+            .ad-side {
+                flex-direction: row;
+                flex: 0 0 auto;
+                padding: 5px 0;
+            }
+
+            .ad-top {
+                width: 100%;
+                height: 50px;
+                margin: 0 5px;
+                writing-mode: horizontal-tb;
+            }
+
+            .ad-vertical {
+                display: none; /* Hide vertical ads on mobile */
+            }
+
+            .game-title {
+                font-size: 2.5rem;
+            }
+
+            .game-subtitle {
+                font-size: 1rem;
+            }
+
+            #fullscreen-button {
+                top: 5px;
+                padding: 1px 10px; /* Ultra thin on mobile */
+                font-size: 10px;
+            }
+
+            /* Force landscape orientation for mobile fullscreen - FROM OLD SCRIPT */
+            #unity-container.landscape-lock {
+                transform: rotate(90deg);
+                transform-origin: center;
+                width: 100vh;
+                height: 100vw;
+                max-width: none;
+                max-height: none;
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%) rotate(90deg);
+                z-index: 9999;
+            }
+
+                #unity-container.landscape-lock #unity-canvas {
+                    width: 100vh;
+                    height: 100vw;
+                    max-width: none;
+                    max-height: none;
+                }
+
+            /* Safari-specific fullscreen fix - FROM OLD SCRIPT */
+            #unity-container.fullscreen-active {
+                width: 100vh !important;
+                height: 100vw !important;
+                max-width: none !important;
+                max-height: none !important;
+                position: fixed !important;
+                top: 50% !important;
+                left: 50% !important;
+                transform: translate(-50%, -50%) rotate(90deg) !important;
+                z-index: 9999 !important;
+            }
+
+                #unity-container.fullscreen-active #unity-canvas {
+                    width: 100vh !important;
+                    height: 100vw !important;
+                    max-width: none !important;
+                    max-height: none !important;
+                }
+        }
+
+        /* Enhanced fullscreen styles with safe area support */
+        :fullscreen #unity-container,
+        :-webkit-full-screen #unity-container,
+        :-moz-full-screen #unity-container {
+            width: 100vw;
+            height: 100vh;
+            max-width: none;
+            max-height: none;
+            aspect-ratio: auto;
+        }
+
+        :fullscreen #unity-canvas,
+        :-webkit-full-screen #unity-canvas,
+        :-moz-full-screen #unity-canvas {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            max-width: none;
+            max-height: none;
+        }
+
+        /* Mobile fullscreen landscape lock */
+        @media (max-width: 768px) {
+            :fullscreen #unity-container,
+            :-webkit-full-screen #unity-container,
+            :-moz-full-screen #unity-container {
+                transform: rotate(90deg);
+                transform-origin: center;
+                width: 100vh !important;
+                height: 100vw !important;
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%) rotate(90deg) !important;
+            }
+
+            :fullscreen #unity-canvas,
+            :-webkit-full-screen #unity-canvas,
+            :-moz-full-screen #unity-canvas {
+                width: 100vh !important;
+                height: 100vw !important;
+            }
+        }
+
+        /* Support for safe area insets on modern browsers */
+        @supports (padding: max(0px)) {
+            #unity-container {
+                padding-top: max(2px, env(safe-area-inset-top));
+                padding-bottom: max(2px, env(safe-area-inset-bottom));
+                padding-left: max(2px, env(safe-area-inset-left));
+                padding-right: max(2px, env(safe-area-inset-right));
+            }
+        }
+
+        /* Hide fullscreen button when in fullscreen mode */
+        :fullscreen #fullscreen-button,
+        :-webkit-full-screen #fullscreen-button,
+        :-moz-full-screen #fullscreen-button {
+            display: none;
+        }
+
+        /* Safari fallback fullscreen styles - FROM OLD SCRIPT */
+        .safari-fullscreen {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            max-width: none !important;
+            max-height: none !important;
+            z-index: 9999 !important;
+            background: #000 !important;
+        }
+    </style>
+    <!-- Use Firebase modular API -->
+    <script type="module">
+        // Your existing Firebase code remains exactly the same
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js';
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, updateProfile, sendPasswordResetEmail, sendEmailVerification, signInAnonymously, updateEmail } from 'https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js';
+        import { getDatabase, ref, set, update, remove, onValue, onDisconnect, push, get, query, orderByChild } from 'https://www.gstatic.com/firebasejs/10.14.0/firebase-database.js';
+        import { getFunctions, httpsCallable } from 'https://www.gstatic.com/firebasejs/10.14.0/firebase-functions.js';
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAo19slRq5C4Zikfi9k8Ktit-a7heD3nVg",
+            authDomain: "neouio.firebaseapp.com",
+            databaseURL: "https://neouio-default-rtdb.firebaseio.com",
+            projectId: "neouio",
+            storageBucket: "neouio.firebasestorage.app",
+            messagingSenderId: "638848046587",
+            appId: "1:638848046587:web:dd9c705197925fb012e75e",
+            measurementId: "G-2BQ88H3BJW"
+        };
+
+        // Initialize Firebase with error handling
+        let app, auth, db;
+        try {
+            app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getDatabase(app);
+            console.log('Firebase initialized successfully');
+        } catch (error) {
+            console.error('Firebase initialization failed:', error.message);
+            if (unityInstance) {
+                unityInstance.SendMessage('GameManager', 'OnFirebaseInitFailed', error.message);
+            }
+            throw error;
+        }
+
+        function setUserOnlineStatus(uid, isOnline) {
+            set(ref(db, `users/${uid}/online`), isOnline)
+                .catch(error => console.error(`Error setting online status for UID ${uid}: ${error.code} - ${error.message}`));
+        }
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                const uid = user.uid;
+                console.log(`User signed in: ${uid}`);
+                setUserOnlineStatus(uid, true);
+                onDisconnect(ref(db, `users/${uid}/online`)).set(false);
+
+                // Existing party invite listener
+                onValue(ref(db, `partyInvites/${uid}`), (snapshot) => {
+                    snapshot.forEach((childSnapshot) => {
+                        const invite = childSnapshot.val();
+                        if (invite) {
+                            console.log(`🎉 PARTY INVITE RECEIVED for UID ${uid}:`, JSON.stringify(invite));
+                            if (unityInstance) {
+                                unityInstance.SendMessage('FriendsManager', 'OnPartyInviteReceived', `${invite.inviterUid}|${invite.inviterUsername}|${invite.partyId}`);
+                            } else {
+                                console.error('Unity instance not initialized for party invite');
+                            }
+                            remove(childSnapshot.ref).catch(error => console.error(`Error removing party invite: ${error.message}`));
+                        }
+                    });
+                }, { onlyOnce: false });
+
+                // NEW: Party join notification listener
+                onValue(ref(db, `partyJoinNotifications/${uid}`), (snapshot) => {
+                    snapshot.forEach((childSnapshot) => {
+                        const notification = childSnapshot.val();
+                        if (notification && notification.type === 'joinMatch') {
+                            console.log(`🎯 PARTY JOIN NOTIFICATION for UID ${uid}:`, JSON.stringify(notification));
+                            if (unityInstance) {
+                                unityInstance.SendMessage('FriendsManager', 'OnPartyJoinNotification',
+                                    `${notification.partyId}|${notification.leaderUsername}`);
+                            } else {
+                                console.error('Unity instance not initialized for party join notification');
+                            }
+                            remove(childSnapshot.ref).catch(error => console.error(`Error removing party join notification: ${error.message}`));
+                        }
+                    });
+                }, { onlyOnce: false });
+            } else {
+                console.log('No user signed in');
+            }
+        });
+
+        // ============================================================================
+        // AUTHENTICATION FUNCTIONS
+        // ============================================================================
+
+        window.FirebaseCheckUsernameAvailability = async function (username) {
+            console.log(`[FirebaseCheckUsernameAvailability] SECURE: Checking username: ${username}`);
+
+            if (!username || typeof username !== 'string' || username.trim() === '') {
+                console.error('[FirebaseCheckUsernameAvailability] Invalid username');
+                if (unityInstance) {
+                    unityInstance.SendMessage('StartScreenController', 'OnUsernameCheckResult', 'error|Invalid username');
+                }
+                return;
+            }
+
+            const sanitizedUsername = username.replace(/[^a-zA-Z0-9_-]/g, '');
+            console.log(`[FirebaseCheckUsernameAvailability] SECURE: Checking sanitized username: ${sanitizedUsername}`);
+
+            try {
+                const response = await fetch('https://us-central1-neouio.cloudfunctions.net/checkUsernameAvailabilitySecure', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ username: sanitizedUsername })
+                });
+
+                console.log(`[FirebaseCheckUsernameAvailability] SECURE: Response status: ${response.status}`);
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP error! status: ${response.status}, response: ${errorText}`);
+                }
+
+                const data = await response.json();
+                console.log(`[FirebaseCheckUsernameAvailability] SECURE: Response data:`, data);
+
+                if (data.available) {
+                    if (unityInstance) {
+                        unityInstance.SendMessage('StartScreenController', 'OnUsernameCheckResult', 'available');
+                    }
+                } else {
+                    if (unityInstance) {
+                        unityInstance.SendMessage('StartScreenController', 'OnUsernameCheckResult', 'taken');
+                    }
+                }
+            } catch (error) {
+                console.error('[FirebaseCheckUsernameAvailability] SECURE: Fetch error:', error.message);
+
+                let errorMessage = error.message;
+                if (error.message.includes('Failed to fetch')) {
+                    errorMessage = 'Network error: Cannot reach server. Check your connection.';
+                }
+
+                if (unityInstance) {
+                    unityInstance.SendMessage('StartScreenController', 'OnUsernameCheckResult', `error|${errorMessage}`);
+                }
+            }
+        };
+
+        // Anonymous sign-in for guests
+        window.FirebaseAnonymousSignIn = function (callbackObjectName) {
+            console.log('Attempting anonymous sign-in');
+            signInAnonymously(auth)
+                .then((userCredential) => {
+                    const uid = userCredential.user.uid;
+                    console.log('Anonymous sign-in successful, UID: ' + uid);
+                    setUserOnlineStatus(uid, true);
+                    if (unityInstance) {
+                        unityInstance.SendMessage(callbackObjectName, 'OnAnonymousSignInSuccess', uid);
+                    } else {
+                        console.error('Unity instance not initialized');
+                    }
+                })
+                .catch((error) => {
+                    console.error('Anonymous sign-in error: ', error.code, error.message);
+                    if (unityInstance) {
+                        unityInstance.SendMessage(callbackObjectName, 'OnAnonymousSignInFailed', error.message);
+                    } else {
+                        console.error('Unity instance not initialized');
+                    }
+                });
+        };
+
+        window.FirebaseSignUp = async function (username, password, email) {
+            console.log(`[FirebaseSignUp] SIMPLE VERSION: ${username} with ${email}`);
+
+            if (!username || !password || !email) {
+                console.error('[FirebaseSignUp] Missing fields');
+                if (unityInstance) {
+                    unityInstance.SendMessage('StartScreenController', 'OnSignUpFailed', 'Username, email, and password are required');
+                }
+                return;
+            }
+
+            const sanitizedUsername = username.replace(/[^a-zA-Z0-9_-]/g, '');
+
+            try {
+                console.log('[FirebaseSignUp] Calling Cloud Function');
+
+                const response = await fetch('https://us-central1-neouio.cloudfunctions.net/signUp', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username: sanitizedUsername,
+                        password: password,
+                        email: email
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok || !data.success) {
+                    throw new Error(data.error || 'Registration failed');
+                }
+
+                console.log('[FirebaseSignUp] SUCCESS:', data);
+
+                // ✅ SIGN THE USER IN CLIENT-SIDE
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                console.log('[FirebaseSignUp] User signed in:', userCredential.user.uid);
+
+                if (unityInstance) {
+                    unityInstance.SendMessage(
+                        'StartScreenController',
+                        'OnSignUpSuccess',
+                        `${data.uid}|${data.username}|${data.email}`
+                    );
+                }
+
+            } catch (error) {
+                console.error('[FirebaseSignUp] ERROR:', error.message);
+
+                let errorMessage = error.message;
+                if (error.message.includes('email already') || error.message.includes('Email already')) {
+                    errorMessage = 'Email already registered';
+                } else if (error.message.includes('Username already')) {
+                    errorMessage = 'Username already taken';
+                }
+
+                if (unityInstance) {
+                    unityInstance.SendMessage('StartScreenController', 'OnSignUpFailed', errorMessage);
+                }
+            }
+        };
+
+
+        window.FirebaseSignIn = async function (username, password) {
+            console.log(`[FirebaseSignIn] SECURE: Attempting login for username: ${username}`);
+
+            if (!username || !password) {
+                console.error('[FirebaseSignIn] Invalid input: username or password is empty');
+                if (unityInstance) {
+                    unityInstance.SendMessage('StartScreenController', 'OnSignInFailed', 'Username and password are required');
+                }
+                return;
+            }
+
+            const sanitizedUsername = username.replace(/[^a-zA-Z0-9_-]/g, '');
+
+            try {
+                console.log('[FirebaseSignIn] SECURE: Calling Cloud Function for sign-in');
+
+                const response = await fetch('https://us-central1-neouio.cloudfunctions.net/signInWithUsername', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        username: sanitizedUsername,
+                        password: password
+                    })
+                });
+
+                console.log(`[FirebaseSignIn] SECURE: Response status: ${response.status}`);
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP error! status: ${response.status}, response: ${errorText}`);
+                }
+
+                const data = await response.json();
+                console.log('[FirebaseSignIn] SECURE: Response data:', data);
+
+                if (!data.success) {
+                    throw new Error(data.error || 'Login failed');
+                }
+
+                console.log('[FirebaseSignIn] SECURE: Cloud Function successful, signing in client-side');
+
+                // Now sign in client-side with the email we received
+                const userCredential = await signInWithEmailAndPassword(auth, data.email, password);
+                const user = userCredential.user;
+
+                console.log('[FirebaseSignIn] SECURE: Client-side sign-in successful:', user.uid);
+
+                if (unityInstance) {
+                    unityInstance.SendMessage(
+                        'StartScreenController',
+                        'OnSignInSuccess',
+                        `${data.uid}|${data.username}`
+                    );
+                }
+
+            } catch (error) {
+                console.error('[FirebaseSignIn] SECURE: Login error:', error.message);
+
+                let errorMessage = 'Login failed';
+                switch (error.message) {
+                    case 'User not found':
+                        errorMessage = 'User not found';
+                        break;
+                    case 'User account incomplete':
+                        errorMessage = 'User account incomplete';
+                        break;
+                    case 'auth/invalid-credential':
+                    case 'auth/wrong-password':
+                        errorMessage = 'Invalid password';
+                        break;
+                    case 'auth/too-many-requests':
+                        errorMessage = 'Too many failed attempts. Try again later';
+                        break;
+                    case 'auth/network-request-failed':
+                        errorMessage = 'Network error. Please check your connection';
+                        break;
+                    default:
+                        if (error.message.includes('User not found')) {
+                            errorMessage = 'User not found';
+                        } else {
+                            errorMessage = error.message || 'Unknown error occurred';
+                        }
+                }
+
+                console.error(`[FirebaseSignIn] SECURE: Final error message: ${errorMessage}`);
+
+                if (unityInstance) {
+                    unityInstance.SendMessage('StartScreenController', 'OnSignInFailed', errorMessage);
+                }
+            }
+        };
+
+        window.FirebaseSendPasswordReset = function (email, callbackObjectName) {
+            console.log(`Sending password reset email to: ${email}`);
+            sendPasswordResetEmail(auth, email)
+                .then(() => {
+                    console.log('Password reset email sent successfully');
+                    if (unityInstance) {
+                        unityInstance.SendMessage(callbackObjectName, 'OnPasswordResetSent', 'success');
+                    } else {
+                        console.error('Unity instance not initialized');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error sending password reset:', error.code, error.message);
+                    if (unityInstance) {
+                        unityInstance.SendMessage(callbackObjectName, 'OnPasswordResetSent', error.message);
+                    } else {
+                        console.error('Unity instance not initialized');
+                    }
+                });
+        };
+
+        window.FirebaseGetVerificationStatus = function (callbackObjectName) {
+            console.log('Checking verification status');
+            const user = auth.currentUser;
+            if (user) {
+                user.reload().then(() => {
+                    console.log('Verification status: ', user.emailVerified ? 'verified' : 'unverified');
+                    if (unityInstance) {
+                        unityInstance.SendMessage(callbackObjectName, 'OnVerificationStatusReceived', user.emailVerified ? 'verified' : 'unverified');
+                    } else {
+                        console.error('Unity instance not initialized');
+                    }
+                }).catch(error => {
+                    console.error('Error reloading user for verification status:', error.code, error.message);
+                    if (unityInstance) {
+                        unityInstance.SendMessage(callbackObjectName, 'OnVerificationStatusReceived', 'error');
+                    } else {
+                        console.error('Unity instance not initialized');
+                    }
+                });
+            } else {
+                console.error('No user signed in for verification status check');
+                if (unityInstance) {
+                    unityInstance.SendMessage(callbackObjectName, 'OnVerificationStatusReceived', 'no_user');
+                } else {
+                    console.error('Unity instance not initialized');
+                }
+            }
+        };
+
+        window.FirebaseGetEmail = function (uid, callbackObjectName) {
+            console.log(`Loading email for UID: ${uid}`);
+            get(ref(db, `users/${uid}/email`)).then(snapshot => {
+                const email = snapshot.val() || '';
+                console.log(`Email loaded: ${email}`);
+                if (unityInstance) {
+                    unityInstance.SendMessage(callbackObjectName, 'OnEmailLoaded', email);
+                } else {
+                    console.error('Unity instance not initialized');
+                }
+            }).catch(error => {
+                console.error('Error loading email:', error.code, error.message);
+                if (unityInstance) {
+                    unityInstance.SendMessage(callbackObjectName, 'OnEmailLoaded', '');
+                } else {
+                    console.error('Unity instance not initialized');
+                }
+            });
+        };
+
+        window.FirebaseSignOut = function () {
+            console.log('Attempting sign out');
+            const user = auth.currentUser;
+            if (user) {
+                const uid = user.uid;
+                set(ref(db, `users/${uid}/online`), false)
+                    .then(() => {
+                        console.log(`Set online status to false for UID ${uid}`);
+                        auth.signOut()
+                            .then(() => {
+                                console.log(`User ${uid} signed out successfully`);
+                                if (unityInstance) {
+                                    unityInstance.SendMessage('GameManager', 'OnSignOutSuccess', 'success');
+                                } else {
+                                    console.error('Unity instance not initialized');
+                                }
+                            })
+                            .catch(error => {
+                                console.error(`SignOut error: ${error.code} - ${error.message}`);
+                                if (unityInstance) {
+                                    unityInstance.SendMessage('GameManager', 'OnSignOutFailed', error.message);
+                                } else {
+                                    console.error('Unity instance not initialized');
+                                }
+                            });
+                    })
+                    .catch(error => {
+                        console.error(`Error setting online status for UID ${uid}: ${error.code} - ${error.message}`);
+                        auth.signOut()
+                            .then(() => {
+                                console.log(`User ${uid} signed out successfully`);
+                                if (unityInstance) {
+                                    unityInstance.SendMessage('GameManager', 'OnSignOutSuccess', 'success');
+                                } else {
+                                    console.error('Unity instance not initialized');
+                                }
+                            })
+                            .catch(error => {
+                                console.error(`SignOut error: ${error.code} - ${error.message}`);
+                                if (unityInstance) {
+                                    unityInstance.SendMessage('GameManager', 'OnSignOutFailed', error.message);
+                                } else {
+                                    console.error('Unity instance not initialized');
+                                }
+                            });
+                    });
+            } else {
+                console.log("No user is currently signed in");
+                if (unityInstance) {
+                    unityInstance.SendMessage('GameManager', 'OnSignOutFailed', 'No user signed in');
+                } else {
+                    console.error('Unity instance not initialized');
+                }
+            }
+        };
+
+        // ============================================================================
+        // LEADERBOARD AND STATS FUNCTIONS
+        // ============================================================================
+
+        window.FirebaseLoadLeaderboard = function (gameMode, limit) {
+            console.log(`🏆 DIRECT LEADERBOARD: Loading ${gameMode}, limit: ${limit}`);
+
+            if (!gameMode) {
+                console.warn('🏆 Using default gameMode: MoonRan');
+                gameMode = "MoonRan";
+            }
+
+            const correctedGameMode = gameMode === "Moon Ran" ? "MoonRan" :
+                gameMode === "TeamMoonRan" ? "TeamMoonRan" : gameMode;
+
+            const field = `${correctedGameMode}Crowns`;
+            const validLimit = limit || 100;
+
+            console.log(`🏆 Loading from field: ${field}`);
+
+            const usersRef = ref(db, 'users');
+
+            get(usersRef).then((snapshot) => {
+                if (!snapshot.exists()) {
+                    console.log('🏆 No users found');
+                    if (unityInstance) {
+                        unityInstance.SendMessage('LeaderboardManager', 'OnLeaderboardLoaded', `${correctedGameMode}|`);
+                    }
+                    return;
+                }
+
+                const users = [];
+
+                snapshot.forEach((child) => {
+                    const userData = child.val();
+                    const username = userData.username;
+                    const crowns = userData[field] || 0;
+
+                    if (username && typeof username === 'string' && username !== 'Unknown' && crowns > 0) {
+                        users.push({
+                            username: username,
+                            crowns: crowns,
+                            uid: child.key
+                        });
+                    }
+                });
+
+                console.log(`🏆 Found ${users.length} users with crowns`);
+
+                users.sort((a, b) => b.crowns - a.crowns);
+
+                const topUsers = users.slice(0, validLimit);
+
+                const entries = [];
+                let currentRank = 1;
+                let previousCrowns = -1;
+                let skipCount = 0;
+
+                for (let i = 0; i < topUsers.length; i++) {
+                    const user = topUsers[i];
+
+                    if (user.crowns !== previousCrowns) {
+                        currentRank += skipCount;
+                        skipCount = 0;
+                        previousCrowns = user.crowns;
+                    }
+
+                    entries.push(`${user.username},${user.crowns},${currentRank}`);
+                    skipCount++;
+                }
+
+                console.log(`✅ ${correctedGameMode} leaderboard - ${entries.length} ranked players`);
+
+                const payload = `${correctedGameMode}|${entries.join(';')}`;
+
+                if (unityInstance) {
+                    unityInstance.SendMessage('LeaderboardManager', 'OnLeaderboardLoaded', payload);
+                }
+
+            }).catch((error) => {
+                console.error('❌ DIRECT LEADERBOARD ERROR:', error);
+
+                if (unityInstance) {
+                    unityInstance.SendMessage('LeaderboardManager', 'OnLeaderboardLoaded', `${correctedGameMode}|`);
+                }
+            });
+        };
+
+        window.FirebaseGetPlayerStats = function (uid, gameMode, callbackObjectName) {
+            console.log(`🎯 Loading player stats for UID ${uid} in ${gameMode}`);
+
+            const getPlayerStats = httpsCallable(getFunctions(app), 'getPlayerStats');
+
+            getPlayerStats({ uid, gameMode })
+                .then((result) => {
+                    console.log('✅ Player stats loaded:', result.data);
+                    if (unityInstance) {
+                        unityInstance.SendMessage(callbackObjectName, 'OnPlayerStatsLoaded', JSON.stringify(result.data));
+                    }
+                })
+                .catch((error) => {
+                    console.error('❌ Error loading player stats:', error);
+                    if (unityInstance) {
+                        unityInstance.SendMessage(callbackObjectName, 'OnPlayerStatsLoaded', JSON.stringify({
+                            crowns: 0,
+                            gameMode: gameMode
+                        }));
+                    }
+                });
+        };
+
+        window.FirebaseGetPlayerCrownsDirect = function (uid, gameMode, callbackObjectName) {
+            console.log(`🎯 DIRECT: Loading ${gameMode} crowns for ${uid}`);
+
+            if (!uid || !gameMode) {
+                console.error('❌ DIRECT: Missing UID or gameMode');
+                const result = {
+                    crowns: 0,
+                    gameMode: gameMode || "Unknown"
+                };
+                if (unityInstance) {
+                    unityInstance.SendMessage(callbackObjectName, 'OnPlayerStatsLoaded', JSON.stringify(result));
+                }
+                return;
+            }
+
+            const crownsField = `${gameMode}Crowns`;
+            const userRef = ref(db, `users/${uid}/${crownsField}`);
+
+            get(userRef)
+                .then((snapshot) => {
+                    const crowns = snapshot.val() || 0;
+                    console.log(`✅ DIRECT: ${uid} has ${crowns} ${gameMode} crowns`);
+
+                    const result = {
+                        crowns: crowns,
+                        gameMode: gameMode
+                    };
+
+                    if (unityInstance) {
+                        unityInstance.SendMessage(callbackObjectName, 'OnPlayerStatsLoaded', JSON.stringify(result));
+                    }
+                })
+                .catch((error) => {
+                    console.error('❌ DIRECT: Error loading crowns:', error);
+                    const result = {
+                        crowns: 0,
+                        gameMode: gameMode
+                    };
+                    if (unityInstance) {
+                        unityInstance.SendMessage(callbackObjectName, 'OnPlayerStatsLoaded', JSON.stringify(result));
+                    }
+                });
+        };
+
+        // ADD THIS FUNCTION to index.html
+        window.FirebaseCleanupOldPartyInvites = function (uid, callbackObjectName) {
+            console.log(`Cleaning up old party invites for UID: ${uid}`);
+
+            if (!auth.currentUser) {
+                console.error('No authenticated user');
+                if (unityInstance) {
+                    unityInstance.SendMessage(callbackObjectName, 'OnPartyCleanupComplete', 'Error: Not authenticated');
+                }
+                return;
+            }
+
+            const oneDayAgo = Date.now() - (24 * 60 * 60 * 1000); // 24 hours ago
+
+            // Cleanup old party invites
+            get(ref(db, `partyInvites/${uid}`)).then((snapshot) => {
+                const updates = {};
+
+                if (snapshot.exists()) {
+                    snapshot.forEach((childSnapshot) => {
+                        const invite = childSnapshot.val();
+                        if (invite && invite.timestamp < oneDayAgo) {
+                            updates[`partyInvites/${uid}/${childSnapshot.key}`] = null;
+                            console.log(`Removing old party invite from ${invite.inviterUsername}`);
+                        }
+                    });
+                }
+
+                // Cleanup old party join notifications
+                return get(ref(db, `partyJoinNotifications/${uid}`)).then((notifSnapshot) => {
+                    if (notifSnapshot.exists()) {
+                        notifSnapshot.forEach((childSnapshot) => {
+                            const notification = childSnapshot.val();
+                            if (notification && notification.timestamp < oneDayAgo) {
+                                updates[`partyJoinNotifications/${uid}/${childSnapshot.key}`] = null;
+                                console.log(`Removing old party join notification`);
+                            }
+                        });
+                    }
+
+                    if (Object.keys(updates).length > 0) {
+                        return update(ref(db), updates);
+                    } else {
+                        return Promise.resolve();
+                    }
+                });
+
+            }).then(() => {
+                console.log('✅ Successfully cleaned up old party data');
+                if (unityInstance) {
+                    unityInstance.SendMessage(callbackObjectName, 'OnPartyCleanupComplete', 'success');
+                }
+            }).catch((error) => {
+                console.error('❌ Cleanup failed:', error);
+                if (unityInstance) {
+                    unityInstance.SendMessage(callbackObjectName, 'OnPartyCleanupComplete', error.message);
+                }
+            });
+        };
+
+        window.FirebaseAwardCrown = function (uid, gameMode) {
+            console.log(`🎯 AWARD CROWN: ${uid} in ${gameMode}`);
+
+            if (!auth.currentUser) {
+                console.error('No authenticated user');
+                return;
+            }
+
+            const awardCrown = httpsCallable(getFunctions(app), 'awardCrown');
+
+            awardCrown({ uid, gameMode })
+                .then((result) => {
+                    console.log(`✅ SUCCESS: Crown awarded to ${uid} - ${result.data.newCrowns} total`);
+                })
+                .catch((error) => {
+                    console.error('❌ Crown award failed:', error);
+                });
+        };
+
+        // ============================================================================
+        // FRIEND SYSTEM FUNCTIONS - DIRECT DATABASE ACCESS
+        // ============================================================================
+
+        window.FirebaseSendFriendRequest = function (fromUid, toUsername, callbackObjectName) {
+            console.log(`Sending friend request from ${fromUid} to ${toUsername}`);
+
+            get(ref(db, `usernames/${toUsername}`)).then((snapshot) => {
+                if (!snapshot.exists()) {
+                    throw new Error('User not found');
+                }
+
+                const targetUid = snapshot.val().uid;
+                console.log(`Found user ${toUsername} with UID: ${targetUid}`);
+
+                const updates = {};
+                updates[`friends/${fromUid}/sentRequests/${targetUid}`] = true;
+                updates[`friends/${targetUid}/receivedRequests/${fromUid}`] = true;
+
+                return update(ref(db), updates);
+            })
+                .then(() => {
+                    console.log('Friend request sent successfully');
+                    if (unityInstance) {
+                        unityInstance.SendMessage(callbackObjectName, 'OnFriendRequestSent', 'success');
+                    }
+                })
+                .catch((error) => {
+                    console.error('Send request error:', error);
+                    if (unityInstance) {
+                        unityInstance.SendMessage(callbackObjectName, 'OnFriendRequestSent', error.message);
+                    }
+                });
+        };
+
+        window.FirebaseAcceptFriendRequest = function (uid, friendUid, callbackObjectName) {
+            console.log(`Accepting friend request for ${uid} from ${friendUid}`);
+
+            const updates = {};
+            updates[`friends/${uid}/receivedRequests/${friendUid}`] = null;
+            updates[`friends/${friendUid}/sentRequests/${uid}`] = null;
+            updates[`friends/${uid}/accepted/${friendUid}`] = true;
+            updates[`friends/${friendUid}/accepted/${uid}`] = true;
+
+            update(ref(db), updates)
+                .then(() => {
+                    console.log('Friend request accepted successfully');
+                    if (unityInstance) {
+                        unityInstance.SendMessage(callbackObjectName, 'OnFriendRequestAccepted', 'success');
+                    }
+                })
+                .catch((error) => {
+                    console.error('Accept request error:', error);
+                    if (unityInstance) {
+                        unityInstance.SendMessage(callbackObjectName, 'OnFriendRequestAccepted', error.message);
+                    }
+                });
+        };
+
+        window.FirebaseRejectFriendRequest = function (uid, friendUid, callbackObjectName) {
+            console.log(`Rejecting friend request for ${uid} from ${friendUid}`);
+
+            const updates = {};
+            updates[`friends/${uid}/receivedRequests/${friendUid}`] = null;
+            updates[`friends/${friendUid}/sentRequests/${uid}`] = null;
+
+            update(ref(db), updates)
+                .then(() => {
+                    console.log('Friend request rejected successfully');
+                    if (unityInstance) {
+                        unityInstance.SendMessage(callbackObjectName, 'OnFriendRequestRejected', 'success');
+                    }
+                })
+                .catch((error) => {
+                    console.error('Reject request error:', error);
+                    if (unityInstance) {
+                        unityInstance.SendMessage(callbackObjectName, 'OnFriendRequestRejected', error.message);
+                    }
+                });
+        };
+
+        window.FirebaseLoadFriends = function (uid, callbackObjectName) {
+            console.log(`Loading friends data for ${uid}`);
+
+            const friendsRef = ref(db, `friends/${uid}`);
+
+            get(friendsRef).then((snapshot) => {
+                let result = {
+                    accepted: {},
+                    receivedRequests: {},
+                    sentRequests: {}
+                };
+
+                if (snapshot.exists()) {
+                    const data = snapshot.val();
+                    result.accepted = data.accepted || {};
+                    result.receivedRequests = data.receivedRequests || {};
+                    result.sentRequests = data.sentRequests || {};
+                }
+
+                console.log('Friends data loaded:', result);
+
+                // Create arrays to store promises for username lookups
+                const acceptedPromises = [];
+                const receivedPromises = [];
+                const sentPromises = [];
+
+                // Look up usernames for accepted friends
+                Object.keys(result.accepted).forEach(friendUid => {
+                    acceptedPromises.push(
+                        get(ref(db, `users/${friendUid}/username`))
+                            .then(snapshot => ({
+                                uid: friendUid,
+                                username: snapshot.val() || `User_${friendUid.substring(0, 6)}`
+                            }))
+                    );
+                });
+
+                // Look up usernames for received requests
+                Object.keys(result.receivedRequests).forEach(fromUid => {
+                    receivedPromises.push(
+                        get(ref(db, `users/${fromUid}/username`))
+                            .then(snapshot => ({
+                                uid: fromUid,
+                                username: snapshot.val() || `User_${fromUid.substring(0, 6)}`
+                            }))
+                    );
+                });
+
+                // Look up usernames for sent requests
+                Object.keys(result.sentRequests).forEach(toUid => {
+                    sentPromises.push(
+                        get(ref(db, `users/${toUid}/username`))
+                            .then(snapshot => ({
+                                uid: toUid,
+                                username: snapshot.val() || `User_${toUid.substring(0, 6)}`
+                            }))
+                    );
+                });
+
+                // Wait for all username lookups to complete
+                return Promise.all([
+                    Promise.all(acceptedPromises),
+                    Promise.all(receivedPromises),
+                    Promise.all(sentPromises)
+                ]).then(([acceptedUsers, receivedUsers, sentUsers]) => {
+                    // Format: acceptedUsernames|receivedUsernames|sentUsernames
+                    const acceptedStr = acceptedUsers.map(user => `${user.username}:${user.uid}`).join(',');
+                    const receivedStr = receivedUsers.map(user => `${user.username}:${user.uid}`).join(',');
+                    const sentStr = sentUsers.map(user => `${user.username}:${user.uid}`).join(',');
+
+                    const formattedData = `${acceptedStr}|${receivedStr}|${sentStr}`;
+
+                    console.log('Formatted friends data:', formattedData);
+
+                    if (unityInstance) {
+                        unityInstance.SendMessage(callbackObjectName, 'OnFriendsLoaded', formattedData);
+                    }
+                });
+
+            }).catch((error) => {
+                console.error('Error loading friends:', error);
+                if (unityInstance) {
+                    unityInstance.SendMessage(callbackObjectName, 'OnFriendsLoaded', '||');
+                }
+            });
+        };
+
+        window.FirebaseCheckOnlineStatus = function (friendUid, callbackObjectName) {
+            console.log(`Checking online status for ${friendUid}`);
+
+            get(ref(db, `users/${friendUid}/online`)).then((snapshot) => {
+                const isOnline = snapshot.val() || false;
+                const result = `${friendUid}|${isOnline}`;
+
+                if (unityInstance) {
+                    unityInstance.SendMessage(callbackObjectName, 'OnOnlineStatusReceived', result);
+                }
+            }).catch((error) => {
+                console.error('Error checking online status:', error);
+                if (unityInstance) {
+                    unityInstance.SendMessage(callbackObjectName, 'OnOnlineStatusReceived', `${friendUid}|false`);
+                }
+            });
+        };
+
+        // ============================================================================
+        // PARTY SYSTEM FUNCTIONS - DIRECT DATABASE ACCESS
+        // ============================================================================
+
+        // Add these to your existing Firebase functions
+
+        window.FirebaseKickFromParty = function (partyId, targetUid, callbackObjectName) {
+            console.log(`Kicking ${targetUid} from party ${partyId}`);
+
+            if (!auth.currentUser) {
+                console.error('No authenticated user');
+                if (unityInstance) {
+                    unityInstance.SendMessage(callbackObjectName, 'OnPartyKicked', 'Error: Not authenticated');
+                }
+                return;
+            }
+
+            // DIRECT DATABASE ACCESS - No Cloud Function needed
+            const updates = {};
+            updates[`parties/${partyId}/members/${targetUid}`] = null;
+
+            update(ref(db), updates)
+                .then(() => {
+                    console.log('✅ Successfully kicked user from party via direct database access');
+                    if (unityInstance) {
+                        unityInstance.SendMessage(callbackObjectName, 'OnPartyKicked', 'success');
+                    }
+                })
+                .catch((error) => {
+                    console.error('❌ Kick from party failed:', error);
+                    if (unityInstance) {
+                        unityInstance.SendMessage(callbackObjectName, 'OnPartyKicked', error.message);
+                    }
+                });
+        };
+
+        window.FirebaseNotifyPartyToJoin = function (targetUid, partyId, callbackObjectName) {
+            console.log(`Notifying ${targetUid} to join party ${partyId} for PARTY match`);
+
+            if (!auth.currentUser) {
+                console.error('No authenticated user');
+                if (unityInstance) {
+                    unityInstance.SendMessage(callbackObjectName, 'OnPartyJoinNotified', 'Error: Not authenticated');
+                }
+                return;
+            }
+
+            // Get leader username for the notification
+            get(ref(db, `users/${auth.currentUser.uid}/username`)).then((snapshot) => {
+                const leaderUsername = snapshot.val() || 'Unknown';
+
+                const inviteKey = push(ref(db, 'partyJoinNotifications')).key;
+
+                const updates = {};
+                updates[`partyJoinNotifications/${targetUid}/${inviteKey}`] = {
+                    partyId: partyId,
+                    leaderUsername: leaderUsername,
+                    timestamp: Date.now(),
+                    type: 'joinMatch',
+                    isPartyMatch: true,
+                    scene: "PartyLoadingMatch" // SPECIFIC SCENE FOR PARTIES
+                };
+
+                return update(ref(db), updates);
+            })
+                .then(() => {
+                    console.log('✅ Successfully notified party member to join via direct database access');
+                    if (unityInstance) {
+                        unityInstance.SendMessage(callbackObjectName, 'OnPartyJoinNotified', 'success');
+                    }
+                })
+                .catch((error) => {
+                    console.error('❌ Party join notification failed:', error);
+                    if (unityInstance) {
+                        unityInstance.SendMessage(callbackObjectName, 'OnPartyJoinNotified', error.message);
+                    }
+                });
+        };
+
+        window.FirebaseCreateParty = function (uid, partyId, callbackObjectName) {
+            console.log(`Creating party ${partyId} for ${uid}`);
+
+            get(ref(db, `users/${uid}/username`)).then((snapshot) => {
+                const username = snapshot.val();
+
+                const updates = {};
+                updates[`parties/${partyId}/leader`] = uid;
+                updates[`parties/${partyId}/members/${uid}`] = {
+                    username: username,
+                    isOnline: true
+                };
+
+                return update(ref(db), updates);
+            })
+                .then(() => {
+                    console.log('Party created successfully');
+                    if (unityInstance) {
+                        unityInstance.SendMessage(callbackObjectName, 'OnPartyCreated', 'success');
+                    }
+                })
+                .catch((error) => {
+                    console.error('Create party error:', error);
+                    if (unityInstance) {
+                        unityInstance.SendMessage(callbackObjectName, 'OnPartyCreated', error.message);
+                    }
+                });
+        };
+
+        window.FirebaseInviteToParty = function (partyId, friendUid, callbackObjectName) {
+            console.log(`Inviting ${friendUid} to party ${partyId}`);
+
+            Promise.all([
+                get(ref(db, `users/${auth.currentUser.uid}/username`)),
+                get(ref(db, `users/${friendUid}/username`))
+            ]).then(([inviterSnapshot, friendSnapshot]) => {
+                const inviterUsername = inviterSnapshot.val();
+                const friendUsername = friendSnapshot.val();
+
+                const inviteKey = push(ref(db, `partyInvites/${friendUid}`)).key;
+
+                const updates = {};
+                updates[`partyInvites/${friendUid}/${inviteKey}`] = {
+                    inviterUid: auth.currentUser.uid,
+                    inviterUsername: inviterUsername,
+                    partyId: partyId,
+                    timestamp: Date.now()
+                };
+
+                return update(ref(db), updates);
+            })
+                .then(() => {
+                    console.log('Party invite sent successfully');
+                    if (unityInstance) {
+                        unityInstance.SendMessage(callbackObjectName, 'OnPartyInvited', 'success');
+                    }
+                })
+                .catch((error) => {
+                    console.error('Party invite error:', error);
+                    if (unityInstance) {
+                        unityInstance.SendMessage(callbackObjectName, 'OnPartyInvited', error.message);
+                    }
+                });
+        };
+
+        window.FirebaseJoinParty = function (uid, partyId, callbackObjectName) {
+            console.log(`Joining party ${partyId} for ${uid}`);
+
+            get(ref(db, `users/${uid}/username`)).then((snapshot) => {
+                const username = snapshot.val();
+
+                const updates = {};
+                updates[`parties/${partyId}/members/${uid}`] = {
+                    username: username,
+                    isOnline: true
+                };
+
+                return update(ref(db), updates);
+            })
+                .then(() => {
+                    console.log('Joined party successfully');
+                    if (unityInstance) {
+                        unityInstance.SendMessage(callbackObjectName, 'OnPartyJoined', 'success');
+                    }
+                })
+                .catch((error) => {
+                    console.error('Join party error:', error);
+                    if (unityInstance) {
+                        unityInstance.SendMessage(callbackObjectName, 'OnPartyJoined', error.message);
+                    }
+                });
+        };
+
+        window.FirebaseLeaveParty = function (uid, partyId, callbackObjectName) {
+            console.log(`Leaving party ${partyId} for ${uid}`);
+
+            // Use a transaction to safely handle party cleanup
+            const partyRef = ref(db, `parties/${partyId}`);
+
+            get(partyRef).then((snapshot) => {
+                if (!snapshot.exists()) {
+                    console.log(`Party ${partyId} already deleted`);
+                    if (unityInstance) {
+                        unityInstance.SendMessage(callbackObjectName, 'OnPartyLeft', 'success');
+                    }
+                    return;
+                }
+
+                const updates = {};
+                updates[`parties/${partyId}/members/${uid}`] = null;
+
+                // Check if we're the last member
+                const members = snapshot.val().members || {};
+                let remainingMembers = 0;
+                Object.keys(members).forEach(memberUid => {
+                    if (memberUid !== uid && members[memberUid] != null) {
+                        remainingMembers++;
+                    }
+                });
+
+                // If we're the last member, delete the entire party
+                if (remainingMembers === 0) {
+                    console.log(`Deleting empty party ${partyId}`);
+                    // Use remove() for the entire party instead of setting to null in updates
+                    remove(partyRef).then(() => {
+                        console.log('Left party and deleted empty party successfully');
+                        if (unityInstance) {
+                            unityInstance.SendMessage(callbackObjectName, 'OnPartyLeft', 'success');
+                        }
+                    }).catch((error) => {
+                        console.error('Error deleting party:', error);
+                        if (unityInstance) {
+                            unityInstance.SendMessage(callbackObjectName, 'OnPartyLeft', error.message);
+                        }
+                    });
+                } else {
+                    // Just remove ourselves from members
+                    update(ref(db), updates)
+                        .then(() => {
+                            console.log('Left party successfully');
+                            if (unityInstance) {
+                                unityInstance.SendMessage(callbackObjectName, 'OnPartyLeft', 'success');
+                            }
+                        })
+                        .catch((error) => {
+                            console.error('Leave party error:', error);
+                            if (unityInstance) {
+                                unityInstance.SendMessage(callbackObjectName, 'OnPartyLeft', error.message);
+                            }
+                        });
+                }
+            }).catch((error) => {
+                console.error('Error checking party:', error);
+                if (unityInstance) {
+                    unityInstance.SendMessage(callbackObjectName, 'OnPartyLeft', error.message);
+                }
+            });
+        };
+
+        window.FirebaseLoadPartyMembers = function (partyId, callbackObjectName) {
+            console.log(`Loading party members for ${partyId}`);
+
+            get(ref(db, `parties/${partyId}/members`)).then((snapshot) => {
+                let members = [];
+
+                if (snapshot.exists()) {
+                    const membersData = snapshot.val();
+                    Object.keys(membersData).forEach(uid => {
+                        const member = membersData[uid];
+                        members.push(`${member.username}:${uid}:${member.isOnline}`);
+                    });
+                }
+
+                const result = members.join('-');
+                console.log('Party members loaded:', result);
+
+                if (unityInstance) {
+                    unityInstance.SendMessage(callbackObjectName, 'OnPartyMembersLoaded', result);
+                }
+            }).catch((error) => {
+                console.error('Error loading party members:', error);
+                if (unityInstance) {
+                    unityInstance.SendMessage(callbackObjectName, 'OnPartyMembersLoaded', '');
+                }
+            });
+        };
+
+    </script>
+</head>
+<body>
+    <!-- iOS Instructions Modal -->
+    <div class="ios-instructions" id="ios-instructions">
+        <div class="ios-instructions-content">
+            <h3>🚀 For Best Experience on iOS</h3>
+            <p>Add this game to your Home Screen for fullscreen gameplay:</p>
+            <ol class="ios-steps">
+                <li>Tap the <strong>Share button</strong> <span style="color:#a0d2ff">⎋</span> at the bottom</li>
+                <li>Scroll down and tap <strong>"Add to Home Screen"</strong></li>
+                <li>Tap <strong>"Add"</strong> in the top right</li>
+                <li>Launch from your <strong>Home Screen</strong> icon</li>
+            </ol>
+            <p><em>This will enable fullscreen and better performance!</em></p>
+            <button class="ios-close-btn" id="ios-close-btn">Got It!</button>
+        </div>
+    </div>
+
+    <!-- Starfield background -->
+    <div class="stars" id="stars"></div>
+
+    <div class="main-container">
+        <!-- Header with title -->
+        <div class="header">
+            <h1 class="game-title">Neou.io</h1>
+            <p class="game-subtitle">An Outer Worldly Adventure</p>
+        </div>
+
+        <!-- Main content area -->
+        <div class="content-wrapper">
+            <!-- Left ad container -->
+            <div class="ad-side left-ad">
+                <div class="ad-top">Google AdSense</div>
+                <div class="ad-vertical">Google AdSense</div>
+            </div>
+
+            <!-- Game area -->
+            <div class="game-area">
+                <div id="unity-container">
+                    <canvas id="unity-canvas"></canvas>
+                    <div id="loading-overlay">Loading NeouWebGL...</div>
+                    <button id="fullscreen-button">Fullscreen</button>
+                </div>
+
+                <!-- How to play image - FIXED PATH -->
+                <div class="how-to-play">
+                    <img src="videos/HowToPlay.png" alt="How to Play" crossorigin="anonymous">
+                </div>
+            </div>
+
+            <!-- Right ad container -->
+            <div class="ad-side right-ad">
+                <div class="ad-top">Google AdSense</div>
+                <div class="ad-vertical">Google AdSense</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Create manifest.json dynamically
+        const manifest = {
+            "name": "Neou.io",
+            "short_name": "Neou.io",
+            "description": "An Outer Worldly Adventure",
+            "start_url": "/",
+            "display": "standalone",
+            "background_color": "#000000",
+            "theme_color": "#000000",
+            "orientation": "landscape",
+            "icons": [
+                {
+                    "src": "icons/icon-192.png",
+                    "sizes": "192x192",
+                    "type": "image/png"
+                },
+                {
+                    "src": "icons/icon-512.png",
+                    "sizes": "512x512",
+                    "type": "image/png"
+                }
+            ]
+        };
+
+        // Create manifest file dynamically
+        const manifestBlob = new Blob([JSON.stringify(manifest, null, 2)], { type: 'application/json' });
+        const manifestURL = URL.createObjectURL(manifestBlob);
+
+        // Update manifest link
+        const manifestLink = document.querySelector('link[rel="manifest"]');
+        if (manifestLink) {
+            manifestLink.href = manifestURL;
+        }
+
+        // Detect iOS and standalone mode
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+        const isIOSSafari = isIOS && isSafari;
+        const isStandalone = window.navigator.standalone ||
+            window.matchMedia('(display-mode: standalone)').matches ||
+            document.referrer.includes('android-app://');
+
+        console.log('iOS:', isIOS, 'iOS Safari:', isIOSSafari, 'Standalone:', isStandalone);
+
+        // Create starfield effect
+        function createStars() {
+            const starsContainer = document.getElementById('stars');
+            const starCount = 200;
+
+            for (let i = 0; i < starCount; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+
+                const x = Math.random() * 100;
+                const y = Math.random() * 100;
+                const size = Math.random() * 1.5 + 0.5;
+                const opacity = Math.random() * 0.7 + 0.3;
+
+                star.style.left = `${x}%`;
+                star.style.top = `${y}%`;
+                star.style.width = `${size}px`;
+                star.style.height = `${size}px`;
+                star.style.opacity = opacity;
+
+                starsContainer.appendChild(star);
+            }
+        }
+
+        createStars();
+
+        var unityInstance = null;
+        var container = document.querySelector("#unity-container");
+        var canvas = document.querySelector("#unity-canvas");
+        var loadingOverlay = document.querySelector("#loading-overlay");
+        var fullscreenButton = document.querySelector("#fullscreen-button");
+        var iosInstructions = document.getElementById('ios-instructions');
+        var iosCloseBtn = document.getElementById('ios-close-btn');
+
+        // Show iOS instructions on first visit to iOS Safari
+        if (isIOSSafari && !isStandalone && !sessionStorage.getItem('iosInstructionsSeen')) {
+            setTimeout(() => {
+                iosInstructions.classList.add('active');
+            }, 2000);
+        }
+
+        iosCloseBtn.addEventListener('click', function () {
+            iosInstructions.classList.remove('active');
+            sessionStorage.setItem('iosInstructionsSeen', 'true');
+        });
+
+        function showIOSInstructions(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            iosInstructions.classList.add('active');
+        }
+
+        // Move fullscreen button to top center (from old script)
+        fullscreenButton.style.left = '50%';
+        fullscreenButton.style.transform = 'translateX(-50%)';
+
+        // ============================================================================
+        // COMBINED FULLSCREEN HANDLING - WORKS IN PWA AND BROWSER
+        // ============================================================================
+
+        // Safari-safe fullscreen function (from old script - WORKING VERSION)
+        function toggleFullscreen() {
+            console.log('toggleFullscreen called, isStandalone:', isStandalone);
+
+            if (!document.fullscreenElement &&
+                !document.webkitFullscreenElement &&
+                !document.mozFullScreenElement &&
+                !container.classList.contains('fullscreen-active')) {
+
+                // ENTER FULLSCREEN
+                if (container.requestFullscreen) {
+                    container.requestFullscreen().catch(err => {
+                        console.log("Standard fullscreen error:", err);
+                        safariFullscreenFallback(true);
+                    });
+                } else if (container.webkitRequestFullscreen) {
+                    container.webkitRequestFullscreen().catch(err => {
+                        console.log("Webkit fullscreen error:", err);
+                        safariFullscreenFallback(true);
+                    });
+                } else if (container.mozRequestFullScreen) {
+                    container.mozRequestFullScreen().catch(err => {
+                        console.log("Moz fullscreen error:", err);
+                        safariFullscreenFallback(true);
+                    });
+                } else {
+                    // Fallback for browsers that don't support Fullscreen API
+                    safariFullscreenFallback(true);
+                }
+            } else {
+                // EXIT FULLSCREEN
+                if (document.exitFullscreen) {
+                    document.exitFullscreen().catch(err => {
+                        console.log("Exit fullscreen error:", err);
+                        safariFullscreenFallback(false);
+                    });
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen().catch(err => {
+                        console.log("Webkit exit fullscreen error:", err);
+                        safariFullscreenFallback(false);
+                    });
+                } else if (document.mozCancelFullScreen) {
+                    document.mozCancelFullScreen().catch(err => {
+                        console.log("Moz exit fullscreen error:", err);
+                        safariFullscreenFallback(false);
+                    });
+                } else {
+                    safariFullscreenFallback(false);
+                }
+            }
+        }
+
+        // Safari fallback method (from old script - WORKING VERSION)
+        function safariFullscreenFallback(enter) {
+            if (enter) {
+                // ENTER fullscreen fallback
+                if (window.innerWidth <= 768) { // mobile
+                    container.classList.add('fullscreen-active');
+                    container.classList.add('safari-fullscreen');
+                    document.body.style.overflow = 'hidden';
+
+                    // Try to lock orientation on iOS
+                    if (isIOS && window.screen.orientation && window.screen.orientation.lock) {
+                        window.screen.orientation.lock('landscape').catch(e => {
+                            console.log("Orientation lock not supported:", e);
+                        });
+                    }
+
+                    // Hide fullscreen button but keep it for exit
+                    fullscreenButton.style.display = 'block';
+                    fullscreenButton.textContent = 'Exit Fullscreen';
+
+                    // Dispatch event for resize handling
+                    window.dispatchEvent(new Event('resize'));
+                } else {
+                    // For desktop Safari, use CSS fullscreen simulation
+                    container.classList.add('safari-fullscreen');
+                    fullscreenButton.textContent = 'Exit Fullscreen';
+                    document.body.style.overflow = 'hidden';
+                }
+
+                // Set a flag so we know we're in fallback mode
+                container.setAttribute('data-safari-fallback', 'true');
+            } else {
+                // EXIT fullscreen fallback
+                container.classList.remove('fullscreen-active');
+                container.classList.remove('safari-fullscreen');
+
+                // Restore normal styling
+                container.removeAttribute('data-safari-fallback');
+                fullscreenButton.textContent = 'Fullscreen';
+                document.body.style.overflow = '';
+
+                // Unlock orientation
+                if (isIOS && window.screen.orientation && window.screen.orientation.unlock) {
+                    window.screen.orientation.unlock();
+                }
+
+                // Dispatch event for resize handling
+                window.dispatchEvent(new Event('resize'));
+            }
+        }
+
+        // Enhanced event listener for fullscreen button (from old script)
+        fullscreenButton.addEventListener("click", function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+
+            // For Safari, use the working toggleFullscreen function
+            if (isSafari || isIOSSafari) {
+                toggleFullscreen();
+            } else {
+                // For other browsers
+                if (!document.fullscreenElement) {
+                    container.requestFullscreen().then(() => {
+                        // Apply mobile landscape lock after entering fullscreen
+                        setTimeout(applyMobileLandscapeLock, 100);
+                    }).catch(err => {
+                        console.error("Fullscreen error:", err);
+                        // Fallback for Safari-like behavior
+                        safariFullscreenFallback(true);
+                    });
+                } else {
+                    document.exitFullscreen().then(() => {
+                        // Remove landscape lock after exiting fullscreen
+                        setTimeout(applyMobileLandscapeLock, 100);
+                    }).catch(err => {
+                        console.error("Exit fullscreen error:", err);
+                        safariFullscreenFallback(false);
+                    });
+                }
+            }
+
+            // Prevent default behavior
+            return false;
+        });
+
+        // Setup the fullscreen button correctly
+        function setupFullscreenButton() {
+            console.log('setupFullscreenButton called');
+
+            // Remove all existing event listeners first
+            fullscreenButton.removeEventListener('click', toggleFullscreen);
+            fullscreenButton.removeEventListener('click', showIOSInstructions);
+
+            if (isIOSSafari && !isStandalone) {
+                // iOS Safari browser - show Add to Home Screen button
+                console.log('Setting up for iOS Safari browser');
+                fullscreenButton.textContent = '📲 Add to Home Screen';
+                fullscreenButton.classList.add('ios-mode');
+                fullscreenButton.addEventListener('click', showIOSInstructions);
+            } else {
+                // PWA mode OR desktop/Android - show normal fullscreen button
+                console.log('Setting up for PWA/Desktop/Android');
+                fullscreenButton.textContent = 'Fullscreen';
+                fullscreenButton.classList.remove('ios-mode');
+                fullscreenButton.addEventListener('click', toggleFullscreen);
+            }
+        }
+
+        // Update button text based on fullscreen state
+        function updateFullscreenButton() {
+            const isFullscreen = !!(document.fullscreenElement ||
+                document.webkitFullscreenElement ||
+                document.mozFullScreenElement ||
+                document.msFullscreenElement ||
+                container.classList.contains('fullscreen-active') ||
+                container.classList.contains('safari-fullscreen'));
+
+            console.log('updateFullscreenButton called, isFullscreen:', isFullscreen);
+
+            if (isFullscreen) {
+                fullscreenButton.textContent = 'Exit Fullscreen';
+            } else {
+                fullscreenButton.textContent = 'Fullscreen';
+            }
+        }
+
+        // Handle fullscreen change events
+        document.addEventListener('fullscreenchange', updateFullscreenButton);
+        document.addEventListener('webkitfullscreenchange', updateFullscreenButton);
+        document.addEventListener('mozfullscreenchange', updateFullscreenButton);
+        document.addEventListener('MSFullscreenChange', updateFullscreenButton);
+
+        // Initialize button
+        setupFullscreenButton();
+
+        // Mobile landscape lock function (from old script)
+        function applyMobileLandscapeLock() {
+            const isMobile = window.innerWidth <= 768;
+            const isFullscreen = !!(document.fullscreenElement ||
+                document.webkitFullscreenElement ||
+                document.mozFullScreenElement ||
+                container.classList.contains('fullscreen-active'));
+
+            if (isMobile && isFullscreen) {
+
+                // Apply landscape lock styles
+                if (!isSafari) {
+                    container.classList.add('landscape-lock');
+                }
+
+                // Try to lock orientation if supported (may fail on Safari without HTTPS)
+                if (screen.orientation && screen.orientation.lock) {
+                    try {
+                        screen.orientation.lock('landscape').catch(error => {
+                            console.log('Orientation lock not supported:', error);
+                        });
+                    } catch (e) {
+                        console.log('Orientation lock error:', e);
+                    }
+                }
+
+                // Dispatch resize event to update layout
+                window.dispatchEvent(new Event('resize'));
+            } else {
+                // Remove landscape lock
+                container.classList.remove('landscape-lock');
+
+                // Unlock orientation if supported
+                if (screen.orientation && screen.orientation.unlock) {
+                    try {
+                        screen.orientation.unlock();
+                    } catch (e) {
+                        console.log('Orientation unlock error:', e);
+                    }
+                }
+            }
+        }
+
+        // Handle resize for proper scaling (from old script)
+        function handleResize() {
+            const windowWidth = window.innerWidth;
+            const windowHeight = window.innerHeight;
+            const gameAspectRatio = 16 / 9;
+            const windowAspectRatio = windowWidth / windowHeight;
+
+            console.log(`Window: ${windowWidth}x${windowHeight}, Aspect: ${windowAspectRatio.toFixed(2)}`);
+
+            // If in fullscreen on mobile with landscape lock, use different calculations
+            if (container.classList.contains('landscape-lock') ||
+                container.classList.contains('fullscreen-active') ||
+                container.classList.contains('safari-fullscreen')) {
+
+                // For landscape-locked mobile fullscreen
+                canvas.style.width = '100%';
+                canvas.style.height = '100%';
+                return;
+            }
+
+            let targetWidth = windowWidth;
+            let targetHeight = windowHeight;
+
+            const compensation = 4;
+
+            if (windowAspectRatio > gameAspectRatio) {
+                targetHeight = windowHeight - compensation;
+                targetWidth = targetHeight * gameAspectRatio;
+            } else {
+                targetWidth = windowWidth - compensation;
+                targetHeight = targetWidth / gameAspectRatio;
+            }
+
+            targetWidth = Math.max(targetWidth, 100);
+            targetHeight = Math.max(targetHeight, 100);
+
+            canvas.style.width = targetWidth + 'px';
+            canvas.style.height = targetHeight + 'px';
+
+            container.style.justifyContent = 'center';
+            container.style.alignItems = 'center';
+
+            console.log(`Adjusted size: ${targetWidth}x${targetHeight}`);
+        }
+
+        // Apply safe area compensation
+        function applySafeAreaCompensation() {
+            const isFullscreen = !!(document.fullscreenElement ||
+                document.webkitFullscreenElement ||
+                container.classList.contains('fullscreen-active'));
+
+            if (isFullscreen) {
+                // In fullscreen, use safe area insets
+                container.style.padding = '0';
+            } else {
+                // Normal mode with small compensation
+                const safetyMargin = 2;
+                container.style.padding = safetyMargin + 'px';
+            }
+        }
+
+        // Handle orientation for standalone mode
+        if (isStandalone && screen.orientation && screen.orientation.lock) {
+            // Lock to landscape in standalone mode
+            screen.orientation.lock('landscape').catch(e => {
+                console.log('Orientation lock failed (may not be supported):', e);
+            });
+        }
+
+        // Also allow double-tap for mobile fullscreen (from old script)
+        const isMobile = window.innerWidth <= 768;
+        if (isMobile) {
+            let lastTap = 0;
+            container.addEventListener('touchend', function (event) {
+                const currentTime = new Date().getTime();
+                const tapLength = currentTime - lastTap;
+
+                if (tapLength < 500 && tapLength > 0) {
+                    // Double tap detected
+                    toggleFullscreen();
+                    event.preventDefault();
+                }
+                lastTap = currentTime;
+            });
+        }
+
+        // Handle orientation changes
+        window.addEventListener('orientationchange', function () {
+            setTimeout(function () {
+                handleResize();
+                applySafeAreaCompensation();
+                applyMobileLandscapeLock();
+            }, 150);
+        });
+
+        // Initialize on load
+        window.addEventListener('load', function () {
+            handleResize();
+            applySafeAreaCompensation();
+            setupFullscreenButton();
+            updateFullscreenButton();
+        });
+
+        window.addEventListener('resize', function () {
+            handleResize();
+            applySafeAreaCompensation();
+        });
+
+        // Handle click events to ensure proper fullscreen on iOS
+        document.addEventListener('click', function () {
+            // iOS Safari sometimes needs an extra tap to register
+            if (isIOSSafari) {
+                if (typeof AudioContext !== 'undefined' && unityInstance && unityInstance.Module.audioContext) {
+                    unityInstance.Module.audioContext.resume().then(() => console.log('Audio context resumed'));
+                }
+            }
+        }, { once: true });
+
+        const possibleBuildPaths = [
+            "Build/NeouWebGL.loader.js",
+            "Build/neouwebgl.loader.js",
+            "Build/NeouWebGL/NeouWebGL.loader.js"
+        ];
+
+        function tryLoadUnityScript(index = 0) {
+            if (index >= possibleBuildPaths.length) {
+                console.error("All Unity script load attempts failed.");
+                loadingOverlay.innerText = 'Failed to load the game. Please check your network, file paths, or Unity build settings.';
+                return;
+            }
+
+            const buildScriptPath = possibleBuildPaths[index];
+            console.log(`Attempting to load Unity script: ${buildScriptPath}`);
+
+            var script = document.createElement("script");
+            script.src = buildScriptPath;
+            script.onload = () => {
+                console.log(`Unity script loaded successfully: ${buildScriptPath}`);
+                const buildName = buildScriptPath.split('/').pop().replace('.loader.js', '');
+                createUnityInstance(canvas, {
+                    dataUrl: `Build/${buildName}.data`,
+                    frameworkUrl: `Build/${buildName}.framework.js`,
+                    codeUrl: `Build/${buildName}.wasm`,
+                    streamingAssetsUrl: "StreamingAssets",
+                    companyName: "DefaultCompany",
+                    productName: "1.0",
+                    productVersion: "1.0",
+                    autoSyncPersistentDataPath: true
+                }).then((instance) => {
+                    unityInstance = instance;
+                    loadingOverlay.style.display = 'none';
+                    console.log('Unity instance initialized');
+                    setTimeout(function () {
+                        handleResize();
+                        applySafeAreaCompensation();
+                        setupFullscreenButton();
+                        updateFullscreenButton();
+                    }, 100);
+                }).catch((error) => {
+                    console.error("Unity initialization error:", error.message);
+                    loadingOverlay.innerText = 'Failed to initialize the game. Please try again.';
+                });
+            };
+            script.onerror = (error) => {
+                console.error(`Failed to load Unity script at ${buildScriptPath}:`, error.message);
+                console.error(`Check if the file exists at ${buildScriptPath} and is accessible. Possible issues: file missing, incorrect path, server permissions, or incorrect MIME type.`);
+                console.error(`Attempting next path (if available)...`);
+                tryLoadUnityScript(index + 1);
+            };
+            document.body.appendChild(script);
+        }
+
+        tryLoadUnityScript();
+    </script>
+</body>
+</html>
