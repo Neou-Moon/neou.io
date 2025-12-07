@@ -5,7 +5,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta http-equiv="Cross-Origin-Embedder-Policy" content="require-corp">
     <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <!-- Cache control for GitHub Pages -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
@@ -18,7 +18,6 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Neou.io">
-    <meta name="apple-mobile-web-app-orientations" content="landscape">
     <link rel="apple-touch-icon" href="icons/icon-192.png">
     
     <style>
@@ -36,9 +35,6 @@
             color: white;
             position: relative;
             -webkit-tap-highlight-color: transparent;
-            /* Prevent bounce/overscroll on iOS */
-            overscroll-behavior: none;
-            -webkit-overflow-scrolling: touch;
         }
 
             /* Space background with stars */
@@ -103,8 +99,6 @@
             flex-direction: column;
             min-height: 100vh;
             padding: 0;
-            /* Prevent iOS overscroll */
-            overflow: hidden;
         }
 
         .content-wrapper {
@@ -178,10 +172,6 @@
             max-width: 1920px;
             max-height: 1080px;
             margin: 0 auto;
-            /* iOS specific: prevent default touch behaviors */
-            touch-action: manipulation;
-            -webkit-user-drag: none;
-            user-select: none;
         }
 
         #unity-canvas {
@@ -193,13 +183,6 @@
             /* Ensure exact 1920x1080 rendering */
             max-width: 1920px;
             max-height: 1080px;
-            /* iOS specific: hardware acceleration and touch fixes */
-            -webkit-transform: translateZ(0);
-            transform: translateZ(0);
-            -webkit-backface-visibility: hidden;
-            backface-visibility: hidden;
-            -webkit-perspective: 1000;
-            perspective: 1000;
         }
 
         /* How to play image */
@@ -251,10 +234,6 @@
             white-space: nowrap;
             line-height: 1.1; /* Very tight line height */
             -webkit-tap-highlight-color: transparent;
-            /* iOS specific: prevent long press menu */
-            -webkit-touch-callout: none;
-            -webkit-user-select: none;
-            user-select: none;
         }
 
         /* iOS Instructions Modal */
@@ -365,7 +344,7 @@
                 font-size: 10px;
             }
 
-            /* Force landscape orientation for mobile fullscreen */
+            /* Force landscape orientation for mobile fullscreen - FROM OLD SCRIPT */
             #unity-container.landscape-lock {
                 transform: rotate(90deg);
                 transform-origin: center;
@@ -387,7 +366,7 @@
                     max-height: none;
                 }
 
-            /* Safari-specific fullscreen fix */
+            /* Safari-specific fullscreen fix - FROM OLD SCRIPT */
             #unity-container.fullscreen-active {
                 width: 100vh !important;
                 height: 100vw !important;
@@ -406,25 +385,6 @@
                     max-width: none !important;
                     max-height: none !important;
                 }
-            
-            /* iOS specific: Force landscape even in portrait */
-            @media screen and (orientation: portrait) {
-                #unity-container.ios-landscape-force {
-                    transform: rotate(90deg) !important;
-                    transform-origin: center !important;
-                    width: 100vh !important;
-                    height: 100vw !important;
-                    position: absolute !important;
-                    top: 50% !important;
-                    left: 50% !important;
-                    transform: translate(-50%, -50%) rotate(90deg) !important;
-                }
-                
-                #unity-container.ios-landscape-force #unity-canvas {
-                    width: 100vh !important;
-                    height: 100vw !important;
-                }
-            }
         }
 
         /* Enhanced fullscreen styles with safe area support */
@@ -479,14 +439,6 @@
                 padding-left: max(2px, env(safe-area-inset-left));
                 padding-right: max(2px, env(safe-area-inset-right));
             }
-            
-            #unity-container.fullscreen-active,
-            #unity-container.safari-fullscreen {
-                padding-top: env(safe-area-inset-top) !important;
-                padding-bottom: env(safe-area-inset-bottom) !important;
-                padding-left: env(safe-area-inset-left) !important;
-                padding-right: env(safe-area-inset-right) !important;
-            }
         }
 
         /* Hide fullscreen button when in fullscreen mode */
@@ -496,7 +448,7 @@
             display: none;
         }
 
-        /* Safari fallback fullscreen styles */
+        /* Safari fallback fullscreen styles - FROM OLD SCRIPT */
         .safari-fullscreen {
             position: fixed !important;
             top: 0 !important;
@@ -507,58 +459,6 @@
             max-height: none !important;
             z-index: 9999 !important;
             background: #000 !important;
-        }
-        
-        /* iOS forced landscape overlay */
-        .ios-landscape-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.95);
-            z-index: 9998;
-            justify-content: center;
-            align-items: center;
-            color: white;
-            text-align: center;
-            padding: 20px;
-        }
-        
-        .ios-landscape-overlay.active {
-            display: flex;
-        }
-        
-        .ios-landscape-overlay-content {
-            background: rgba(30, 30, 60, 0.95);
-            border-radius: 12px;
-            padding: 25px;
-            max-width: 400px;
-            border: 2px solid rgba(100, 150, 255, 0.5);
-            box-shadow: 0 0 30px rgba(80, 120, 255, 0.4);
-        }
-        
-        .ios-landscape-overlay h3 {
-            color: #a0d2ff;
-            margin-top: 0;
-            font-size: 1.5rem;
-        }
-        
-        .ios-landscape-overlay p {
-            font-size: 1.1rem;
-            line-height: 1.5;
-        }
-        
-        .ios-landscape-icon {
-            font-size: 3rem;
-            margin-bottom: 20px;
-            animation: rotateIcon 2s ease-in-out infinite;
-        }
-        
-        @keyframes rotateIcon {
-            0%, 100% { transform: rotate(0deg); }
-            50% { transform: rotate(90deg); }
         }
     </style>
     <!-- Use Firebase modular API -->
@@ -1701,16 +1601,6 @@
     </script>
 </head>
 <body>
-    <!-- iOS Landscape Overlay -->
-    <div class="ios-landscape-overlay" id="ios-landscape-overlay">
-        <div class="ios-landscape-overlay-content">
-            <div class="ios-landscape-icon">📱</div>
-            <h3>Rotate Your Device</h3>
-            <p>For the best experience, please rotate your device to landscape mode.</p>
-            <p><em>This game is designed to be played in landscape orientation.</em></p>
-        </div>
-    </div>
-
     <!-- iOS Instructions Modal -->
     <div class="ios-instructions" id="ios-instructions">
         <div class="ios-instructions-content">
@@ -1809,9 +1699,8 @@
         const isStandalone = window.navigator.standalone || 
                            window.matchMedia('(display-mode: standalone)').matches ||
                            document.referrer.includes('android-app://');
-        const isMobile = window.innerWidth <= 768;
 
-        console.log('iOS:', isIOS, 'iOS Safari:', isIOSSafari, 'Standalone:', isStandalone, 'Mobile:', isMobile);
+        console.log('iOS:', isIOS, 'iOS Safari:', isIOSSafari, 'Standalone:', isStandalone);
 
         // Create starfield effect
         function createStars() {
@@ -1846,7 +1735,6 @@
         var fullscreenButton = document.querySelector("#fullscreen-button");
         var iosInstructions = document.getElementById('ios-instructions');
         var iosCloseBtn = document.getElementById('ios-close-btn');
-        var iosLandscapeOverlay = document.getElementById('ios-landscape-overlay');
 
         // Show iOS instructions on first visit to iOS Safari
         if (isIOSSafari && !isStandalone && !sessionStorage.getItem('iosInstructionsSeen')) {
@@ -1866,83 +1754,15 @@
             iosInstructions.classList.add('active');
         }
 
-        // Move fullscreen button to top center
+        // Move fullscreen button to top center (from old script)
         fullscreenButton.style.left = '50%';
         fullscreenButton.style.transform = 'translateX(-50%)';
 
         // ============================================================================
-        // ENHANCED LANDSCAPE FORCING FOR iOS PWA
+        // COMBINED FULLSCREEN HANDLING - WORKS IN PWA AND BROWSER
         // ============================================================================
 
-        // Check if device is in portrait mode
-        function isPortrait() {
-            return window.innerHeight > window.innerWidth;
-        }
-
-        // Force landscape mode for iOS
-        function forceIOSLandscape() {
-            if (!isIOS || !isMobile) return;
-            
-            console.log('Checking orientation for iOS...');
-            
-            // Always add iOS landscape force class when in portrait
-            if (isPortrait()) {
-                console.log('Portrait detected on iOS, forcing landscape...');
-                container.classList.add('ios-landscape-force');
-                // Show landscape overlay
-                iosLandscapeOverlay.classList.add('active');
-                
-                // Lock screen orientation if supported (works in some iOS versions)
-                if (screen.orientation && screen.orientation.lock) {
-                    screen.orientation.lock('landscape').catch(e => {
-                        console.log('Orientation lock failed:', e);
-                    });
-                }
-                
-                // Dispatch resize to trigger CSS
-                setTimeout(() => {
-                    window.dispatchEvent(new Event('resize'));
-                }, 100);
-            } else {
-                // Landscape mode - remove force classes
-                container.classList.remove('ios-landscape-force');
-                iosLandscapeOverlay.classList.remove('active');
-            }
-        }
-
-        // Enhanced iOS fullscreen function with landscape forcing
-        function iosFullscreenWithLandscape() {
-            console.log('iOS fullscreen with landscape forcing');
-            
-            // Always force landscape for iOS when entering fullscreen
-            forceIOSLandscape();
-            
-            // Use existing safari fallback
-            safariFullscreenFallback(true);
-            
-            // For PWA standalone mode, we need to handle specially
-            if (isStandalone) {
-                console.log('PWA standalone mode detected');
-                // In standalone mode, we can't use standard fullscreen API
-                // So we use our CSS fallback and force landscape
-                container.classList.add('fullscreen-active');
-                container.classList.add('safari-fullscreen');
-                document.body.style.overflow = 'hidden';
-                
-                // Force landscape
-                forceIOSLandscape();
-                
-                // Update button
-                fullscreenButton.textContent = 'Exit Fullscreen';
-                fullscreenButton.style.display = 'block';
-            }
-        }
-
-        // ============================================================================
-        // COMBINED FULLSCREEN HANDLING WITH iOS LANDSCAPE FORCING
-        // ============================================================================
-
-        // Safari-safe fullscreen function
+        // Safari-safe fullscreen function (from old script - WORKING VERSION)
         function toggleFullscreen() {
             console.log('toggleFullscreen called, isStandalone:', isStandalone);
             
@@ -1951,13 +1771,7 @@
                 !document.mozFullScreenElement &&
                 !container.classList.contains('fullscreen-active')) {
 
-                // Special handling for iOS
-                if (isIOS) {
-                    iosFullscreenWithLandscape();
-                    return;
-                }
-
-                // ENTER FULLSCREEN for non-iOS
+                // ENTER FULLSCREEN
                 if (container.requestFullscreen) {
                     container.requestFullscreen().catch(err => {
                         console.log("Standard fullscreen error:", err);
@@ -1974,19 +1788,11 @@
                         safariFullscreenFallback(true);
                     });
                 } else {
+                    // Fallback for browsers that don't support Fullscreen API
                     safariFullscreenFallback(true);
                 }
             } else {
                 // EXIT FULLSCREEN
-                if (isIOS) {
-                    // iOS exit handling
-                    safariFullscreenFallback(false);
-                    // Remove landscape forcing
-                    container.classList.remove('ios-landscape-force');
-                    iosLandscapeOverlay.classList.remove('active');
-                    return;
-                }
-                
                 if (document.exitFullscreen) {
                     document.exitFullscreen().catch(err => {
                         console.log("Exit fullscreen error:", err);
@@ -2008,77 +1814,79 @@
             }
         }
 
-        // Safari fallback method
+        // Safari fallback method (from old script - WORKING VERSION)
         function safariFullscreenFallback(enter) {
             if (enter) {
                 // ENTER fullscreen fallback
-                if (isMobile) {
+                if (window.innerWidth <= 768) { // mobile
                     container.classList.add('fullscreen-active');
                     container.classList.add('safari-fullscreen');
                     document.body.style.overflow = 'hidden';
 
-                    // Try to lock orientation
-                    if (screen.orientation && screen.orientation.lock) {
-                        screen.orientation.lock('landscape').catch(e => {
+                    // Try to lock orientation on iOS
+                    if (isIOS && window.screen.orientation && window.screen.orientation.lock) {
+                        window.screen.orientation.lock('landscape').catch(e => {
                             console.log("Orientation lock not supported:", e);
                         });
                     }
 
-                    // Update button
-                    fullscreenButton.textContent = 'Exit Fullscreen';
+                    // Hide fullscreen button but keep it for exit
                     fullscreenButton.style.display = 'block';
+                    fullscreenButton.textContent = 'Exit Fullscreen';
 
-                    // Force iOS landscape if needed
-                    if (isIOS) {
-                        forceIOSLandscape();
-                    }
-
+                    // Dispatch event for resize handling
                     window.dispatchEvent(new Event('resize'));
                 } else {
+                    // For desktop Safari, use CSS fullscreen simulation
                     container.classList.add('safari-fullscreen');
                     fullscreenButton.textContent = 'Exit Fullscreen';
                     document.body.style.overflow = 'hidden';
                 }
 
+                // Set a flag so we know we're in fallback mode
                 container.setAttribute('data-safari-fallback', 'true');
             } else {
                 // EXIT fullscreen fallback
                 container.classList.remove('fullscreen-active');
                 container.classList.remove('safari-fullscreen');
-                container.classList.remove('ios-landscape-force');
 
+                // Restore normal styling
                 container.removeAttribute('data-safari-fallback');
                 fullscreenButton.textContent = 'Fullscreen';
                 document.body.style.overflow = '';
-                iosLandscapeOverlay.classList.remove('active');
 
-                if (screen.orientation && screen.orientation.unlock) {
-                    screen.orientation.unlock();
+                // Unlock orientation
+                if (isIOS && window.screen.orientation && window.screen.orientation.unlock) {
+                    window.screen.orientation.unlock();
                 }
 
+                // Dispatch event for resize handling
                 window.dispatchEvent(new Event('resize'));
             }
         }
 
-        // Enhanced event listener for fullscreen button
+        // Enhanced event listener for fullscreen button (from old script)
         fullscreenButton.addEventListener("click", function (event) {
             event.preventDefault();
             event.stopPropagation();
 
-            // For Safari/iOS, use enhanced toggle
+            // For Safari, use the working toggleFullscreen function
             if (isSafari || isIOSSafari) {
                 toggleFullscreen();
             } else {
                 // For other browsers
                 if (!document.fullscreenElement) {
                     container.requestFullscreen().then(() => {
+                        // Apply mobile landscape lock after entering fullscreen
                         setTimeout(applyMobileLandscapeLock, 100);
                     }).catch(err => {
                         console.error("Fullscreen error:", err);
+                        // Fallback for Safari-like behavior
                         safariFullscreenFallback(true);
                     });
                 } else {
                     document.exitFullscreen().then(() => {
+                        // Remove landscape lock after exiting fullscreen
                         setTimeout(applyMobileLandscapeLock, 100);
                     }).catch(err => {
                         console.error("Exit fullscreen error:", err);
@@ -2087,6 +1895,7 @@
                 }
             }
 
+            // Prevent default behavior
             return false;
         });
 
@@ -2094,17 +1903,18 @@
         function setupFullscreenButton() {
             console.log('setupFullscreenButton called');
             
+            // Remove all existing event listeners first
             fullscreenButton.removeEventListener('click', toggleFullscreen);
             fullscreenButton.removeEventListener('click', showIOSInstructions);
             
             if (isIOSSafari && !isStandalone) {
-                // iOS Safari browser
+                // iOS Safari browser - show Add to Home Screen button
                 console.log('Setting up for iOS Safari browser');
                 fullscreenButton.textContent = '📲 Add to Home Screen';
                 fullscreenButton.classList.add('ios-mode');
                 fullscreenButton.addEventListener('click', showIOSInstructions);
             } else {
-                // PWA mode OR desktop/Android
+                // PWA mode OR desktop/Android - show normal fullscreen button
                 console.log('Setting up for PWA/Desktop/Android');
                 fullscreenButton.textContent = 'Fullscreen';
                 fullscreenButton.classList.remove('ios-mode');
@@ -2139,18 +1949,22 @@
         // Initialize button
         setupFullscreenButton();
 
-        // Mobile landscape lock function
+        // Mobile landscape lock function (from old script)
         function applyMobileLandscapeLock() {
+            const isMobile = window.innerWidth <= 768;
             const isFullscreen = !!(document.fullscreenElement ||
                 document.webkitFullscreenElement ||
                 document.mozFullScreenElement ||
                 container.classList.contains('fullscreen-active'));
 
             if (isMobile && isFullscreen) {
+
+                // Apply landscape lock styles
                 if (!isSafari) {
                     container.classList.add('landscape-lock');
                 }
 
+                // Try to lock orientation if supported (may fail on Safari without HTTPS)
                 if (screen.orientation && screen.orientation.lock) {
                     try {
                         screen.orientation.lock('landscape').catch(error => {
@@ -2161,10 +1975,13 @@
                     }
                 }
 
+                // Dispatch resize event to update layout
                 window.dispatchEvent(new Event('resize'));
             } else {
+                // Remove landscape lock
                 container.classList.remove('landscape-lock');
 
+                // Unlock orientation if supported
                 if (screen.orientation && screen.orientation.unlock) {
                     try {
                         screen.orientation.unlock();
@@ -2175,7 +1992,7 @@
             }
         }
 
-        // Handle resize for proper scaling
+        // Handle resize for proper scaling (from old script)
         function handleResize() {
             const windowWidth = window.innerWidth;
             const windowHeight = window.innerHeight;
@@ -2184,28 +2001,12 @@
 
             console.log(`Window: ${windowWidth}x${windowHeight}, Aspect: ${windowAspectRatio.toFixed(2)}`);
 
-            // Check for iOS landscape forcing
-            if (container.classList.contains('ios-landscape-force')) {
-                console.log('iOS landscape force active');
-                // For iOS forced landscape in portrait
-                const forcedWidth = windowHeight;
-                const forcedHeight = windowWidth;
-                
-                canvas.style.width = forcedWidth + 'px';
-                canvas.style.height = forcedHeight + 'px';
-                canvas.style.transform = 'rotate(90deg)';
-                canvas.style.transformOrigin = 'center';
-                
-                container.style.justifyContent = 'center';
-                container.style.alignItems = 'center';
-                return;
-            }
-
-            // If in fullscreen on mobile with landscape lock
+            // If in fullscreen on mobile with landscape lock, use different calculations
             if (container.classList.contains('landscape-lock') ||
                 container.classList.contains('fullscreen-active') ||
                 container.classList.contains('safari-fullscreen')) {
 
+                // For landscape-locked mobile fullscreen
                 canvas.style.width = '100%';
                 canvas.style.height = '100%';
                 return;
@@ -2243,8 +2044,10 @@
                                    container.classList.contains('fullscreen-active'));
             
             if (isFullscreen) {
+                // In fullscreen, use safe area insets
                 container.style.padding = '0';
             } else {
+                // Normal mode with small compensation
                 const safetyMargin = 2;
                 container.style.padding = safetyMargin + 'px';
             }
@@ -2252,12 +2055,14 @@
 
         // Handle orientation for standalone mode
         if (isStandalone && screen.orientation && screen.orientation.lock) {
+            // Lock to landscape in standalone mode
             screen.orientation.lock('landscape').catch(e => {
-                console.log('Orientation lock failed:', e);
+                console.log('Orientation lock failed (may not be supported):', e);
             });
         }
 
-        // Also allow double-tap for mobile fullscreen
+        // Also allow double-tap for mobile fullscreen (from old script)
+        const isMobile = window.innerWidth <= 768;
         if (isMobile) {
             let lastTap = 0;
             container.addEventListener('touchend', function (event) {
@@ -2265,6 +2070,7 @@
                 const tapLength = currentTime - lastTap;
 
                 if (tapLength < 500 && tapLength > 0) {
+                    // Double tap detected
                     toggleFullscreen();
                     event.preventDefault();
                 }
@@ -2272,49 +2078,31 @@
             });
         }
 
-        // Handle orientation changes - check for iOS landscape forcing
+        // Handle orientation changes
         window.addEventListener('orientationchange', function() {
             setTimeout(function() {
-                console.log('Orientation changed');
-                // Check iOS landscape forcing
-                if (isIOS) {
-                    forceIOSLandscape();
-                }
                 handleResize();
                 applySafeAreaCompensation();
                 applyMobileLandscapeLock();
             }, 150);
         });
 
-        // Also check on resize (iOS sometimes triggers resize instead of orientationchange)
-        let resizeTimeout;
-        window.addEventListener('resize', function() {
-            clearTimeout(resizeTimeout);
-            resizeTimeout = setTimeout(function() {
-                console.log('Resize detected');
-                if (isIOS) {
-                    forceIOSLandscape();
-                }
-                handleResize();
-                applySafeAreaCompensation();
-            }, 100);
-        });
-
         // Initialize on load
         window.addEventListener('load', function() {
-            // Check iOS landscape on load
-            if (isIOS) {
-                setTimeout(forceIOSLandscape, 500);
-            }
-            
             handleResize();
             applySafeAreaCompensation();
             setupFullscreenButton();
             updateFullscreenButton();
         });
 
+        window.addEventListener('resize', function() {
+            handleResize();
+            applySafeAreaCompensation();
+        });
+
         // Handle click events to ensure proper fullscreen on iOS
         document.addEventListener('click', function() {
+            // iOS Safari sometimes needs an extra tap to register
             if (isIOSSafari) {
                 if (typeof AudioContext !== 'undefined' && unityInstance && unityInstance.Module.audioContext) {
                     unityInstance.Module.audioContext.resume().then(() => console.log('Audio context resumed'));
@@ -2361,10 +2149,6 @@
                         applySafeAreaCompensation();
                         setupFullscreenButton();
                         updateFullscreenButton();
-                        // Check iOS landscape after Unity loads
-                        if (isIOS) {
-                            setTimeout(forceIOSLandscape, 300);
-                        }
                     }, 100);
                 }).catch((error) => {
                     console.error("Unity initialization error:", error.message);
