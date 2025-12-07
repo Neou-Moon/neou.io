@@ -6,6 +6,13 @@
     <meta http-equiv="Cross-Origin-Embedder-Policy" content="require-corp">
     <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <!-- PWA Meta Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#000000">
+    <link rel="manifest" href="manifest.json">
+    
     <title>Neou.io | An Outer Worldly Adventure</title>
     <link rel="icon" href="data:;base64,iVBORw0KGgo="> <!-- Suppress favicon 404 -->
     <style>
@@ -220,6 +227,61 @@
             line-height: 1.1; /* Very tight line height */
         }
 
+        /* iOS Install Prompt */
+        #ios-install-prompt {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 12px;
+            z-index: 9998;
+            font-size: 14px;
+            text-align: center;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+            border: 2px solid rgba(255,255,255,0.3);
+            max-width: 90%;
+            backdrop-filter: blur(10px);
+            display: none;
+            animation: slideUp 0.3s ease-out;
+        }
+        
+        #ios-install-prompt button {
+            background: white;
+            color: #667eea;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            margin-left: 10px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        #ios-install-prompt button.secondary {
+            background: transparent;
+            color: white;
+            border: 1px solid white;
+            margin-left: 5px;
+        }
+        
+        #ios-install-prompt .close {
+            background: none;
+            border: none;
+            color: white;
+            position: absolute;
+            top: 5px;
+            right: 10px;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateX(-50%) translateY(100%); opacity: 0; }
+            to { transform: translateX(-50%) translateY(0); opacity: 1; }
+        }
+
         /* Mobile-specific adjustments */
         @media (max-width: 768px) {
             .content-wrapper {
@@ -267,6 +329,12 @@
                 max-width: calc(100% - 6px);
                 max-height: calc(100% - 6px);
             }
+            
+            #ios-install-prompt {
+                bottom: 10px;
+                padding: 10px 15px;
+                font-size: 13px;
+            }
         }
 
         /* Enhanced fullscreen styles with safe area support */
@@ -304,8 +372,64 @@
         :-moz-full-screen #fullscreen-button {
             display: none;
         }
+        
+        /* iOS Maximized Mode */
+        body.ios-maximized .header,
+        body.ios-maximized .ad-side,
+        body.ios-maximized .how-to-play,
+        body.ios-maximized #ios-install-prompt {
+            display: none !important;
+        }
+        
+        body.ios-maximized .game-area {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            padding: 0;
+            z-index: 9999;
+            background: #000;
+        }
+        
+        body.ios-maximized #unity-container {
+            width: 100vw;
+            height: 100vh;
+            border-radius: 0;
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+        }
+        
+        body.ios-maximized #unity-canvas {
+            width: 100%;
+            height: 100%;
+            max-width: 100%;
+            max-height: 100%;
+        }
+        
+        body.ios-maximized #fullscreen-button {
+            background: #ff3b30;
+            color: white;
+            top: max(10px, env(safe-area-inset-top));
+        }
+        
+        /* iOS-specific CSS */
+        @supports (-webkit-touch-callout: none) {
+            #fullscreen-button {
+                font-size: 12px;
+                padding: 4px 16px;
+            }
+            
+            /* Hide browser UI elements when maximized */
+            body.ios-maximized {
+                position: fixed;
+                width: 100%;
+                height: 100%;
+                overflow: hidden;
+            }
+        }
     </style>
-    <!-- Use Firebase modular API -->
+    
+    <!-- Firebase code remains exactly the same -->
     <script type="module">
         // Your existing Firebase code remains exactly the same
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js';
@@ -1447,6 +1571,19 @@
 <body>
     <!-- Starfield background -->
     <div class="stars" id="stars"></div>
+    
+    <!-- iOS Install Prompt -->
+    <div id="ios-install-prompt">
+        <button class="close" onclick="hideIOSPrompt()">×</button>
+        <div>📱 <strong>For best experience on iOS:</strong></div>
+        <div style="font-size: 12px; margin-top: 5px; opacity: 0.9;">
+            Add to Home Screen for true fullscreen
+        </div>
+        <div style="margin-top: 10px;">
+            <button onclick="showIOSInstructions()">How to Install</button>
+            <button class="secondary" onclick="hideIOSPromptPermanent()">Not Now</button>
+        </div>
+    </div>
 
     <div class="main-container">
         <!-- Header with title -->
@@ -1523,18 +1660,120 @@
         var canvas = document.querySelector("#unity-canvas");
         var loadingOverlay = document.querySelector("#loading-overlay");
         var fullscreenButton = document.querySelector("#fullscreen-button");
+        var iosPrompt = document.querySelector("#ios-install-prompt");
+
+        // iOS Detection
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+        const isStandalone = window.navigator.standalone;
 
         // Move fullscreen button to top center
         fullscreenButton.style.left = '50%';
         fullscreenButton.style.transform = 'translateX(-50%)';
 
+        // Update button text for iOS
+        if (isIOS && !isStandalone) {
+            fullscreenButton.textContent = 'Maximize (iOS Limited)';
+            fullscreenButton.style.background = '#555';
+        }
+
+        // Fullscreen button handler
         fullscreenButton.addEventListener("click", () => {
-            if (!document.fullscreenElement) {
-                container.requestFullscreen().catch(err => console.error("Fullscreen error:", err));
+            if (isIOS && !isStandalone) {
+                // iOS Safari: Use "maximum possible" fullscreen
+                maximizeForIOS();
             } else {
-                document.exitFullscreen();
+                // Everyone else: Use real fullscreen
+                if (!document.fullscreenElement) {
+                    container.requestFullscreen().catch(err => {
+                        console.log("Fullscreen error:", err);
+                        maximizeForIOS(); // Fallback
+                    });
+                } else {
+                    document.exitFullscreen();
+                }
             }
         });
+
+        // iOS Maximization
+        function maximizeForIOS() {
+            document.body.classList.add('ios-maximized');
+            fullscreenButton.textContent = 'Exit';
+            fullscreenButton.style.background = '#ff3b30';
+            fullscreenButton.onclick = exitIOSMaximized;
+            
+            // Hide iOS prompt if visible
+            hideIOSPrompt();
+            
+            // iOS hacks to hide browser UI
+            document.body.style.overflow = 'hidden';
+            document.documentElement.style.overflow = 'hidden';
+            
+            // Try to hide address bar
+            setTimeout(() => {
+                window.scrollTo(0, 1);
+            }, 100);
+            
+            // Prevent bounce/scroll
+            document.addEventListener('touchmove', preventTouch, { passive: false });
+            
+            // Handle resize
+            handleResize();
+        }
+        
+        function exitIOSMaximized() {
+            document.body.classList.remove('ios-maximized');
+            fullscreenButton.textContent = isIOS && !isStandalone ? 'Maximize (iOS Limited)' : 'Fullscreen';
+            fullscreenButton.style.background = isIOS && !isStandalone ? '#555' : 'rgba(255, 255, 255, 0.9)';
+            fullscreenButton.onclick = () => {
+                if (isIOS && !isStandalone) {
+                    maximizeForIOS();
+                } else {
+                    if (!document.fullscreenElement) {
+                        container.requestFullscreen();
+                    } else {
+                        document.exitFullscreen();
+                    }
+                }
+            };
+            
+            // Restore scroll
+            document.body.style.overflow = '';
+            document.documentElement.style.overflow = '';
+            document.removeEventListener('touchmove', preventTouch);
+            
+            // Show iOS prompt after a delay if applicable
+            if (isIOS && !isStandalone && !localStorage.getItem('iosPromptDismissed')) {
+                setTimeout(showIOSPrompt, 3000);
+            }
+            
+            handleResize();
+        }
+        
+        function preventTouch(e) {
+            e.preventDefault();
+        }
+
+        // iOS Install Prompt Functions
+        function showIOSPrompt() {
+            if (isIOS && !isStandalone && !localStorage.getItem('iosPromptDismissed') && 
+                !document.body.classList.contains('ios-maximized')) {
+                iosPrompt.style.display = 'block';
+            }
+        }
+        
+        function hideIOSPrompt() {
+            iosPrompt.style.display = 'none';
+        }
+        
+        function hideIOSPromptPermanent() {
+            hideIOSPrompt();
+            localStorage.setItem('iosPromptDismissed', 'true');
+        }
+        
+        function showIOSInstructions() {
+            hideIOSPrompt();
+            alert('📱 How to install for best experience:\n\n1. Tap the Share button (□↑) in Safari\n2. Scroll down and tap "Add to Home Screen"\n3. Launch from home screen for true fullscreen\n\nThis gives you the best gaming experience on iOS!');
+        }
 
         // Handle resize and aspect ratio properly
         function handleResize() {
@@ -1543,12 +1782,10 @@
             const gameAspectRatio = 16 / 9;
             const windowAspectRatio = windowWidth / windowHeight;
 
-            console.log(`Window: ${windowWidth}x${windowHeight}, Aspect: ${windowAspectRatio.toFixed(2)}`);
-
             let targetWidth = windowWidth;
             let targetHeight = windowHeight;
 
-            const compensation = 4;
+            const compensation = document.body.classList.contains('ios-maximized') ? 0 : 4;
 
             if (windowAspectRatio > gameAspectRatio) {
                 targetHeight = windowHeight - compensation;
@@ -1566,15 +1803,11 @@
 
             container.style.justifyContent = 'center';
             container.style.alignItems = 'center';
-
-            console.log(`Adjusted size: ${targetWidth}x${targetHeight}`);
         }
 
         function applySafeAreaCompensation() {
-            const safetyMargin = 2;
-
+            const safetyMargin = document.body.classList.contains('ios-maximized') ? 0 : 2;
             container.style.padding = safetyMargin + 'px';
-
             canvas.style.maxWidth = `calc(100% - ${safetyMargin * 2}px)`;
             canvas.style.maxHeight = `calc(100% - ${safetyMargin * 2}px)`;
         }
@@ -1582,11 +1815,18 @@
         window.addEventListener('load', function () {
             handleResize();
             applySafeAreaCompensation();
+            
+            // Show iOS prompt after a delay
+            if (isIOS && !isStandalone && !localStorage.getItem('iosPromptDismissed')) {
+                setTimeout(showIOSPrompt, 5000);
+            }
         });
+        
         window.addEventListener('resize', function () {
             handleResize();
             applySafeAreaCompensation();
         });
+        
         window.addEventListener('orientationchange', function () {
             setTimeout(function () {
                 handleResize();
@@ -1606,6 +1846,7 @@
                 }
             }, 100);
         });
+        
         document.addEventListener('webkitfullscreenchange', function () {
             setTimeout(function () {
                 handleResize();
@@ -1618,6 +1859,7 @@
                 }
             }, 100);
         });
+        
         document.addEventListener('mozfullscreenchange', function () {
             setTimeout(function () {
                 handleResize();
@@ -1690,6 +1932,14 @@
                 unityInstance.Module.audioContext.resume().then(() => console.log('Audio context resumed'));
             }
         }, { once: true });
+        
+        // PWA Installation
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            // You could show a custom install button here if desired
+        });
     </script>
 </body>
 </html>
