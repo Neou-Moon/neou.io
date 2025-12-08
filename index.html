@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html lang="en-us">
 <head>
     <meta charset="utf-8">
@@ -26,9 +25,6 @@
             --safe-area-inset-bottom: 0px;
             --safe-area-inset-left: 0px;
             --safe-area-inset-right: 0px;
-            --game-width: 1920px;
-            --game-height: 1080px;
-            --game-aspect-ratio: calc(1920 / 1080);
         }
 
         * {
@@ -300,7 +296,7 @@
             display: flex;
             flex: 1;
             width: 100%;
-            max-width: 2400px; /* Increased to accommodate 1920px game + ads */
+            max-width: 1600px;
             margin: 0 auto;
             padding: 0 10px;
         }
@@ -343,20 +339,32 @@
             text-orientation: mixed;
         }
 
-        /* Game container - UPDATED FOR 1920x1080 DEFAULT */
+        /* Game container - FULL SCREEN in PWA mode - UPDATED */
         .game-area {
             flex: 1;
             display: flex;
             flex-direction: column;
             align-items: center;
             padding: 10px;
-            min-width: 0; /* Prevent flexbox overflow */
         }
 
-        /* When not in fullscreen, container is fixed 1920x1080 */
+        body.pwa-fullscreen-mode .game-area {
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #000;
+        }
+
         #unity-container {
-            width: 1920px;
-            height: 1080px;
+            width: 100%;
+            height: 100%;
             position: relative;
             display: flex;
             justify-content: center;
@@ -366,23 +374,17 @@
             overflow: hidden;
             box-shadow: 0 0 20px rgba(80, 120, 255, 0.3);
             padding: 2px;
-            margin: 0 auto;
         }
 
-        /* Fullscreen modes */
-        body.pwa-fullscreen-mode #unity-container,
-        body:fullscreen #unity-container,
-        body:-webkit-full-screen #unity-container,
-        body:-moz-full-screen #unity-container {
-            width: 100vw !important;
-            height: 100vh !important;
+        body.pwa-fullscreen-mode #unity-container {
+            width: 100vw;
+            height: 100vh;
             border-radius: 0;
             box-shadow: none;
             padding: 0;
-            margin: 0;
         }
 
-        /* Canvas wrapper for proper containment */
+        /* NEW: Game canvas wrapper for proper containment */
         .canvas-wrapper {
             position: relative;
             width: 100%;
@@ -391,23 +393,28 @@
             justify-content: center;
             align-items: center;
             background: #000;
-            overflow: hidden;
+        }
+
+        body.pwa-fullscreen-mode .canvas-wrapper {
+            width: 100vw;
+            height: 100vh;
         }
 
         #unity-canvas {
-            width: 100% !important;
-            height: 100% !important;
+            width: auto;
+            height: auto;
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
             display: block;
             background: #000;
         }
 
-        /* Fullscreen canvas */
-        body.pwa-fullscreen-mode #unity-canvas,
-        body:fullscreen #unity-canvas,
-        body:-webkit-full-screen #unity-canvas,
-        body:-moz-full-screen #unity-canvas {
-            width: 100% !important;
-            height: 100% !important;
+        body.pwa-fullscreen-mode #unity-canvas {
+            width: auto !important;
+            height: auto !important;
+            max-width: 100vw !important;
+            max-height: 100vh !important;
             object-fit: contain !important;
         }
 
@@ -448,7 +455,7 @@
             padding: 20px;
         }
 
-        /* FULLSCREEN BUTTON */
+        /* FULLSCREEN BUTTON - COMPLETELY DIFFERENT LOGIC FOR iOS PWA */
         #fullscreen-button {
             position: absolute;
             top: 10px;
@@ -479,7 +486,7 @@
             cursor: not-allowed;
         }
 
-        /* iOS PWA button state */
+        /* iOS PWA button state - THIS IS DIFFERENT! */
         #fullscreen-button.ios-pwa-enabled {
             background: rgba(76, 201, 240, 0.9);
             color: white;
@@ -495,6 +502,11 @@
                 padding-left: env(safe-area-inset-left);
                 padding-right: env(safe-area-inset-right);
             }
+            
+            body.pwa-fullscreen-mode #unity-canvas {
+                max-height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom)) !important;
+                max-width: calc(100vw - env(safe-area-inset-left) - env(safe-area-inset-right)) !important;
+            }
         }
 
         /* Letterbox/pillarbox backgrounds for aspect ratio mismatch */
@@ -504,6 +516,40 @@
             position: absolute;
             background: #000;
             z-index: -1;
+        }
+
+        /* Vertical letterbox (top/bottom) */
+        .canvas-wrapper.letterbox-vertical::before {
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 50%;
+            transform: translateY(-100%);
+        }
+
+        .canvas-wrapper.letterbox-vertical::after {
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 50%;
+            transform: translateY(100%);
+        }
+
+        /* Horizontal pillarbox (left/right) */
+        .canvas-wrapper.letterbox-horizontal::before {
+            top: 0;
+            left: 0;
+            width: 50%;
+            height: 100%;
+            transform: translateX(-100%);
+        }
+
+        .canvas-wrapper.letterbox-horizontal::after {
+            top: 0;
+            right: 0;
+            width: 50%;
+            height: 100%;
+            transform: translateX(100%);
         }
 
         /* iOS notch/safe area handling */
@@ -596,17 +642,13 @@
                 font-size: 10px;
             }
 
-            /* On mobile, scale down the game container */
             #unity-container {
-                width: 100% !important;
-                max-width: 1920px;
-                height: auto !important;
-                aspect-ratio: 16/9;
+                padding: 3px;
             }
 
             #unity-canvas {
-                width: 100% !important;
-                height: 100% !important;
+                max-width: calc(100% - 6px);
+                max-height: calc(100% - 6px);
             }
 
             .ios-warning-content {
@@ -624,34 +666,6 @@
             .ios-dismiss-button {
                 width: 100%;
             }
-        }
-
-        /* Desktop adjustments for the fixed 1920x1080 container */
-        @media (min-width: 769px) and (max-width: 2240px) {
-            .content-wrapper {
-                overflow-x: auto; /* Allow horizontal scrolling if needed */
-                padding: 10px;
-            }
-            
-            #unity-container {
-                /* Ensure it stays at 1920x1080 */
-                width: 1920px;
-                height: 1080px;
-            }
-        }
-
-        /* Hide scrollbar but keep functionality */
-        .content-wrapper::-webkit-scrollbar {
-            height: 8px;
-        }
-        
-        .content-wrapper::-webkit-scrollbar-track {
-            background: rgba(0, 0, 0, 0.2);
-        }
-        
-        .content-wrapper::-webkit-scrollbar-thumb {
-            background: rgba(100, 150, 255, 0.5);
-            border-radius: 4px;
         }
     </style>
     
@@ -1395,8 +1409,6 @@
                     console.error('Accept request error:', error);
                     if (unityInstance) {
                         unityInstance.SendMessage(callbackObjectName, 'OnFriendRequestAccepted', error.message);
-                    } else {
-                        console.error('Unity instance not initialized');
                     }
                 });
         };
@@ -1884,7 +1896,7 @@
                 <div class="ad-vertical">Google AdSense</div>
             </div>
 
-            <!-- Game area - UPDATED WITH FIXED 1920x1080 CONTAINER -->
+            <!-- Game area - UPDATED WITH CANVAS WRAPPER -->
             <div class="game-area">
                 <div id="unity-container">
                     <div class="canvas-wrapper">
@@ -1939,7 +1951,7 @@
         }
 
         // ============================================================================
-        // PWA FULLSCREEN HANDLING
+        // PWA FULLSCREEN HANDLING - THE KEY DIFFERENCE
         // ============================================================================
 
         // For iOS PWA, we need to simulate fullscreen by adjusting CSS
@@ -2140,45 +2152,72 @@
         fullscreenButton.addEventListener('click', toggleFullscreen);
 
         // ============================================================================
-        // RESIZE HANDLING - SIMPLIFIED FOR FIXED 1920x1080
+        // RESIZE HANDLING - UPDATED FOR PROPER CONTAINMENT
         // ============================================================================
 
         function handleResize() {
-            const container = document.getElementById('unity-container');
+            const windowWidth = window.innerWidth;
+            const windowHeight = window.innerHeight;
+            const gameAspectRatio = 16 / 9;
+            const windowAspectRatio = windowWidth / windowHeight;
+            
+            const canvasWrapper = document.querySelector('.canvas-wrapper');
             const canvas = document.querySelector("#unity-canvas");
             
-            // When in fullscreen modes, canvas fills available space
-            if (body.classList.contains('pwa-fullscreen-mode') || 
-                document.fullscreenElement ||
-                document.webkitFullscreenElement ||
-                document.mozFullScreenElement ||
-                document.msFullscreenElement) {
+            let targetWidth, targetHeight;
+            
+            // Calculate proper size based on aspect ratio
+            if (windowAspectRatio > gameAspectRatio) {
+                // Window is wider than game (pillarbox)
+                targetHeight = windowHeight;
+                targetWidth = targetHeight * gameAspectRatio;
                 
-                canvas.style.width = '100%';
-                canvas.style.height = '100%';
-                
-                // Update Unity if available
-                if (unityInstance && unityInstance.Module && unityInstance.Module.SetCanvasSize) {
-                    try {
-                        unityInstance.Module.SetCanvasSize(container.clientWidth, container.clientHeight);
-                    } catch (e) {
-                        console.log('Could not set Unity canvas size');
-                    }
-                }
+                // Update letterbox classes
+                canvasWrapper.classList.remove('letterbox-vertical');
+                canvasWrapper.classList.add('letterbox-horizontal');
             } else {
-                // Not in fullscreen - maintain 1920x1080
-                canvas.style.width = '1920px';
-                canvas.style.height = '1080px';
+                // Window is taller than game (letterbox)
+                targetWidth = windowWidth;
+                targetHeight = targetWidth / gameAspectRatio;
                 
-                // Update Unity if available
-                if (unityInstance && unityInstance.Module && unityInstance.Module.SetCanvasSize) {
-                    try {
-                        unityInstance.Module.SetCanvasSize(1920, 1080);
-                    } catch (e) {
-                        console.log('Could not set Unity canvas size');
-                    }
+                // Update letterbox classes
+                canvasWrapper.classList.remove('letterbox-horizontal');
+                canvasWrapper.classList.add('letterbox-vertical');
+            }
+            
+            // Apply safe area compensation
+            if (isStandalonePWA() && isPwaFullscreen) {
+                const safeTop = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--safe-area-inset-top') || '0px');
+                const safeBottom = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--safe-area-inset-bottom') || '0px');
+                const safeLeft = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--safe-area-inset-left') || '0px');
+                const safeRight = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--safe-area-inset-right') || '0px');
+                
+                // Adjust for safe areas
+                targetHeight = Math.min(targetHeight, windowHeight - safeTop - safeBottom);
+                targetWidth = Math.min(targetWidth, windowWidth - safeLeft - safeRight);
+                
+                // Ensure aspect ratio is maintained
+                if (targetWidth / targetHeight > gameAspectRatio) {
+                    targetWidth = targetHeight * gameAspectRatio;
+                } else {
+                    targetHeight = targetWidth / gameAspectRatio;
                 }
             }
+            
+            // Set canvas size
+            canvas.style.width = targetWidth + 'px';
+            canvas.style.height = targetHeight + 'px';
+            
+            // Update Unity if available
+            if (unityInstance && unityInstance.Module && unityInstance.Module.SetCanvasSize) {
+                try {
+                    unityInstance.Module.SetCanvasSize(targetWidth, targetHeight);
+                } catch (e) {
+                    console.log('Could not set Unity canvas size');
+                }
+            }
+            
+            console.log(`Resized to: ${targetWidth}x${targetHeight}, Window: ${windowWidth}x${windowHeight}`);
         }
 
         function applySafeAreaCompensation() {
@@ -2187,6 +2226,15 @@
             document.documentElement.style.setProperty('--safe-area-inset-bottom', 'env(safe-area-inset-bottom, 0px)');
             document.documentElement.style.setProperty('--safe-area-inset-left', 'env(safe-area-inset-left, 0px)');
             document.documentElement.style.setProperty('--safe-area-inset-right', 'env(safe-area-inset-right, 0px)');
+            
+            const container = document.getElementById('unity-container');
+            
+            if (isStandalonePWA() && isPwaFullscreen) {
+                container.style.padding = '0';
+            } else {
+                const safetyMargin = 2;
+                container.style.padding = safetyMargin + 'px';
+            }
         }
 
         // ============================================================================
