@@ -339,7 +339,7 @@
             text-orientation: mixed;
         }
 
-        /* Game container - FULL SCREEN in PWA mode - UPDATED */
+        /* Game area - UPDATED WITH CANVAS WRAPPER */
         .game-area {
             flex: 1;
             display: flex;
@@ -362,29 +362,55 @@
             background: #000;
         }
 
+        /* NEW: 16:9 Container for normal mode */
         #unity-container {
             width: 100%;
-            height: 100%;
+            max-width: 100%;
             position: relative;
-            display: flex;
-            justify-content: center;
-            align-items: center;
             background: #000;
             border-radius: 8px;
             overflow: hidden;
             box-shadow: 0 0 20px rgba(80, 120, 255, 0.3);
             padding: 2px;
+            /* 16:9 Aspect Ratio Container */
+            aspect-ratio: 16 / 9;
+        }
+
+        /* Fallback for browsers that don't support aspect-ratio */
+        @supports not (aspect-ratio: 16 / 9) {
+            #unity-container {
+                height: 0;
+                padding-bottom: 56.25%; /* 16:9 aspect ratio */
+                position: relative;
+            }
+            
+            #unity-container > .canvas-wrapper {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+            }
         }
 
         body.pwa-fullscreen-mode #unity-container {
+            aspect-ratio: unset;
             width: 100vw;
             height: 100vh;
+            max-width: none;
             border-radius: 0;
             box-shadow: none;
             padding: 0;
         }
 
-        /* NEW: Game canvas wrapper for proper containment */
+        @supports not (aspect-ratio: 16 / 9) {
+            body.pwa-fullscreen-mode #unity-container {
+                height: 100vh;
+                padding-bottom: 0;
+            }
+        }
+
+        /* Game canvas wrapper for proper containment */
         .canvas-wrapper {
             position: relative;
             width: 100%;
@@ -401,10 +427,8 @@
         }
 
         #unity-canvas {
-            width: auto;
-            height: auto;
-            max-width: 100%;
-            max-height: 100%;
+            width: 100%;
+            height: 100%;
             object-fit: contain;
             display: block;
             background: #000;
@@ -423,6 +447,8 @@
             margin-top: 15px;
             text-align: center;
             transition: all 0.3s;
+            width: 100%;
+            max-width: 800px;
         }
 
         body.pwa-fullscreen-mode .how-to-play {
@@ -430,7 +456,7 @@
         }
 
         .how-to-play img {
-            max-width: 100%;
+            width: 100%;
             height: auto;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(80, 120, 255, 0.5);
@@ -2158,35 +2184,37 @@
         function handleResize() {
             const windowWidth = window.innerWidth;
             const windowHeight = window.innerHeight;
-            const gameAspectRatio = 16 / 9;
-            const windowAspectRatio = windowWidth / windowHeight;
             
-            const canvasWrapper = document.querySelector('.canvas-wrapper');
-            const canvas = document.querySelector("#unity-canvas");
-            
-            let targetWidth, targetHeight;
-            
-            // Calculate proper size based on aspect ratio
-            if (windowAspectRatio > gameAspectRatio) {
-                // Window is wider than game (pillarbox)
-                targetHeight = windowHeight;
-                targetWidth = targetHeight * gameAspectRatio;
+            // Only apply complex resizing in PWA fullscreen mode
+            if (isPwaFullscreen && isStandalonePWA()) {
+                const gameAspectRatio = 16 / 9;
+                const windowAspectRatio = windowWidth / windowHeight;
                 
-                // Update letterbox classes
-                canvasWrapper.classList.remove('letterbox-vertical');
-                canvasWrapper.classList.add('letterbox-horizontal');
-            } else {
-                // Window is taller than game (letterbox)
-                targetWidth = windowWidth;
-                targetHeight = targetWidth / gameAspectRatio;
+                const canvasWrapper = document.querySelector('.canvas-wrapper');
+                const canvas = document.querySelector("#unity-canvas");
                 
-                // Update letterbox classes
-                canvasWrapper.classList.remove('letterbox-horizontal');
-                canvasWrapper.classList.add('letterbox-vertical');
-            }
-            
-            // Apply safe area compensation
-            if (isStandalonePWA() && isPwaFullscreen) {
+                let targetWidth, targetHeight;
+                
+                // Calculate proper size based on aspect ratio
+                if (windowAspectRatio > gameAspectRatio) {
+                    // Window is wider than game (pillarbox)
+                    targetHeight = windowHeight;
+                    targetWidth = targetHeight * gameAspectRatio;
+                    
+                    // Update letterbox classes
+                    canvasWrapper.classList.remove('letterbox-vertical');
+                    canvasWrapper.classList.add('letterbox-horizontal');
+                } else {
+                    // Window is taller than game (letterbox)
+                    targetWidth = windowWidth;
+                    targetHeight = targetWidth / gameAspectRatio;
+                    
+                    // Update letterbox classes
+                    canvasWrapper.classList.remove('letterbox-horizontal');
+                    canvasWrapper.classList.add('letterbox-vertical');
+                }
+                
+                // Apply safe area compensation
                 const safeTop = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--safe-area-inset-top') || '0px');
                 const safeBottom = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--safe-area-inset-bottom') || '0px');
                 const safeLeft = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--safe-area-inset-left') || '0px');
@@ -2202,22 +2230,46 @@
                 } else {
                     targetHeight = targetWidth / gameAspectRatio;
                 }
-            }
-            
-            // Set canvas size
-            canvas.style.width = targetWidth + 'px';
-            canvas.style.height = targetHeight + 'px';
-            
-            // Update Unity if available
-            if (unityInstance && unityInstance.Module && unityInstance.Module.SetCanvasSize) {
-                try {
-                    unityInstance.Module.SetCanvasSize(targetWidth, targetHeight);
-                } catch (e) {
-                    console.log('Could not set Unity canvas size');
+                
+                // Set canvas size
+                canvas.style.width = targetWidth + 'px';
+                canvas.style.height = targetHeight + 'px';
+                
+                // Update Unity if available
+                if (unityInstance && unityInstance.Module && unityInstance.Module.SetCanvasSize) {
+                    try {
+                        unityInstance.Module.SetCanvasSize(targetWidth, targetHeight);
+                    } catch (e) {
+                        console.log('Could not set Unity canvas size');
+                    }
                 }
+                
+                console.log(`PWA Fullscreen resized to: ${targetWidth}x${targetHeight}, Window: ${windowWidth}x${windowHeight}`);
+            } else {
+                // Normal mode - rely on CSS aspect-ratio container
+                const canvas = document.querySelector("#unity-canvas");
+                const container = document.querySelector("#unity-container");
+                
+                // Reset canvas to fill container
+                canvas.style.width = '100%';
+                canvas.style.height = '100%';
+                
+                // Clear letterbox classes
+                const canvasWrapper = document.querySelector('.canvas-wrapper');
+                canvasWrapper.classList.remove('letterbox-vertical', 'letterbox-horizontal');
+                
+                // Update Unity if available
+                if (unityInstance && unityInstance.Module && unityInstance.Module.SetCanvasSize) {
+                    try {
+                        const containerRect = container.getBoundingClientRect();
+                        unityInstance.Module.SetCanvasSize(containerRect.width, containerRect.height);
+                    } catch (e) {
+                        console.log('Could not set Unity canvas size');
+                    }
+                }
+                
+                console.log(`Normal mode - container maintains 16:9 aspect ratio`);
             }
-            
-            console.log(`Resized to: ${targetWidth}x${targetHeight}, Window: ${windowWidth}x${windowHeight}`);
         }
 
         function applySafeAreaCompensation() {
@@ -2226,15 +2278,6 @@
             document.documentElement.style.setProperty('--safe-area-inset-bottom', 'env(safe-area-inset-bottom, 0px)');
             document.documentElement.style.setProperty('--safe-area-inset-left', 'env(safe-area-inset-left, 0px)');
             document.documentElement.style.setProperty('--safe-area-inset-right', 'env(safe-area-inset-right, 0px)');
-            
-            const container = document.getElementById('unity-container');
-            
-            if (isStandalonePWA() && isPwaFullscreen) {
-                container.style.padding = '0';
-            } else {
-                const safetyMargin = 2;
-                container.style.padding = safetyMargin + 'px';
-            }
         }
 
         // ============================================================================
