@@ -6,12 +6,18 @@
     <meta http-equiv="Cross-Origin-Embedder-Policy" content="require-corp">
     <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="mobile-web-app-capable" content="yes">
     <title>Neou.io | An Outer Worldly Adventure</title>
     <link rel="icon" href="data:;base64,iVBORw0KGgo="> <!-- Suppress favicon 404 -->
-    <link rel="apple-touch-icon" href="data:;base64,iVBORw0KGgo="> <!-- iOS icon -->
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- iOS PWA meta tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Neou.io">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    
     <style>
         * {
             box-sizing: border-box;
@@ -224,8 +230,8 @@
             line-height: 1.1; /* Very tight line height */
         }
 
-        /* Landscape Warning Popup - MOVED TO BOTTOM */
-        #landscape-warning {
+        /* iOS PWA Instructions */
+        #ios-pwa-instructions {
             display: none;
             position: fixed;
             bottom: 20px;
@@ -242,21 +248,21 @@
             backdrop-filter: blur(10px);
         }
 
-        .warning-header {
+        .pwa-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 10px;
         }
 
-        .warning-title {
+        .pwa-title {
             font-size: 16px;
             font-weight: bold;
             color: #a0d2ff;
             margin: 0;
         }
 
-        .close-warning {
+        .close-pwa {
             background: rgba(255, 50, 50, 0.8);
             color: white;
             border: none;
@@ -272,11 +278,11 @@
             flex-shrink: 0;
         }
 
-        .close-warning:hover {
+        .close-pwa:hover {
             background: rgba(255, 50, 50, 1);
         }
 
-        .warning-content {
+        .pwa-content {
             font-size: 14px;
             line-height: 1.5;
             color: #e0e0ff;
@@ -284,16 +290,22 @@
             text-align: center;
         }
 
-        .warning-icon {
+        .pwa-icon {
             text-align: center;
             font-size: 30px;
             margin-bottom: 10px;
             color: #a0d2ff;
         }
 
-        /* iOS-specific fixes */
-        .ios-fix {
-            /* iOS specific fixes */
+        .pwa-steps {
+            text-align: left;
+            margin: 15px 0;
+            padding-left: 20px;
+        }
+
+        .pwa-steps li {
+            margin-bottom: 8px;
+            font-size: 13px;
         }
 
         /* Mobile-specific adjustments */
@@ -334,6 +346,12 @@
                 font-size: 10px;
             }
 
+            /* iOS-specific fullscreen button adjustments */
+            .ios #fullscreen-button {
+                background: rgba(255, 255, 255, 0.95);
+                border: 1px solid rgba(0, 0, 0, 0.2);
+            }
+
             /* More compensation on mobile if needed */
             #unity-container {
                 padding: 3px;
@@ -344,56 +362,24 @@
                 max-height: calc(100% - 6px);
             }
 
-            /* Show landscape warning only on mobile portrait */
-            @media (orientation: portrait) {
-                #landscape-warning {
-                    display: block;
-                }
-            }
-
-            @media (orientation: landscape) {
-                #landscape-warning {
-                    display: none !important;
-                }
-            }
-
-            /* Adjust warning position for very small screens */
+            /* Adjust PWA instructions for small screens */
             @media (max-height: 600px) {
-                #landscape-warning {
+                #ios-pwa-instructions {
                     bottom: 10px;
                     padding: 12px;
                 }
                 
-                .warning-title {
+                .pwa-title {
                     font-size: 14px;
                 }
                 
-                .warning-content {
+                .pwa-content {
                     font-size: 12px;
                 }
                 
-                .warning-icon {
+                .pwa-icon {
                     font-size: 25px;
                     margin-bottom: 8px;
-                }
-            }
-
-            /* iOS specific fixes - maintain layout */
-            @supports (-webkit-touch-callout: none) {
-                /* iOS specific CSS */
-                body {
-                    -webkit-tap-highlight-color: transparent;
-                }
-                
-                #unity-container {
-                    /* iOS fullscreen compatibility */
-                    position: relative;
-                }
-                
-                #fullscreen-button {
-                    /* Make button more tappable on iOS */
-                    min-height: 44px;
-                    min-width: 44px;
                 }
             }
         }
@@ -426,7 +412,7 @@
                 padding-right: max(2px, env(safe-area-inset-right));
             }
             
-            #landscape-warning {
+            #ios-pwa-instructions {
                 bottom: max(20px, env(safe-area-inset-bottom));
             }
         }
@@ -491,9 +477,9 @@
                 max-height: 100% !important;
             }
 
-            :fullscreen #landscape-warning,
-            :-webkit-full-screen #landscape-warning,
-            :-moz-full-screen #landscape-warning {
+            :fullscreen #ios-pwa-instructions,
+            :-webkit-full-screen #ios-pwa-instructions,
+            :-moz-full-screen #ios-pwa-instructions {
                 display: none !important;
             }
         }
@@ -501,6 +487,31 @@
         /* Ensure proper aspect ratio with black borders in all orientations */
         #unity-canvas.aspect-ratio {
             object-fit: contain;
+        }
+
+        /* iOS-specific styles for better fullscreen experience */
+        .ios :fullscreen #unity-container,
+        .ios :-webkit-full-screen #unity-container {
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
+            padding-left: env(safe-area-inset-left);
+            padding-right: env(safe-area-inset-right);
+        }
+
+        /* PWA installed styles */
+        .pwa-installed .header,
+        .pwa-installed .ad-side,
+        .pwa-installed .how-to-play {
+            display: none;
+        }
+
+        .pwa-installed .game-area {
+            padding: 0;
+        }
+
+        .pwa-installed #unity-container {
+            border-radius: 0;
+            box-shadow: none;
         }
 
         /* Portrait mode support */
@@ -1665,16 +1676,22 @@
     <!-- Starfield background -->
     <div class="stars" id="stars"></div>
 
-    <!-- Landscape Warning Popup - NOW AT BOTTOM -->
-    <div id="landscape-warning">
-        <div class="warning-header">
-            <h3 class="warning-title">📱 Landscape Mode</h3>
-            <button class="close-warning" id="close-warning">×</button>
+    <!-- iOS PWA Instructions Popup -->
+    <div id="ios-pwa-instructions">
+        <div class="pwa-header">
+            <h3 class="pwa-title">📱 Install Neou.io App</h3>
+            <button class="close-pwa" id="close-pwa">×</button>
         </div>
-        <div class="warning-icon">🔄</div>
-        <div class="warning-content">
-            For the best gaming experience, we recommend rotating your device to landscape mode. The game is optimized for widescreen gameplay!
+        <div class="pwa-icon">⬇️</div>
+        <div class="pwa-content">
+            For the best fullscreen experience on iOS, install Neou.io as a PWA (Progressive Web App):
         </div>
+        <ol class="pwa-steps">
+            <li>Tap the <strong>Share</strong> button <span style="color:#a0d2ff;">(⎋)</span> in Safari</li>
+            <li>Scroll down and tap <strong>"Add to Home Screen"</strong></li>
+            <li>Tap <strong>"Add"</strong> in the top right corner</li>
+            <li>Launch from your Home Screen for fullscreen gameplay!</li>
+        </ol>
     </div>
 
     <div class="main-container">
@@ -1715,6 +1732,27 @@
     </div>
 
     <script>
+        // Detect iOS
+        function isIOS() {
+            return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        }
+
+        // Detect if installed as PWA
+        function isStandalone() {
+            return window.matchMedia('(display-mode: standalone)').matches || 
+                   window.navigator.standalone === true;
+        }
+
+        // Add iOS class to body for iOS-specific styling
+        if (isIOS()) {
+            document.body.classList.add('ios');
+        }
+
+        // Add PWA class if installed as standalone
+        if (isStandalone()) {
+            document.body.classList.add('pwa-installed');
+        }
+
         // Create starfield effect
         function createStars() {
             const starsContainer = document.getElementById('stars');
@@ -1747,36 +1785,46 @@
         // Initialize starfield
         createStars();
 
-        // Landscape warning functionality
-        const landscapeWarning = document.getElementById('landscape-warning');
-        const closeWarningBtn = document.getElementById('close-warning');
+        // iOS PWA Instructions functionality
+        const pwaInstructions = document.getElementById('ios-pwa-instructions');
+        const closePwaBtn = document.getElementById('close-pwa');
 
-        // Close warning when X is clicked
-        closeWarningBtn.addEventListener('click', () => {
-            landscapeWarning.style.display = 'none';
+        // Close PWA instructions when X is clicked
+        closePwaBtn.addEventListener('click', () => {
+            pwaInstructions.style.display = 'none';
+            // Store in localStorage that user dismissed the instructions
+            localStorage.setItem('pwaInstructionsDismissed', 'true');
         });
 
-        // Check orientation on load and resize
-        function checkOrientation() {
-            if (window.innerWidth <= 768) {
-                if (window.matchMedia("(orientation: portrait)").matches) {
-                    landscapeWarning.style.display = 'block';
-                } else {
-                    landscapeWarning.style.display = 'none';
-                }
-            } else {
-                landscapeWarning.style.display = 'none';
+        // Show PWA instructions for iOS users not in standalone mode
+        function checkAndShowPWAInstructions() {
+            const hasDismissed = localStorage.getItem('pwaInstructionsDismissed');
+            
+            if (isIOS() && !isStandalone() && !hasDismissed) {
+                // Show after a delay so user can see the game loads first
+                setTimeout(() => {
+                    pwaInstructions.style.display = 'block';
+                }, 3000);
             }
         }
 
-        // Check orientation initially
-        checkOrientation();
+        // iOS Fullscreen workaround
+        function setupIOSFullscreenWorkaround() {
+            if (!isIOS()) return;
 
-        // Check on resize and orientation change
-        window.addEventListener('resize', checkOrientation);
-        window.addEventListener('orientationchange', () => {
-            setTimeout(checkOrientation, 100);
-        });
+            const fullscreenButton = document.getElementById('fullscreen-button');
+            
+            // Change button text for iOS
+            if (isStandalone()) {
+                fullscreenButton.textContent = 'Exit Fullscreen';
+            } else {
+                fullscreenButton.textContent = 'Fullscreen (Install PWA)';
+                fullscreenButton.addEventListener('click', () => {
+                    pwaInstructions.style.display = 'block';
+                });
+                return; // Don't add normal fullscreen behavior for iOS browser
+            }
+        }
 
         var unityInstance = null;
         var container = document.querySelector("#unity-container");
@@ -1788,139 +1836,19 @@
         fullscreenButton.style.left = '50%';
         fullscreenButton.style.transform = 'translateX(-50%)';
 
-        // iOS Fullscreen Compatibility
-        function isIOS() {
-            return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-        }
+        // Setup iOS specific handlers first
+        setupIOSFullscreenWorkaround();
 
-        // Enhanced fullscreen function with iOS compatibility
-        function requestFullscreen(element) {
-            if (isIOS()) {
-                // iOS requires special handling
-                console.log('iOS device detected - using iOS fullscreen workaround');
-                
-                // Hide all UI elements for iOS
-                document.querySelector('.main-container').style.display = 'none';
-                document.querySelector('.header').style.display = 'none';
-                document.querySelector('.ad-side').style.display = 'none';
-                document.querySelector('.how-to-play').style.display = 'none';
-                landscapeWarning.style.display = 'none';
-                
-                // Make container fill the screen
-                container.style.position = 'fixed';
-                container.style.top = '0';
-                container.style.left = '0';
-                container.style.width = '100vw';
-                container.style.height = '100vh';
-                container.style.zIndex = '9999';
-                container.style.padding = '0';
-                
-                // Make canvas fill the container
-                canvas.style.width = '100%';
-                canvas.style.height = '100%';
-                canvas.style.maxWidth = '100%';
-                canvas.style.maxHeight = '100%';
-                
-                // Hide fullscreen button
-                fullscreenButton.style.display = 'none';
-                
-                // Lock orientation if possible
-                if (screen.orientation && screen.orientation.lock) {
-                    screen.orientation.lock('landscape').catch(e => {
-                        console.log('Orientation lock not supported:', e);
-                    });
+        // Only add normal fullscreen behavior for non-iOS or iOS PWA
+        if (!isIOS() || isStandalone()) {
+            fullscreenButton.addEventListener("click", () => {
+                if (!document.fullscreenElement) {
+                    container.requestFullscreen().catch(err => console.error("Fullscreen error:", err));
+                } else {
+                    document.exitFullscreen();
                 }
-                
-                // Dispatch a custom event for Unity to know we're in fullscreen
-                window.dispatchEvent(new Event('ios-fullscreen'));
-                
-                return Promise.resolve();
-            } else {
-                // Standard fullscreen for other devices
-                if (element.requestFullscreen) {
-                    return element.requestFullscreen();
-                } else if (element.webkitRequestFullscreen) {
-                    return element.webkitRequestFullscreen();
-                } else if (element.mozRequestFullScreen) {
-                    return element.mozRequestFullScreen();
-                }
-                return Promise.reject(new Error('Fullscreen not supported'));
-            }
+            });
         }
-
-        // Enhanced exit fullscreen function
-        function exitFullscreen() {
-            if (isIOS() && container.style.position === 'fixed') {
-                // iOS exit fullscreen
-                console.log('Exiting iOS fullscreen');
-                
-                // Restore all UI elements
-                document.querySelector('.main-container').style.display = 'flex';
-                document.querySelector('.header').style.display = 'block';
-                document.querySelector('.ad-side').style.display = 'flex';
-                document.querySelector('.how-to-play').style.display = 'block';
-                
-                // Restore container positioning
-                container.style.position = 'relative';
-                container.style.top = '';
-                container.style.left = '';
-                container.style.width = '';
-                container.style.height = '';
-                container.style.zIndex = '';
-                
-                // Restore canvas
-                canvas.style.width = '';
-                canvas.style.height = '';
-                
-                // Show fullscreen button
-                fullscreenButton.style.display = 'block';
-                
-                // Unlock orientation if possible
-                if (screen.orientation && screen.orientation.unlock) {
-                    screen.orientation.unlock();
-                }
-                
-                // Dispatch exit event
-                window.dispatchEvent(new Event('ios-exit-fullscreen'));
-                
-                // Re-check orientation warning
-                checkOrientation();
-                
-                // Handle resize
-                setTimeout(handleResize, 100);
-                
-                return Promise.resolve();
-            } else {
-                // Standard exit fullscreen
-                if (document.exitFullscreen) {
-                    return document.exitFullscreen();
-                } else if (document.webkitExitFullscreen) {
-                    return document.webkitExitFullscreen();
-                } else if (document.mozCancelFullScreen) {
-                    return document.mozCancelFullScreen();
-                }
-                return Promise.reject(new Error('Exit fullscreen not supported'));
-            }
-        }
-
-        // Check if currently in fullscreen (including iOS pseudo-fullscreen)
-        function isFullscreen() {
-            if (isIOS() && container.style.position === 'fixed') {
-                return true;
-            }
-            return !!(document.fullscreenElement || 
-                     document.webkitFullscreenElement || 
-                     document.mozFullScreenElement);
-        }
-
-        // Enhanced fullscreen button click handler
-        fullscreenButton.addEventListener("click", () => {
-            if (!isFullscreen()) {
-                requestFullscreen(container).catch(err => console.error("Fullscreen error:", err));
-            } else {
-                exitFullscreen().catch(err => console.error("Exit fullscreen error:", err));
-            }
-        });
 
         // Handle resize and aspect ratio properly
         function handleResize() {
@@ -1934,7 +1862,7 @@
             let targetWidth = windowWidth;
             let targetHeight = windowHeight;
 
-            const compensation = 4;
+            const compensation = isIOS() ? 6 : 4; // Slightly more compensation for iOS
 
             if (windowAspectRatio > gameAspectRatio) {
                 // Window is wider than game aspect ratio (black bars on sides)
@@ -1949,11 +1877,8 @@
             targetWidth = Math.max(targetWidth, 100);
             targetHeight = Math.max(targetHeight, 100);
 
-            // Only adjust if not in iOS fullscreen mode
-            if (!(isIOS() && container.style.position === 'fixed')) {
-                canvas.style.width = targetWidth + 'px';
-                canvas.style.height = targetHeight + 'px';
-            }
+            canvas.style.width = targetWidth + 'px';
+            canvas.style.height = targetHeight + 'px';
 
             container.style.justifyContent = 'center';
             container.style.alignItems = 'center';
@@ -1969,20 +1894,18 @@
         }
 
         function applySafeAreaCompensation() {
-            const safetyMargin = 2;
+            const safetyMargin = isIOS() ? 3 : 2;
 
-            // Only apply safe area compensation if not in iOS fullscreen
-            if (!(isIOS() && container.style.position === 'fixed')) {
-                container.style.padding = safetyMargin + 'px';
+            container.style.padding = safetyMargin + 'px';
 
-                canvas.style.maxWidth = `calc(100% - ${safetyMargin * 2}px)`;
-                canvas.style.maxHeight = `calc(100% - ${safetyMargin * 2}px)`;
-            }
+            canvas.style.maxWidth = `calc(100% - ${safetyMargin * 2}px)`;
+            canvas.style.maxHeight = `calc(100% - ${safetyMargin * 2}px)`;
         }
 
         window.addEventListener('load', function () {
             handleResize();
             applySafeAreaCompensation();
+            checkAndShowPWAInstructions();
         });
         
         window.addEventListener('resize', function () {
@@ -1997,7 +1920,6 @@
             }, 100);
         });
 
-        // Standard fullscreen change handlers
         document.addEventListener('fullscreenchange', function () {
             setTimeout(function () {
                 handleResize();
@@ -2071,15 +1993,6 @@
                     unityInstance = instance;
                     loadingOverlay.style.display = 'none';
                     console.log('Unity instance initialized');
-                    
-                    // iOS specific initialization
-                    if (isIOS()) {
-                        console.log('iOS device detected - applying iOS optimizations');
-                        // Ensure canvas has proper touch handling for iOS
-                        canvas.style.webkitTouchCallout = 'none';
-                        canvas.style.webkitUserSelect = 'none';
-                    }
-                    
                     setTimeout(function () {
                         handleResize();
                         applySafeAreaCompensation();
