@@ -22,6 +22,8 @@
             font-family: Arial, sans-serif;
             color: white;
             position: relative;
+            /* Prevent portrait orientation */
+            transform: rotate(0deg);
         }
 
         /* Space background with stars */
@@ -153,6 +155,8 @@
             overflow: hidden;
             box-shadow: 0 0 20px rgba(80, 120, 255, 0.3);
             margin: 0 auto;
+            /* Force 16:9 aspect ratio */
+            aspect-ratio: 16 / 9;
         }
 
         #unity-canvas {
@@ -252,9 +256,51 @@
                 font-size: 10px;
             }
 
-            /* On mobile, make container take most of the width */
+            /* On mobile, make container take full width */
             #unity-container {
                 max-width: 100%;
+                width: 100%;
+                aspect-ratio: 16 / 9;
+            }
+            
+            /* Portrait warning message */
+            .portrait-warning {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.9);
+                z-index: 1000;
+                justify-content: center;
+                align-items: center;
+                text-align: center;
+                padding: 20px;
+                color: white;
+                font-size: 1.2rem;
+                flex-direction: column;
+            }
+            
+            .portrait-warning.show {
+                display: flex;
+            }
+            
+            .portrait-warning h3 {
+                font-size: 1.8rem;
+                margin-bottom: 20px;
+                color: #a0d2ff;
+            }
+            
+            .rotate-icon {
+                font-size: 4rem;
+                margin-bottom: 20px;
+                animation: rotate 2s infinite;
+            }
+            
+            @keyframes rotate {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(90deg); }
             }
         }
 
@@ -268,6 +314,10 @@
             border-radius: 0 !important;
             margin: 0 !important;
             padding: 0 !important;
+            aspect-ratio: unset !important;
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
         }
 
         :fullscreen #unity-canvas,
@@ -275,6 +325,7 @@
         :-moz-full-screen #unity-canvas {
             width: 100% !important;
             height: 100% !important;
+            object-fit: contain !important; /* This creates black bars */
         }
 
         /* Hide fullscreen button when in fullscreen mode */
@@ -1439,6 +1490,14 @@
     <!-- Starfield background -->
     <div class="stars" id="stars"></div>
 
+    <!-- Portrait Warning for Mobile -->
+    <div id="portrait-warning" class="portrait-warning">
+        <div class="rotate-icon">↻</div>
+        <h3>Please Rotate Your Device</h3>
+        <p>This game requires landscape orientation for the best experience.</p>
+        <p>Please rotate your device to landscape mode.</p>
+    </div>
+
     <div class="main-container">
         <!-- Header with title -->
         <div class="header">
@@ -1514,19 +1573,58 @@
         var canvas = document.querySelector("#unity-canvas");
         var loadingOverlay = document.querySelector("#loading-overlay");
         var fullscreenButton = document.querySelector("#fullscreen-button");
+        var portraitWarning = document.querySelector("#portrait-warning");
 
         // Move fullscreen button to top center
         fullscreenButton.style.left = '50%';
         fullscreenButton.style.transform = 'translateX(-50%)';
 
-        // Fullscreen button handler - SIMPLE VERSION
+        // Fullscreen button handler
         fullscreenButton.addEventListener("click", () => {
             if (!document.fullscreenElement) {
+                // Try to lock orientation to landscape before entering fullscreen
+                lockOrientation();
                 container.requestFullscreen().catch(err => console.error("Fullscreen error:", err));
             } else {
                 document.exitFullscreen();
             }
         });
+
+        // Function to lock orientation to landscape
+        function lockOrientation() {
+            if (screen.orientation && screen.orientation.lock) {
+                screen.orientation.lock('landscape').catch(err => {
+                    console.log('Screen orientation lock not supported:', err);
+                });
+            } else if (screen.lockOrientation) {
+                screen.lockOrientation('landscape');
+            } else if (screen.mozLockOrientation) {
+                screen.mozLockOrientation('landscape');
+            } else if (screen.msLockOrientation) {
+                screen.msLockOrientation('landscape');
+            }
+        }
+
+        // Function to check orientation and show/hide portrait warning
+        function checkOrientation() {
+            const isMobile = window.innerWidth <= 768;
+            
+            if (!isMobile) {
+                portraitWarning.classList.remove('show');
+                return;
+            }
+            
+            const isPortrait = window.innerHeight > window.innerWidth;
+            const isFullscreen = document.fullscreenElement || 
+                                document.webkitFullscreenElement || 
+                                document.mozFullScreenElement;
+            
+            if (isPortrait && !isFullscreen) {
+                portraitWarning.classList.add('show');
+            } else {
+                portraitWarning.classList.remove('show');
+            }
+        }
 
         // Handle resize for proper aspect ratio and black bars
         function handleResize() {
@@ -1534,55 +1632,62 @@
                                 document.webkitFullscreenElement || 
                                 document.mozFullScreenElement;
             
+            // Check orientation first
+            checkOrientation();
+            
             if (isFullscreen) {
-                // In fullscreen, fill the entire screen
-                canvas.style.width = '100%';
-                canvas.style.height = '100%';
-                canvas.style.objectFit = 'contain'; // This creates black bars to maintain aspect ratio
-                
-                // Set container to full screen
+                // In fullscreen, fill the entire screen with black bars
                 container.style.width = '100vw';
                 container.style.height = '100vh';
-                container.style.maxWidth = 'none';
+                canvas.style.width = '100%';
+                canvas.style.height = '100%';
+                canvas.style.objectFit = 'contain'; // This creates black bars
+                
+                // Try to lock orientation in fullscreen
+                lockOrientation();
             } else {
-                // In normal mode, maintain 16:9 aspect ratio with max width
-                const containerWidth = Math.min(container.parentElement.offsetWidth, 1200);
-                const containerHeight = (containerWidth * 9) / 16;
-                
-                container.style.width = containerWidth + 'px';
-                container.style.height = containerHeight + 'px';
-                
-                // Canvas fills container
+                // In normal mode, maintain 16:9 aspect ratio with CSS aspect-ratio property
+                // CSS handles this automatically with aspect-ratio: 16/9
                 canvas.style.width = '100%';
                 canvas.style.height = '100%';
                 canvas.style.objectFit = 'contain';
             }
             
-            console.log(`Container: ${container.offsetWidth}x${container.offsetHeight}, Canvas: ${canvas.offsetWidth}x${canvas.offsetHeight}`);
+            console.log(`Window: ${window.innerWidth}x${window.innerHeight}, Container: ${container.offsetWidth}x${container.offsetHeight}`);
         }
 
         // Listen for fullscreen changes
         document.addEventListener('fullscreenchange', function() {
             setTimeout(handleResize, 100);
+            checkOrientation();
         });
         document.addEventListener('webkitfullscreenchange', function() {
             setTimeout(handleResize, 100);
+            checkOrientation();
         });
         document.addEventListener('mozfullscreenchange', function() {
             setTimeout(handleResize, 100);
+            checkOrientation();
         });
 
         // Handle orientation changes
         window.addEventListener('orientationchange', function() {
-            setTimeout(handleResize, 300);
+            setTimeout(function() {
+                handleResize();
+                checkOrientation();
+            }, 300);
+        });
+
+        // Handle resize events
+        window.addEventListener('resize', function() {
+            handleResize();
+            checkOrientation();
         });
 
         // Initial setup
         window.addEventListener('load', function() {
             handleResize();
-        });
-        window.addEventListener('resize', function() {
-            handleResize();
+            checkOrientation();
         });
 
         // Load Unity
@@ -1622,6 +1727,7 @@
                     console.log('Unity instance initialized');
                     setTimeout(function () {
                         handleResize();
+                        checkOrientation();
                     }, 100);
                 }).catch((error) => {
                     console.error("Unity initialization error:", error.message);
