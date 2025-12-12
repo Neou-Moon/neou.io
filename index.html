@@ -146,8 +146,7 @@
 
         #unity-container {
             width: 100%;
-            max-width: 1200px;
-            height: 675px; /* 16:9 aspect ratio: 1200x675 */
+            height: 100%;
             position: relative;
             display: flex;
             justify-content: center;
@@ -156,7 +155,8 @@
             border-radius: 8px;
             overflow: hidden;
             box-shadow: 0 0 20px rgba(80, 120, 255, 0.3);
-            margin: 0 auto;
+            /* Add safe area compensation */
+            padding: 2px; /* Small compensation to prevent cutting */
         }
 
         #unity-canvas {
@@ -165,6 +165,9 @@
             object-fit: contain;
             display: block;
             background: #000;
+            /* Ensure no scaling beyond safe boundaries */
+            max-width: calc(100% - 4px);
+            max-height: calc(100% - 4px);
         }
 
         /* How to play image */
@@ -205,16 +208,16 @@
             left: 50%;
             transform: translateX(-50%);
             z-index: 20;
-            padding: 2px 14px;
+            padding: 2px 14px; /* Super thin - 2px top/bottom */
             background: rgba(255, 255, 255, 0.9);
             border: none;
-            border-radius: 2px;
+            border-radius: 2px; /* Very small radius */
             cursor: pointer;
             font-family: Arial, sans-serif;
-            font-size: 11px;
+            font-size: 11px; /* Compact font */
             backdrop-filter: blur(5px);
             white-space: nowrap;
-            line-height: 1.1;
+            line-height: 1.1; /* Very tight line height */
         }
 
         /* Mobile-specific adjustments */
@@ -249,42 +252,50 @@
                 font-size: 1rem;
             }
 
-            #unity-container {
-                width: 100%;
-                height: calc(56.25vw - 20px); /* 16:9 aspect ratio */
-                max-height: 75vh;
-                margin: 0 auto;
-            }
-
             #fullscreen-button {
                 top: 5px;
-                padding: 1px 10px;
+                padding: 1px 10px; /* Ultra thin on mobile */
                 font-size: 10px;
+            }
+
+            /* More compensation on mobile if needed */
+            #unity-container {
+                padding: 3px;
+            }
+
+            #unity-canvas {
+                max-width: calc(100% - 6px);
+                max-height: calc(100% - 6px);
             }
         }
 
-        /* Enhanced fullscreen styles with proper containment */
+        /* Enhanced fullscreen styles with safe area support */
         :fullscreen #unity-container,
         :-webkit-full-screen #unity-container,
         :-moz-full-screen #unity-container {
-            width: 100vw !important;
-            height: 100vh !important;
-            max-width: 100vw !important;
-            max-height: 100vh !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            border-radius: 0 !important;
+            width: 100vw;
+            height: 100vh;
+            padding: 0; /* Remove padding in fullscreen */
         }
 
         :fullscreen #unity-canvas,
         :-webkit-full-screen #unity-canvas,
         :-moz-full-screen #unity-canvas {
-            width: 100% !important;
-            height: 100% !important;
-            max-width: 100% !important;
-            max-height: 100% !important;
-            object-fit: contain !important;
-            background: #000 !important;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            max-width: 100vw;
+            max-height: 100vh;
+        }
+
+        /* Support for safe area insets on modern browsers */
+        @supports (padding: max(0px)) {
+            #unity-container {
+                padding-top: max(2px, env(safe-area-inset-top));
+                padding-bottom: max(2px, env(safe-area-inset-bottom));
+                padding-left: max(2px, env(safe-area-inset-left));
+                padding-right: max(2px, env(safe-area-inset-right));
+            }
         }
 
         /* Hide fullscreen button when in fullscreen mode */
@@ -294,35 +305,153 @@
             display: none;
         }
 
-        /* Ensure game area takes full width in fullscreen */
-        :fullscreen .game-area,
-        :-webkit-full-screen .game-area,
-        :-moz-full-screen .game-area {
-            width: 100vw;
-            height: 100vh;
-            padding: 0;
-            margin: 0;
-        }
+        /* Force landscape orientation in fullscreen on mobile */
+        @media (max-width: 768px) {
+            :fullscreen body,
+            :-webkit-full-screen body,
+            :-moz-full-screen body {
+                transform: rotate(0deg);
+            }
 
-        /* Portrait mode adjustments for fullscreen */
-        @media (orientation: portrait) {
+            :fullscreen .main-container,
+            :-webkit-full-screen .main-container,
+            :-moz-full-screen .main-container {
+                display: none;
+            }
+
+            :fullscreen .header,
+            :-webkit-full-screen .header,
+            :-moz-full-screen .header {
+                display: none;
+            }
+
+            :fullscreen .ad-side,
+            :-webkit-full-screen .ad-side,
+            :-moz-full-screen .ad-side {
+                display: none;
+            }
+
+            :fullscreen .how-to-play,
+            :-webkit-full-screen .how-to-play,
+            :-moz-full-screen .how-to-play {
+                display: none;
+            }
+
             :fullscreen #unity-container,
             :-webkit-full-screen #unity-container,
             :-moz-full-screen #unity-container {
-                width: 100vh !important;
-                height: 100vw !important;
-                transform: rotate(90deg) translateY(-100%);
-                transform-origin: top left;
-                position: absolute;
+                display: flex !important;
+                position: fixed;
                 top: 0;
                 left: 0;
+                width: 100vw;
+                height: 100vh;
+                background: #000;
+                padding: 0;
+                margin: 0;
             }
 
             :fullscreen #unity-canvas,
             :-webkit-full-screen #unity-canvas,
             :-moz-full-screen #unity-canvas {
-                width: 100% !important;
-                height: 100% !important;
+                object-fit: contain;
+                background: #000;
+                max-width: 100%;
+                max-height: 100%;
+            }
+
+            /* Ensure proper aspect ratio with black borders */
+            :fullscreen #unity-canvas.aspect-ratio,
+            :-webkit-full-screen #unity-canvas.aspect-ratio,
+            :-moz-full-screen #unity-canvas.aspect-ratio {
+                object-fit: contain;
+                width: auto !important;
+                height: auto !important;
+                max-width: 100% !important;
+                max-height: 100% !important;
+                margin: auto !important;
+            }
+        }
+
+        /* Portrait mode warning */
+        .portrait-warning {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: 1000;
+            color: white;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+            font-size: 18px;
+        }
+
+        @media (max-width: 768px) and (orientation: portrait) {
+            :fullscreen .portrait-warning,
+            :-webkit-full-screen .portrait-warning,
+            :-moz-full-screen .portrait-warning {
+                display: flex !important;
+            }
+
+            :fullscreen #unity-container,
+            :-webkit-full-screen #unity-container,
+            :-moz-full-screen #unity-container {
+                display: none !important;
+            }
+        }
+
+        /* Landscape-only warning */
+        .landscape-only {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 1000;
+            color: white;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+        }
+
+        .landscape-only h2 {
+            color: #a0d2ff;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        .landscape-only p {
+            font-size: 18px;
+            max-width: 80%;
+            line-height: 1.5;
+        }
+
+        .rotate-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+            animation: rotate 2s infinite ease-in-out;
+        }
+
+        @keyframes rotate {
+            0%, 100% { transform: rotate(0deg); }
+            50% { transform: rotate(90deg); }
+        }
+
+        @media (max-width: 768px) and (orientation: portrait) {
+            :fullscreen .landscape-only,
+            :-webkit-full-screen .landscape-only,
+            :-moz-full-screen .landscape-only {
+                display: flex !important;
             }
         }
     </style>
@@ -1469,6 +1598,19 @@
     <!-- Starfield background -->
     <div class="stars" id="stars"></div>
 
+    <!-- Portrait mode warning -->
+    <div class="portrait-warning" style="display: none;">
+        <div>Please rotate your device to landscape mode for the best experience.</div>
+    </div>
+
+    <!-- Landscape-only warning for fullscreen portrait mode -->
+    <div class="landscape-only" style="display: none;">
+        <div class="rotate-icon">↻</div>
+        <h2>Landscape Mode Required</h2>
+        <p>Please rotate your device to landscape orientation to play in fullscreen mode.</p>
+        <p>The game requires a wider screen for optimal gameplay experience.</p>
+    </div>
+
     <div class="main-container">
         <!-- Header with title -->
         <div class="header">
@@ -1544,107 +1686,174 @@
         var canvas = document.querySelector("#unity-canvas");
         var loadingOverlay = document.querySelector("#loading-overlay");
         var fullscreenButton = document.querySelector("#fullscreen-button");
+        var landscapeOnlyWarning = document.querySelector(".landscape-only");
+        var portraitWarning = document.querySelector(".portrait-warning");
 
         // Move fullscreen button to top center
         fullscreenButton.style.left = '50%';
         fullscreenButton.style.transform = 'translateX(-50%)';
 
+        // Check orientation and show/hide warnings
+        function checkOrientation() {
+            const isPortrait = window.innerHeight > window.innerWidth;
+            const isFullscreen = document.fullscreenElement || 
+                                document.webkitFullscreenElement || 
+                                document.mozFullScreenElement;
+
+            if (isFullscreen && isPortrait) {
+                // In fullscreen portrait mode, show landscape warning
+                landscapeOnlyWarning.style.display = 'flex';
+                portraitWarning.style.display = 'none';
+                container.style.display = 'none';
+            } else if (isPortrait && !isFullscreen) {
+                // In normal portrait mode, show simple rotate message
+                portraitWarning.style.display = 'flex';
+                landscapeOnlyWarning.style.display = 'none';
+                container.style.display = 'flex';
+            } else {
+                // In landscape mode, hide warnings
+                portraitWarning.style.display = 'none';
+                landscapeOnlyWarning.style.display = 'none';
+                container.style.display = 'flex';
+            }
+        }
+
         fullscreenButton.addEventListener("click", () => {
             if (!document.fullscreenElement) {
-                container.requestFullscreen().catch(err => console.error("Fullscreen error:", err));
+                // Check orientation before entering fullscreen
+                if (window.innerHeight > window.innerWidth) {
+                    // Portrait mode - show warning
+                    landscapeOnlyWarning.style.display = 'flex';
+                    portraitWarning.style.display = 'none';
+                    container.style.display = 'none';
+                    return;
+                }
+                
+                // Landscape mode - proceed to fullscreen
+                container.requestFullscreen().catch(err => {
+                    console.error("Fullscreen error:", err);
+                    landscapeOnlyWarning.style.display = 'none';
+                    container.style.display = 'flex';
+                });
             } else {
                 document.exitFullscreen();
             }
         });
 
-        // Handle resize for regular (non-fullscreen) mode
-        function handleResize() {
-            const container = document.querySelector("#unity-container");
-            
-            // Only resize when not in fullscreen
-            if (!document.fullscreenElement && 
-                !document.webkitFullscreenElement && 
-                !document.mozFullScreenElement) {
-                
-                const gameArea = document.querySelector(".game-area");
-                const gameAreaWidth = gameArea.clientWidth;
-                
-                // Maintain 16:9 aspect ratio
-                const containerWidth = Math.min(1200, gameAreaWidth - 40); // 20px padding on each side
-                const containerHeight = containerWidth * (9/16);
-                
-                container.style.width = containerWidth + 'px';
-                container.style.height = containerHeight + 'px';
-                
-                // Center the canvas within the container
-                const canvas = document.querySelector("#unity-canvas");
-                canvas.style.width = '100%';
-                canvas.style.height = '100%';
-                canvas.style.objectFit = 'contain';
-            }
-        }
-
-        // Handle fullscreen change
-        function handleFullscreenChange() {
-            const container = document.querySelector("#unity-container");
-            const canvas = document.querySelector("#unity-canvas");
-            
-            if (document.fullscreenElement || 
-                document.webkitFullscreenElement || 
-                document.mozFullScreenElement) {
-                
-                // Fullscreen mode
-                container.style.width = '100vw';
-                container.style.height = '100vh';
-                container.style.maxWidth = '100vw';
-                container.style.maxHeight = '100vh';
-                container.style.margin = '0';
-                container.style.padding = '0';
-                
-                // Check if portrait mode
-                if (window.innerHeight > window.innerWidth) {
-                    // Portrait mode - rotate and maintain 16:9
-                    container.style.transform = 'rotate(90deg) translateY(-100%)';
-                    container.style.transformOrigin = 'top left';
-                    container.style.position = 'absolute';
-                    container.style.top = '0';
-                    container.style.left = '0';
-                    container.style.width = '100vh';
-                    container.style.height = '100vw';
-                } else {
-                    // Landscape mode
-                    container.style.transform = 'none';
-                    container.style.transformOrigin = 'initial';
-                    container.style.position = 'relative';
-                    container.style.top = 'auto';
-                    container.style.left = 'auto';
-                }
-                
-                canvas.style.width = '100%';
-                canvas.style.height = '100%';
-                canvas.style.objectFit = 'contain';
-                canvas.style.backgroundColor = '#000';
-            } else {
-                // Exit fullscreen - restore normal sizing
-                container.style.transform = 'none';
-                container.style.transformOrigin = 'initial';
-                container.style.position = 'relative';
-                container.style.top = 'auto';
-                container.style.left = 'auto';
-                setTimeout(handleResize, 100);
-            }
-        }
-
-        // Event listeners
-        window.addEventListener('load', handleResize);
-        window.addEventListener('resize', handleResize);
-        window.addEventListener('orientationchange', function() {
-            setTimeout(handleResize, 100);
+        // Handle orientation changes
+        window.addEventListener("orientationchange", function() {
+            setTimeout(function() {
+                checkOrientation();
+                handleResize();
+                applySafeAreaCompensation();
+            }, 100);
         });
 
-        document.addEventListener('fullscreenchange', handleFullscreenChange);
-        document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
-        document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+        // Handle resize and aspect ratio properly
+        function handleResize() {
+            const windowWidth = window.innerWidth;
+            const windowHeight = window.innerHeight;
+            const gameAspectRatio = 16 / 9;
+            const windowAspectRatio = windowWidth / windowHeight;
+
+            console.log(`Window: ${windowWidth}x${windowHeight}, Aspect: ${windowAspectRatio.toFixed(2)}`);
+
+            let targetWidth = windowWidth;
+            let targetHeight = windowHeight;
+
+            const compensation = 4;
+
+            if (windowAspectRatio > gameAspectRatio) {
+                // Window is wider than game aspect ratio (black bars on sides)
+                targetHeight = windowHeight - compensation;
+                targetWidth = targetHeight * gameAspectRatio;
+            } else {
+                // Window is taller than game aspect ratio (black bars on top/bottom)
+                targetWidth = windowWidth - compensation;
+                targetHeight = targetWidth / gameAspectRatio;
+            }
+
+            targetWidth = Math.max(targetWidth, 100);
+            targetHeight = Math.max(targetHeight, 100);
+
+            canvas.style.width = targetWidth + 'px';
+            canvas.style.height = targetHeight + 'px';
+
+            container.style.justifyContent = 'center';
+            container.style.alignItems = 'center';
+
+            console.log(`Adjusted size: ${targetWidth}x${targetHeight}`);
+            
+            // Add aspect ratio class for proper fullscreen behavior
+            if (windowAspectRatio !== gameAspectRatio) {
+                canvas.classList.add('aspect-ratio');
+            } else {
+                canvas.classList.remove('aspect-ratio');
+            }
+        }
+
+        function applySafeAreaCompensation() {
+            const safetyMargin = 2;
+
+            container.style.padding = safetyMargin + 'px';
+
+            canvas.style.maxWidth = `calc(100% - ${safetyMargin * 2}px)`;
+            canvas.style.maxHeight = `calc(100% - ${safetyMargin * 2}px)`;
+        }
+
+        window.addEventListener('load', function () {
+            checkOrientation();
+            handleResize();
+            applySafeAreaCompensation();
+        });
+        
+        window.addEventListener('resize', function () {
+            checkOrientation();
+            handleResize();
+            applySafeAreaCompensation();
+        });
+
+        document.addEventListener('fullscreenchange', function () {
+            setTimeout(function () {
+                checkOrientation();
+                handleResize();
+                if (document.fullscreenElement) {
+                    container.style.padding = '0';
+                    canvas.style.maxWidth = '100%';
+                    canvas.style.maxHeight = '100%';
+                } else {
+                    applySafeAreaCompensation();
+                }
+            }, 100);
+        });
+        
+        document.addEventListener('webkitfullscreenchange', function () {
+            setTimeout(function () {
+                checkOrientation();
+                handleResize();
+                if (document.webkitFullscreenElement) {
+                    container.style.padding = '0';
+                    canvas.style.maxWidth = '100%';
+                    canvas.style.maxHeight = '100%';
+                } else {
+                    applySafeAreaCompensation();
+                }
+            }, 100);
+        });
+        
+        document.addEventListener('mozfullscreenchange', function () {
+            setTimeout(function () {
+                checkOrientation();
+                handleResize();
+                if (document.mozFullScreenElement) {
+                    container.style.padding = '0';
+                    canvas.style.maxWidth = '100%';
+                    canvas.style.maxHeight = '100%';
+                } else {
+                    applySafeAreaCompensation();
+                }
+            }, 100);
+        });
 
         const possibleBuildPaths = [
             "Build/NeouWebGL.loader.js",
@@ -1680,7 +1889,11 @@
                     unityInstance = instance;
                     loadingOverlay.style.display = 'none';
                     console.log('Unity instance initialized');
-                    handleResize();
+                    setTimeout(function () {
+                        checkOrientation();
+                        handleResize();
+                        applySafeAreaCompensation();
+                    }, 100);
                 }).catch((error) => {
                     console.error("Unity initialization error:", error.message);
                     loadingOverlay.innerText = 'Failed to initialize the game. Please try again.';
