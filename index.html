@@ -6,8 +6,12 @@
     <meta http-equiv="Cross-Origin-Embedder-Policy" content="require-corp">
     <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
     <title>Neou.io | An Outer Worldly Adventure</title>
     <link rel="icon" href="data:;base64,iVBORw0KGgo="> <!-- Suppress favicon 404 -->
+    <link rel="apple-touch-icon" href="data:;base64,iVBORw0KGgo="> <!-- iOS icon -->
     <style>
         * {
             box-sizing: border-box;
@@ -287,6 +291,11 @@
             color: #a0d2ff;
         }
 
+        /* iOS-specific fixes */
+        .ios-fix {
+            /* iOS specific fixes */
+        }
+
         /* Mobile-specific adjustments */
         @media (max-width: 768px) {
             .content-wrapper {
@@ -366,6 +375,25 @@
                 .warning-icon {
                     font-size: 25px;
                     margin-bottom: 8px;
+                }
+            }
+
+            /* iOS specific fixes - maintain layout */
+            @supports (-webkit-touch-callout: none) {
+                /* iOS specific CSS */
+                body {
+                    -webkit-tap-highlight-color: transparent;
+                }
+                
+                #unity-container {
+                    /* iOS fullscreen compatibility */
+                    position: relative;
+                }
+                
+                #fullscreen-button {
+                    /* Make button more tappable on iOS */
+                    min-height: 44px;
+                    min-width: 44px;
                 }
             }
         }
@@ -1760,11 +1788,137 @@
         fullscreenButton.style.left = '50%';
         fullscreenButton.style.transform = 'translateX(-50%)';
 
-        fullscreenButton.addEventListener("click", () => {
-            if (!document.fullscreenElement) {
-                container.requestFullscreen().catch(err => console.error("Fullscreen error:", err));
+        // iOS Fullscreen Compatibility
+        function isIOS() {
+            return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        }
+
+        // Enhanced fullscreen function with iOS compatibility
+        function requestFullscreen(element) {
+            if (isIOS()) {
+                // iOS requires special handling
+                console.log('iOS device detected - using iOS fullscreen workaround');
+                
+                // Hide all UI elements for iOS
+                document.querySelector('.main-container').style.display = 'none';
+                document.querySelector('.header').style.display = 'none';
+                document.querySelector('.ad-side').style.display = 'none';
+                document.querySelector('.how-to-play').style.display = 'none';
+                landscapeWarning.style.display = 'none';
+                
+                // Make container fill the screen
+                container.style.position = 'fixed';
+                container.style.top = '0';
+                container.style.left = '0';
+                container.style.width = '100vw';
+                container.style.height = '100vh';
+                container.style.zIndex = '9999';
+                container.style.padding = '0';
+                
+                // Make canvas fill the container
+                canvas.style.width = '100%';
+                canvas.style.height = '100%';
+                canvas.style.maxWidth = '100%';
+                canvas.style.maxHeight = '100%';
+                
+                // Hide fullscreen button
+                fullscreenButton.style.display = 'none';
+                
+                // Lock orientation if possible
+                if (screen.orientation && screen.orientation.lock) {
+                    screen.orientation.lock('landscape').catch(e => {
+                        console.log('Orientation lock not supported:', e);
+                    });
+                }
+                
+                // Dispatch a custom event for Unity to know we're in fullscreen
+                window.dispatchEvent(new Event('ios-fullscreen'));
+                
+                return Promise.resolve();
             } else {
-                document.exitFullscreen();
+                // Standard fullscreen for other devices
+                if (element.requestFullscreen) {
+                    return element.requestFullscreen();
+                } else if (element.webkitRequestFullscreen) {
+                    return element.webkitRequestFullscreen();
+                } else if (element.mozRequestFullScreen) {
+                    return element.mozRequestFullScreen();
+                }
+                return Promise.reject(new Error('Fullscreen not supported'));
+            }
+        }
+
+        // Enhanced exit fullscreen function
+        function exitFullscreen() {
+            if (isIOS() && container.style.position === 'fixed') {
+                // iOS exit fullscreen
+                console.log('Exiting iOS fullscreen');
+                
+                // Restore all UI elements
+                document.querySelector('.main-container').style.display = 'flex';
+                document.querySelector('.header').style.display = 'block';
+                document.querySelector('.ad-side').style.display = 'flex';
+                document.querySelector('.how-to-play').style.display = 'block';
+                
+                // Restore container positioning
+                container.style.position = 'relative';
+                container.style.top = '';
+                container.style.left = '';
+                container.style.width = '';
+                container.style.height = '';
+                container.style.zIndex = '';
+                
+                // Restore canvas
+                canvas.style.width = '';
+                canvas.style.height = '';
+                
+                // Show fullscreen button
+                fullscreenButton.style.display = 'block';
+                
+                // Unlock orientation if possible
+                if (screen.orientation && screen.orientation.unlock) {
+                    screen.orientation.unlock();
+                }
+                
+                // Dispatch exit event
+                window.dispatchEvent(new Event('ios-exit-fullscreen'));
+                
+                // Re-check orientation warning
+                checkOrientation();
+                
+                // Handle resize
+                setTimeout(handleResize, 100);
+                
+                return Promise.resolve();
+            } else {
+                // Standard exit fullscreen
+                if (document.exitFullscreen) {
+                    return document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) {
+                    return document.webkitExitFullscreen();
+                } else if (document.mozCancelFullScreen) {
+                    return document.mozCancelFullScreen();
+                }
+                return Promise.reject(new Error('Exit fullscreen not supported'));
+            }
+        }
+
+        // Check if currently in fullscreen (including iOS pseudo-fullscreen)
+        function isFullscreen() {
+            if (isIOS() && container.style.position === 'fixed') {
+                return true;
+            }
+            return !!(document.fullscreenElement || 
+                     document.webkitFullscreenElement || 
+                     document.mozFullScreenElement);
+        }
+
+        // Enhanced fullscreen button click handler
+        fullscreenButton.addEventListener("click", () => {
+            if (!isFullscreen()) {
+                requestFullscreen(container).catch(err => console.error("Fullscreen error:", err));
+            } else {
+                exitFullscreen().catch(err => console.error("Exit fullscreen error:", err));
             }
         });
 
@@ -1795,8 +1949,11 @@
             targetWidth = Math.max(targetWidth, 100);
             targetHeight = Math.max(targetHeight, 100);
 
-            canvas.style.width = targetWidth + 'px';
-            canvas.style.height = targetHeight + 'px';
+            // Only adjust if not in iOS fullscreen mode
+            if (!(isIOS() && container.style.position === 'fixed')) {
+                canvas.style.width = targetWidth + 'px';
+                canvas.style.height = targetHeight + 'px';
+            }
 
             container.style.justifyContent = 'center';
             container.style.alignItems = 'center';
@@ -1814,10 +1971,13 @@
         function applySafeAreaCompensation() {
             const safetyMargin = 2;
 
-            container.style.padding = safetyMargin + 'px';
+            // Only apply safe area compensation if not in iOS fullscreen
+            if (!(isIOS() && container.style.position === 'fixed')) {
+                container.style.padding = safetyMargin + 'px';
 
-            canvas.style.maxWidth = `calc(100% - ${safetyMargin * 2}px)`;
-            canvas.style.maxHeight = `calc(100% - ${safetyMargin * 2}px)`;
+                canvas.style.maxWidth = `calc(100% - ${safetyMargin * 2}px)`;
+                canvas.style.maxHeight = `calc(100% - ${safetyMargin * 2}px)`;
+            }
         }
 
         window.addEventListener('load', function () {
@@ -1837,6 +1997,7 @@
             }, 100);
         });
 
+        // Standard fullscreen change handlers
         document.addEventListener('fullscreenchange', function () {
             setTimeout(function () {
                 handleResize();
@@ -1910,6 +2071,15 @@
                     unityInstance = instance;
                     loadingOverlay.style.display = 'none';
                     console.log('Unity instance initialized');
+                    
+                    // iOS specific initialization
+                    if (isIOS()) {
+                        console.log('iOS device detected - applying iOS optimizations');
+                        // Ensure canvas has proper touch handling for iOS
+                        canvas.style.webkitTouchCallout = 'none';
+                        canvas.style.webkitUserSelect = 'none';
+                    }
+                    
                     setTimeout(function () {
                         handleResize();
                         applySafeAreaCompensation();
