@@ -135,7 +135,7 @@
             text-orientation: mixed;
         }
 
-        /* Game container - FIXED ASPECT RATIO */
+        /* Game container */
         .game-area {
             flex: 1;
             display: flex;
@@ -146,21 +146,18 @@
 
         #unity-container {
             width: 100%;
-            max-width: 1200px; /* Maximum width for desktop */
+            max-width: 1200px;
             position: relative;
             background: #000;
             border-radius: 8px;
             overflow: hidden;
             box-shadow: 0 0 20px rgba(80, 120, 255, 0.3);
-            /* 16:9 Aspect Ratio Container */
-            aspect-ratio: 16 / 9;
             margin: 0 auto;
         }
 
         #unity-canvas {
             width: 100%;
             height: 100%;
-            object-fit: contain;
             display: block;
             background: #000;
         }
@@ -255,30 +252,20 @@
                 font-size: 10px;
             }
 
-            /* On mobile, make container take most of the width but maintain aspect ratio */
+            /* On mobile, make container take most of the width */
             #unity-container {
                 max-width: 100%;
-                aspect-ratio: 16 / 9;
-            }
-
-            /* Force portrait mode for mobile when not in fullscreen */
-            @media (orientation: portrait) {
-                #unity-container {
-                    max-width: 100vw;
-                    aspect-ratio: 9 / 16; /* Portrait aspect ratio */
-                }
             }
         }
 
-        /* Enhanced fullscreen styles with forced landscape */
+        /* Fullscreen styles */
         :fullscreen #unity-container,
         :-webkit-full-screen #unity-container,
         :-moz-full-screen #unity-container {
             width: 100vw !important;
             height: 100vh !important;
-            max-width: 100vw !important;
-            max-height: 100vh !important;
-            aspect-ratio: unset !important;
+            max-width: none !important;
+            border-radius: 0 !important;
             margin: 0 !important;
             padding: 0 !important;
         }
@@ -288,31 +275,6 @@
         :-moz-full-screen #unity-canvas {
             width: 100% !important;
             height: 100% !important;
-            object-fit: contain !important;
-        }
-
-        /* Force landscape orientation in fullscreen */
-        @media screen and (orientation: portrait) {
-            :fullscreen #unity-container,
-            :-webkit-full-screen #unity-container,
-            :-moz-full-screen #unity-container {
-                transform: rotate(90deg) translateY(-100%);
-                transform-origin: top left;
-                width: 100vh !important;
-                height: 100vw !important;
-                position: fixed !important;
-                top: 0;
-                left: 0;
-            }
-            
-            :fullscreen #unity-canvas,
-            :-webkit-full-screen #unity-canvas,
-            :-moz-full-screen #unity-canvas {
-                width: 100% !important;
-                height: 100% !important;
-                transform: rotate(-90deg) translateX(-100%);
-                transform-origin: top left;
-            }
         }
 
         /* Hide fullscreen button when in fullscreen mode */
@@ -334,7 +296,7 @@
             }
         }
     </style>
-    <!-- Use Firebase modular API -->
+    <!-- Firebase script remains exactly the same as in your original -->
     <script type="module">
         // Your existing Firebase code remains exactly the same
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js';
@@ -1557,60 +1519,43 @@
         fullscreenButton.style.left = '50%';
         fullscreenButton.style.transform = 'translateX(-50%)';
 
-        // Fullscreen button handler with landscape orientation
+        // Fullscreen button handler - SIMPLE VERSION
         fullscreenButton.addEventListener("click", () => {
             if (!document.fullscreenElement) {
-                // Request fullscreen
                 container.requestFullscreen().catch(err => console.error("Fullscreen error:", err));
-                
-                // Check if we need to rotate to landscape
-                checkAndRotateForFullscreen();
             } else {
                 document.exitFullscreen();
             }
         });
 
-        // Function to check orientation and rotate if needed
-        function checkAndRotateForFullscreen() {
-            // Check if screen orientation API is available
-            if (screen.orientation && screen.orientation.lock) {
-                // Lock to landscape when entering fullscreen
-                screen.orientation.lock('landscape').catch(err => {
-                    console.log('Screen orientation lock not supported:', err);
-                });
-            }
-            
-            // For iOS devices
-            if (window.orientation === undefined) {
-                // iOS doesn't support screen.orientation API fully
-                if (window.innerHeight > window.innerWidth) {
-                    // We're in portrait, show rotation message
-                    setTimeout(() => {
-                        alert("Please rotate your device to landscape mode for the best experience!");
-                    }, 500);
-                }
-            }
-        }
-
-        // Handle resize for proper aspect ratio
+        // Handle resize for proper aspect ratio and black bars
         function handleResize() {
             const isFullscreen = document.fullscreenElement || 
                                 document.webkitFullscreenElement || 
                                 document.mozFullScreenElement;
             
             if (isFullscreen) {
-                // In fullscreen, let CSS handle it with forced landscape
+                // In fullscreen, fill the entire screen
                 canvas.style.width = '100%';
                 canvas.style.height = '100%';
-            } else {
-                // In normal mode, use the 16:9 aspect ratio container
-                // CSS aspect-ratio property handles this automatically
-                const containerWidth = container.offsetWidth;
-                const containerHeight = container.offsetHeight;
+                canvas.style.objectFit = 'contain'; // This creates black bars to maintain aspect ratio
                 
-                // Make canvas fill the container
-                canvas.style.width = containerWidth + 'px';
-                canvas.style.height = containerHeight + 'px';
+                // Set container to full screen
+                container.style.width = '100vw';
+                container.style.height = '100vh';
+                container.style.maxWidth = 'none';
+            } else {
+                // In normal mode, maintain 16:9 aspect ratio with max width
+                const containerWidth = Math.min(container.parentElement.offsetWidth, 1200);
+                const containerHeight = (containerWidth * 9) / 16;
+                
+                container.style.width = containerWidth + 'px';
+                container.style.height = containerHeight + 'px';
+                
+                // Canvas fills container
+                canvas.style.width = '100%';
+                canvas.style.height = '100%';
+                canvas.style.objectFit = 'contain';
             }
             
             console.log(`Container: ${container.offsetWidth}x${container.offsetHeight}, Canvas: ${canvas.offsetWidth}x${canvas.offsetHeight}`);
@@ -1619,21 +1564,12 @@
         // Listen for fullscreen changes
         document.addEventListener('fullscreenchange', function() {
             setTimeout(handleResize, 100);
-            if (document.fullscreenElement) {
-                checkAndRotateForFullscreen();
-            }
         });
         document.addEventListener('webkitfullscreenchange', function() {
             setTimeout(handleResize, 100);
-            if (document.webkitFullscreenElement) {
-                checkAndRotateForFullscreen();
-            }
         });
         document.addEventListener('mozfullscreenchange', function() {
             setTimeout(handleResize, 100);
-            if (document.mozFullScreenElement) {
-                checkAndRotateForFullscreen();
-            }
         });
 
         // Handle orientation changes
