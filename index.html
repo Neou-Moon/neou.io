@@ -22,21 +22,19 @@
             font-family: Arial, sans-serif;
             color: white;
             position: relative;
-            /* Prevent portrait orientation */
-            transform: rotate(0deg);
         }
 
-        /* Space background with stars */
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(ellipse at center, rgba(8, 15, 30, 0.8) 0%, rgba(0, 0, 0, 1) 70%), url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"><defs><radialGradient id="grad"><stop offset="0%" stop-color="%23000B1A"/><stop offset="100%" stop-color="%23000000"/></radialGradient></defs><rect width="100%" height="100%" fill="url(%23grad)"/></svg>');
-            z-index: -2;
-        }
+            /* Space background with stars */
+            body::before {
+                content: '';
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: radial-gradient(ellipse at center, rgba(8, 15, 30, 0.8) 0%, rgba(0, 0, 0, 1) 70%), url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"><defs><radialGradient id="grad"><stop offset="0%" stop-color="%23000B1A"/><stop offset="100%" stop-color="%23000000"/></radialGradient></defs><rect width="100%" height="100%" fill="url(%23grad)"/></svg>');
+                z-index: -2;
+            }
 
         /* Starfield effect */
         .stars {
@@ -148,15 +146,18 @@
 
         #unity-container {
             width: 100%;
-            max-width: 1200px;
             position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             background: #000;
             border-radius: 8px;
             overflow: hidden;
             box-shadow: 0 0 20px rgba(80, 120, 255, 0.3);
-            margin: 0 auto;
-            /* Force 16:9 aspect ratio */
+            /* 16:9 aspect ratio container */
             aspect-ratio: 16 / 9;
+            max-width: 100%;
+            max-height: calc(100vh - 200px); /* Account for header and padding */
         }
 
         #unity-canvas {
@@ -164,22 +165,24 @@
             height: 100%;
             display: block;
             background: #000;
+            /* Ensure canvas maintains 16:9 */
+            object-fit: contain;
         }
 
         /* How to play image */
         .how-to-play {
             margin-top: 15px;
             text-align: center;
-            max-width: 1200px;
             width: 100%;
+            max-width: 800px;
         }
 
-        .how-to-play img {
-            max-width: 100%;
-            height: auto;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(80, 120, 255, 0.5);
-        }
+            .how-to-play img {
+                max-width: 100%;
+                height: auto;
+                border-radius: 8px;
+                box-shadow: 0 0 10px rgba(80, 120, 255, 0.5);
+            }
 
         /* Loading and fullscreen button styles */
         #loading-overlay {
@@ -229,6 +232,8 @@
                 flex-direction: row;
                 flex: 0 0 auto;
                 padding: 5px 0;
+                width: 100%;
+                justify-content: center;
             }
 
             .ad-top {
@@ -256,76 +261,34 @@
                 font-size: 10px;
             }
 
-            /* On mobile, make container take full width */
             #unity-container {
-                max-width: 100%;
-                width: 100%;
-                aspect-ratio: 16 / 9;
-            }
-            
-            /* Portrait warning message */
-            .portrait-warning {
-                display: none;
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: rgba(0, 0, 0, 0.9);
-                z-index: 1000;
-                justify-content: center;
-                align-items: center;
-                text-align: center;
-                padding: 20px;
-                color: white;
-                font-size: 1.2rem;
-                flex-direction: column;
-            }
-            
-            .portrait-warning.show {
-                display: flex;
-            }
-            
-            .portrait-warning h3 {
-                font-size: 1.8rem;
-                margin-bottom: 20px;
-                color: #a0d2ff;
-            }
-            
-            .rotate-icon {
-                font-size: 4rem;
-                margin-bottom: 20px;
-                animation: rotate 2s infinite;
-            }
-            
-            @keyframes rotate {
-                0% { transform: rotate(0deg); }
-                100% { transform: rotate(90deg); }
+                /* On mobile, maintain 16:9 but adjust max height */
+                max-height: calc(100vh - 150px);
+                margin: 0 auto;
             }
         }
 
-        /* Fullscreen styles */
+        /* Enhanced fullscreen styles with landscape lock */
         :fullscreen #unity-container,
         :-webkit-full-screen #unity-container,
         :-moz-full-screen #unity-container {
             width: 100vw !important;
             height: 100vh !important;
-            max-width: none !important;
-            border-radius: 0 !important;
-            margin: 0 !important;
-            padding: 0 !important;
             aspect-ratio: unset !important;
-            position: fixed !important;
-            top: 0 !important;
-            left: 0 !important;
+            max-width: none !important;
+            max-height: none !important;
+            padding: 0 !important;
+            border-radius: 0 !important;
         }
 
         :fullscreen #unity-canvas,
         :-webkit-full-screen #unity-canvas,
         :-moz-full-screen #unity-canvas {
-            width: 100% !important;
-            height: 100% !important;
-            object-fit: contain !important; /* This creates black bars */
+            width: 100vw !important;
+            height: 100vh !important;
+            max-width: 100vw !important;
+            max-height: 100vh !important;
+            object-fit: contain !important;
         }
 
         /* Hide fullscreen button when in fullscreen mode */
@@ -335,19 +298,55 @@
             display: none;
         }
 
-        /* Support for safe area insets on modern browsers */
-        @supports (padding: max(0px)) {
-            :fullscreen #unity-container,
-            :-webkit-full-screen #unity-container,
-            :-moz-full-screen #unity-container {
-                padding-top: env(safe-area-inset-top) !important;
-                padding-bottom: env(safe-area-inset-bottom) !important;
-                padding-left: env(safe-area-inset-left) !important;
-                padding-right: env(safe-area-inset-right) !important;
-            }
+        /* Portrait orientation warning for fullscreen */
+        .portrait-warning {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+
+        .portrait-warning-content {
+            max-width: 500px;
+            padding: 30px;
+            background: rgba(30, 30, 60, 0.9);
+            border-radius: 10px;
+            border: 2px solid rgba(100, 150, 255, 0.5);
+        }
+
+        .portrait-warning h2 {
+            color: #ff6b6b;
+            margin-bottom: 20px;
+        }
+
+        .portrait-warning p {
+            font-size: 18px;
+            line-height: 1.6;
+            margin-bottom: 25px;
+        }
+
+        .rotate-icon {
+            font-size: 48px;
+            margin: 20px 0;
+            animation: rotate 2s infinite ease-in-out;
+        }
+
+        @keyframes rotate {
+            0%, 100% { transform: rotate(0deg); }
+            50% { transform: rotate(90deg); }
         }
     </style>
-    <!-- Firebase script remains exactly the same as in your original -->
+    <!-- Use Firebase modular API -->
     <script type="module">
         // Your existing Firebase code remains exactly the same
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js';
@@ -1489,13 +1488,15 @@
 <body>
     <!-- Starfield background -->
     <div class="stars" id="stars"></div>
-
-    <!-- Portrait Warning for Mobile -->
-    <div id="portrait-warning" class="portrait-warning">
-        <div class="rotate-icon">↻</div>
-        <h3>Please Rotate Your Device</h3>
-        <p>This game requires landscape orientation for the best experience.</p>
-        <p>Please rotate your device to landscape mode.</p>
+    
+    <!-- Portrait orientation warning -->
+    <div class="portrait-warning" id="portrait-warning">
+        <div class="portrait-warning-content">
+            <h2>Rotate Your Device</h2>
+            <div class="rotate-icon">📱</div>
+            <p>This game requires landscape mode for the best experience.</p>
+            <p>Please rotate your device to continue playing.</p>
+        </div>
     </div>
 
     <div class="main-container">
@@ -1575,26 +1576,96 @@
         var fullscreenButton = document.querySelector("#fullscreen-button");
         var portraitWarning = document.querySelector("#portrait-warning");
 
+        // Check and handle orientation
+        function checkOrientation() {
+            const isPortrait = window.innerHeight > window.innerWidth;
+            const isFullscreen = document.fullscreenElement || 
+                                document.webkitFullscreenElement || 
+                                document.mozFullScreenElement;
+            
+            if (isFullscreen && isPortrait) {
+                portraitWarning.style.display = 'flex';
+            } else {
+                portraitWarning.style.display = 'none';
+            }
+        }
+
         // Move fullscreen button to top center
         fullscreenButton.style.left = '50%';
         fullscreenButton.style.transform = 'translateX(-50%)';
 
-        // Fullscreen button handler
         fullscreenButton.addEventListener("click", () => {
             if (!document.fullscreenElement) {
-                // Try to lock orientation to landscape before entering fullscreen
-                lockOrientation();
                 container.requestFullscreen().catch(err => console.error("Fullscreen error:", err));
             } else {
                 document.exitFullscreen();
             }
         });
 
-        // Function to lock orientation to landscape
+        // Handle resize and aspect ratio properly
+        function handleResize() {
+            const windowWidth = window.innerWidth;
+            const windowHeight = window.innerHeight;
+            
+            // Force 16:9 aspect ratio for the container
+            const targetWidth = windowWidth;
+            const targetHeight = targetWidth * (9/16);
+            
+            // If the calculated height is taller than available space, scale down
+            const maxHeight = windowHeight - 200; // Account for header and padding
+            const finalHeight = Math.min(targetHeight, maxHeight);
+            const finalWidth = finalHeight * (16/9);
+            
+            container.style.width = finalWidth + 'px';
+            container.style.height = finalHeight + 'px';
+            
+            console.log(`Container: ${finalWidth}x${finalHeight}, Window: ${windowWidth}x${windowHeight}`);
+        }
+
+        window.addEventListener('load', function () {
+            handleResize();
+            checkOrientation();
+        });
+        
+        window.addEventListener('resize', function () {
+            handleResize();
+            checkOrientation();
+        });
+        
+        window.addEventListener('orientationchange', function () {
+            setTimeout(function () {
+                handleResize();
+                checkOrientation();
+            }, 100);
+        });
+
+        // Fullscreen change handlers
+        document.addEventListener('fullscreenchange', function () {
+            setTimeout(function () {
+                handleResize();
+                checkOrientation();
+            }, 100);
+        });
+        
+        document.addEventListener('webkitfullscreenchange', function () {
+            setTimeout(function () {
+                handleResize();
+                checkOrientation();
+            }, 100);
+        });
+        
+        document.addEventListener('mozfullscreenchange', function () {
+            setTimeout(function () {
+                handleResize();
+                checkOrientation();
+            }, 100);
+        });
+
+        // Prevent portrait orientation in fullscreen
         function lockOrientation() {
             if (screen.orientation && screen.orientation.lock) {
-                screen.orientation.lock('landscape').catch(err => {
-                    console.log('Screen orientation lock not supported:', err);
+                screen.orientation.lock('landscape').catch(function(error) {
+                    console.log('Orientation lock failed: ', error);
                 });
             } else if (screen.lockOrientation) {
                 screen.lockOrientation('landscape');
@@ -1605,92 +1676,6 @@
             }
         }
 
-        // Function to check orientation and show/hide portrait warning
-        function checkOrientation() {
-            const isMobile = window.innerWidth <= 768;
-            
-            if (!isMobile) {
-                portraitWarning.classList.remove('show');
-                return;
-            }
-            
-            const isPortrait = window.innerHeight > window.innerWidth;
-            const isFullscreen = document.fullscreenElement || 
-                                document.webkitFullscreenElement || 
-                                document.mozFullScreenElement;
-            
-            if (isPortrait && !isFullscreen) {
-                portraitWarning.classList.add('show');
-            } else {
-                portraitWarning.classList.remove('show');
-            }
-        }
-
-        // Handle resize for proper aspect ratio and black bars
-        function handleResize() {
-            const isFullscreen = document.fullscreenElement || 
-                                document.webkitFullscreenElement || 
-                                document.mozFullScreenElement;
-            
-            // Check orientation first
-            checkOrientation();
-            
-            if (isFullscreen) {
-                // In fullscreen, fill the entire screen with black bars
-                container.style.width = '100vw';
-                container.style.height = '100vh';
-                canvas.style.width = '100%';
-                canvas.style.height = '100%';
-                canvas.style.objectFit = 'contain'; // This creates black bars
-                
-                // Try to lock orientation in fullscreen
-                lockOrientation();
-            } else {
-                // In normal mode, maintain 16:9 aspect ratio with CSS aspect-ratio property
-                // CSS handles this automatically with aspect-ratio: 16/9
-                canvas.style.width = '100%';
-                canvas.style.height = '100%';
-                canvas.style.objectFit = 'contain';
-            }
-            
-            console.log(`Window: ${window.innerWidth}x${window.innerHeight}, Container: ${container.offsetWidth}x${container.offsetHeight}`);
-        }
-
-        // Listen for fullscreen changes
-        document.addEventListener('fullscreenchange', function() {
-            setTimeout(handleResize, 100);
-            checkOrientation();
-        });
-        document.addEventListener('webkitfullscreenchange', function() {
-            setTimeout(handleResize, 100);
-            checkOrientation();
-        });
-        document.addEventListener('mozfullscreenchange', function() {
-            setTimeout(handleResize, 100);
-            checkOrientation();
-        });
-
-        // Handle orientation changes
-        window.addEventListener('orientationchange', function() {
-            setTimeout(function() {
-                handleResize();
-                checkOrientation();
-            }, 300);
-        });
-
-        // Handle resize events
-        window.addEventListener('resize', function() {
-            handleResize();
-            checkOrientation();
-        });
-
-        // Initial setup
-        window.addEventListener('load', function() {
-            handleResize();
-            checkOrientation();
-        });
-
-        // Load Unity
         const possibleBuildPaths = [
             "Build/NeouWebGL.loader.js",
             "Build/neouwebgl.loader.js",
@@ -1745,7 +1730,6 @@
 
         tryLoadUnityScript();
 
-        // Resume audio context on first click
         document.addEventListener('click', () => {
             if (typeof AudioContext !== 'undefined' && unityInstance && unityInstance.Module.audioContext) {
                 unityInstance.Module.audioContext.resume().then(() => console.log('Audio context resumed'));
