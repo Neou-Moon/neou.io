@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="en-us">
 <head>
     <meta charset="utf-8">
@@ -362,17 +363,17 @@
             background: #000;
         }
 
-        /* NEW: 16:9 Container for normal mode */
+        /* NEW: Fixed 1920x1080 Container with aspect ratio preservation */
         #unity-container {
             width: 100%;
-            max-width: 100%;
+            max-width: 1920px;
             position: relative;
             background: #000;
             border-radius: 8px;
             overflow: hidden;
             box-shadow: 0 0 20px rgba(80, 120, 255, 0.3);
             padding: 2px;
-            /* 16:9 Aspect Ratio Container */
+            /* 16:9 Aspect Ratio Container - FIXED for 1920x1080 */
             aspect-ratio: 16 / 9;
         }
 
@@ -390,6 +391,35 @@
                 left: 0;
                 width: 100%;
                 height: 100%;
+            }
+        }
+
+        /* Fixed fullscreen styling - NO STRETCHING */
+        body:fullscreen #unity-container,
+        body:-webkit-full-screen #unity-container,
+        body:-moz-full-screen #unity-container,
+        body:-ms-fullscreen #unity-container {
+            aspect-ratio: unset;
+            width: auto !important;
+            height: auto !important;
+            max-width: 100vw !important;
+            max-height: 100vh !important;
+            border-radius: 0;
+            box-shadow: none;
+            padding: 0;
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        @supports not (aspect-ratio: 16 / 9) {
+            body:fullscreen #unity-container,
+            body:-webkit-full-screen #unity-container,
+            body:-moz-full-screen #unity-container,
+            body:-ms-fullscreen #unity-container {
+                height: auto;
+                padding-bottom: 0;
             }
         }
 
@@ -426,12 +456,26 @@
             height: 100vh;
         }
 
+        /* FIXED: Canvas maintains aspect ratio with black borders */
         #unity-canvas {
             width: 100%;
             height: 100%;
             object-fit: contain;
             display: block;
             background: #000;
+        }
+
+        /* Fullscreen canvas - FIXED ASPECT RATIO */
+        body:fullscreen #unity-canvas,
+        body:-webkit-full-screen #unity-canvas,
+        body:-moz-full-screen #unity-canvas,
+        body:-ms-fullscreen #unity-canvas {
+            width: auto !important;
+            height: auto !important;
+            max-width: 100vw !important;
+            max-height: 100vh !important;
+            object-fit: contain !important;
+            background: #000 !important;
         }
 
         body.pwa-fullscreen-mode #unity-canvas {
@@ -691,6 +735,32 @@
             .ios-install-button,
             .ios-dismiss-button {
                 width: 100%;
+            }
+            
+            /* Force landscape orientation on mobile fullscreen */
+            @media (orientation: portrait) {
+                body:fullscreen #unity-container,
+                body:-webkit-full-screen #unity-container,
+                body:-moz-full-screen #unity-container,
+                body:-ms-fullscreen #unity-container {
+                    transform: rotate(90deg);
+                    transform-origin: center center;
+                    width: 100vh !important;
+                    height: 100vw !important;
+                    position: absolute;
+                    top: 50%;
+                    left: 50%;
+                    margin-top: -50vw;
+                    margin-left: -50vh;
+                }
+                
+                body:fullscreen #unity-canvas,
+                body:-webkit-full-screen #unity-canvas,
+                body:-moz-full-screen #unity-canvas,
+                body:-ms-fullscreen #unity-canvas {
+                    width: 100vh !important;
+                    height: 100vw !important;
+                }
             }
         }
     </style>
@@ -2104,7 +2174,13 @@
             }
             
             // Desktop/Android - use standard fullscreen API
-            toggleStandardFullscreen();
+            await toggleStandardFullscreen();
+            
+            // Force landscape on mobile devices after fullscreen
+            if (window.innerWidth < window.innerHeight && window.innerWidth <= 768) {
+                console.log('Mobile device in portrait mode, forcing landscape calculation');
+                handleResize();
+            }
         }
 
         // ============================================================================
@@ -2185,13 +2261,58 @@
             const windowWidth = window.innerWidth;
             const windowHeight = window.innerHeight;
             
-            // Only apply complex resizing in PWA fullscreen mode
-            if (isPwaFullscreen && isStandalonePWA()) {
+            // Check if we're in standard fullscreen mode (not PWA)
+            const isStandardFullscreen = document.fullscreenElement || 
+                                         document.webkitFullscreenElement || 
+                                         document.mozFullScreenElement || 
+                                         document.msFullscreenElement;
+            
+            if (isStandardFullscreen && !isStandalonePWA()) {
+                // STANDARD FULLSCREEN MODE (Android/Desktop)
+                const gameAspectRatio = 16 / 9;
+                const windowAspectRatio = windowWidth / windowHeight;
+                
+                let targetWidth, targetHeight;
+                
+                // Calculate proper size based on aspect ratio
+                if (windowAspectRatio > gameAspectRatio) {
+                    // Window is wider than game (pillarbox - black bars on sides)
+                    targetHeight = windowHeight;
+                    targetWidth = targetHeight * gameAspectRatio;
+                } else {
+                    // Window is taller than game (letterbox - black bars top/bottom)
+                    targetWidth = windowWidth;
+                    targetHeight = targetWidth / gameAspectRatio;
+                }
+                
+                // Center the canvas
+                canvas.style.width = targetWidth + 'px';
+                canvas.style.height = targetHeight + 'px';
+                canvas.style.margin = 'auto';
+                canvas.style.position = 'absolute';
+                canvas.style.top = '0';
+                canvas.style.bottom = '0';
+                canvas.style.left = '0';
+                canvas.style.right = '0';
+                canvas.style.objectFit = 'contain';
+                
+                // Update Unity if available
+                if (unityInstance && unityInstance.Module && unityInstance.Module.SetCanvasSize) {
+                    try {
+                        unityInstance.Module.SetCanvasSize(targetWidth, targetHeight);
+                    } catch (e) {
+                        console.log('Could not set Unity canvas size');
+                    }
+                }
+                
+                console.log(`Standard Fullscreen: ${targetWidth}x${targetHeight} (16:9 maintained)`);
+                
+            } else if (isPwaFullscreen && isStandalonePWA()) {
+                // PWA FULLSCREEN MODE
                 const gameAspectRatio = 16 / 9;
                 const windowAspectRatio = windowWidth / windowHeight;
                 
                 const canvasWrapper = document.querySelector('.canvas-wrapper');
-                const canvas = document.querySelector("#unity-canvas");
                 
                 let targetWidth, targetHeight;
                 
@@ -2234,6 +2355,7 @@
                 // Set canvas size
                 canvas.style.width = targetWidth + 'px';
                 canvas.style.height = targetHeight + 'px';
+                canvas.style.margin = 'auto';
                 
                 // Update Unity if available
                 if (unityInstance && unityInstance.Module && unityInstance.Module.SetCanvasSize) {
@@ -2246,17 +2368,18 @@
                 
                 console.log(`PWA Fullscreen resized to: ${targetWidth}x${targetHeight}, Window: ${windowWidth}x${windowHeight}`);
             } else {
-                // Normal mode - rely on CSS aspect-ratio container
-                const canvas = document.querySelector("#unity-canvas");
-                const container = document.querySelector("#unity-container");
-                
-                // Reset canvas to fill container
+                // NORMAL MODE - rely on CSS aspect-ratio container
                 canvas.style.width = '100%';
                 canvas.style.height = '100%';
+                canvas.style.margin = '0';
+                canvas.style.position = 'relative';
+                canvas.style.objectFit = 'contain';
                 
                 // Clear letterbox classes
                 const canvasWrapper = document.querySelector('.canvas-wrapper');
-                canvasWrapper.classList.remove('letterbox-vertical', 'letterbox-horizontal');
+                if (canvasWrapper) {
+                    canvasWrapper.classList.remove('letterbox-vertical', 'letterbox-horizontal');
+                }
                 
                 // Update Unity if available
                 if (unityInstance && unityInstance.Module && unityInstance.Module.SetCanvasSize) {
@@ -2337,9 +2460,18 @@
         });
 
         // Fullscreen change handlers for standard fullscreen
-        document.addEventListener('fullscreenchange', handleResize);
-        document.addEventListener('webkitfullscreenchange', handleResize);
-        document.addEventListener('mozfullscreenchange', handleResize);
+        document.addEventListener('fullscreenchange', function() {
+            setTimeout(handleResize, 100);
+        });
+        document.addEventListener('webkitfullscreenchange', function() {
+            setTimeout(handleResize, 100);
+        });
+        document.addEventListener('mozfullscreenchange', function() {
+            setTimeout(handleResize, 100);
+        });
+        document.addEventListener('MSFullscreenChange', function() {
+            setTimeout(handleResize, 100);
+        });
 
         // ============================================================================
         // UNITY LOADING
