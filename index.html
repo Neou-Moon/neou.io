@@ -220,18 +220,19 @@
             line-height: 1.1; /* Very tight line height */
         }
 
-        /* Landscape Warning Popup */
+        /* Landscape Warning Popup - MOVED TO BOTTOM */
         #landscape-warning {
             display: none;
             position: fixed;
-            top: 20px;
-            right: 20px;
-            width: 300px;
-            max-width: 90%;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 400px;
             background: rgba(20, 30, 60, 0.95);
             border: 2px solid rgba(100, 150, 255, 0.5);
             border-radius: 10px;
-            padding: 20px;
+            padding: 15px;
             z-index: 1000;
             box-shadow: 0 0 20px rgba(80, 120, 255, 0.5);
             backdrop-filter: blur(10px);
@@ -241,11 +242,11 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
         }
 
         .warning-title {
-            font-size: 18px;
+            font-size: 16px;
             font-weight: bold;
             color: #a0d2ff;
             margin: 0;
@@ -256,14 +257,15 @@
             color: white;
             border: none;
             border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            font-size: 20px;
+            width: 25px;
+            height: 25px;
+            font-size: 16px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
             transition: background 0.3s;
+            flex-shrink: 0;
         }
 
         .close-warning:hover {
@@ -274,12 +276,13 @@
             font-size: 14px;
             line-height: 1.5;
             color: #e0e0ff;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
+            text-align: center;
         }
 
         .warning-icon {
             text-align: center;
-            font-size: 40px;
+            font-size: 30px;
             margin-bottom: 10px;
             color: #a0d2ff;
         }
@@ -344,6 +347,27 @@
                     display: none !important;
                 }
             }
+
+            /* Adjust warning position for very small screens */
+            @media (max-height: 600px) {
+                #landscape-warning {
+                    bottom: 10px;
+                    padding: 12px;
+                }
+                
+                .warning-title {
+                    font-size: 14px;
+                }
+                
+                .warning-content {
+                    font-size: 12px;
+                }
+                
+                .warning-icon {
+                    font-size: 25px;
+                    margin-bottom: 8px;
+                }
+            }
         }
 
         /* Enhanced fullscreen styles with safe area support */
@@ -372,6 +396,10 @@
                 padding-bottom: max(2px, env(safe-area-inset-bottom));
                 padding-left: max(2px, env(safe-area-inset-left));
                 padding-right: max(2px, env(safe-area-inset-right));
+            }
+            
+            #landscape-warning {
+                bottom: max(20px, env(safe-area-inset-bottom));
             }
         }
 
@@ -1609,7 +1637,7 @@
     <!-- Starfield background -->
     <div class="stars" id="stars"></div>
 
-    <!-- Landscape Warning Popup -->
+    <!-- Landscape Warning Popup - NOW AT BOTTOM -->
     <div id="landscape-warning">
         <div class="warning-header">
             <h3 class="warning-title">📱 Landscape Mode</h3>
