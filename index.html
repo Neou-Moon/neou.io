@@ -167,7 +167,7 @@
             background: #000;
             /* Ensure no scaling beyond safe boundaries */
             max-width: calc(100% - 4px);
-            max-height: calc(100% - 4px);
+            max-height = calc(100% - 4px);
         }
 
         /* How to play image */
@@ -400,6 +400,7 @@
             text-align: center;
             padding: 20px;
             font-family: Arial, sans-serif;
+            cursor: pointer; /* Make entire warning clickable */
         }
 
         .landscape-warning.active {
@@ -446,6 +447,7 @@
             justify-content: center;
             align-items: center;
             transition: all 0.3s ease;
+            z-index: 10000; /* Make sure X button is above the warning */
         }
 
         .close-button:hover {
@@ -1729,10 +1731,21 @@
             landscapeWarning.classList.add('active');
         }
 
-        // Close warning button handler
-        closeWarningButton.addEventListener('click', function() {
+        // Function to dismiss the warning
+        function dismissWarning() {
             landscapeWarning.classList.remove('active');
             localStorage.setItem('landscapeWarningDismissed', 'true');
+        }
+
+        // Close warning button handler
+        closeWarningButton.addEventListener('click', function(event) {
+            event.stopPropagation(); // Prevent the click from bubbling to the parent
+            dismissWarning();
+        });
+
+        // Make the entire warning clickable to close it
+        landscapeWarning.addEventListener('click', function() {
+            dismissWarning();
         });
 
         // Move fullscreen button to top center
