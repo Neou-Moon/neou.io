@@ -382,6 +382,95 @@
                 object-fit: contain;
             }
         }
+
+        /* Landscape warning overlay - only shows on mobile portrait */
+        .landscape-warning {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 9999;
+            color: white;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+        }
+
+        .landscape-warning.active {
+            display: flex;
+        }
+
+        .landscape-warning h2 {
+            color: #a0d2ff;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        .landscape-warning p {
+            font-size: 18px;
+            max-width: 90%;
+            line-height: 1.5;
+            margin-bottom: 30px;
+        }
+
+        .rotate-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+            animation: rotate 2s infinite ease-in-out;
+        }
+
+        @keyframes rotate {
+            0%, 100% { transform: rotate(0deg); }
+            50% { transform: rotate(90deg); }
+        }
+
+        .close-button {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 24px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .close-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Hide landscape warning in fullscreen */
+        :fullscreen .landscape-warning,
+        :-webkit-full-screen .landscape-warning,
+        :-moz-full-screen .landscape-warning {
+            display: none !important;
+        }
+
+        /* Show warning only on mobile portrait (not landscape) */
+        @media (max-width: 768px) and (orientation: portrait) {
+            .landscape-warning {
+                display: flex;
+            }
+        }
+
+        @media (max-width: 768px) and (orientation: landscape) {
+            .landscape-warning {
+                display: none !important;
+            }
+        }
     </style>
     <!-- Use Firebase modular API -->
     <script type="module">
@@ -703,7 +792,7 @@
                 console.error(`[FirebaseSignIn] SECURE: Final error message: ${errorMessage}`);
 
                 if (unityInstance) {
-                    unityInstance.SendMessage('StartScreenController', 'OnSignInFailed', errorMessage);
+                    unityInstance.SendMessage('StartScreenController', 'OnSignInFailed', error.message);
                 }
             }
         };
@@ -1526,6 +1615,15 @@
     <!-- Starfield background -->
     <div class="stars" id="stars"></div>
 
+    <!-- Landscape warning overlay - shows only on mobile portrait -->
+    <div class="landscape-warning" id="landscape-warning">
+        <button class="close-button" id="close-warning">×</button>
+        <div class="rotate-icon">↻</div>
+        <h2>Better Experience in Landscape</h2>
+        <p>For the best gameplay experience, we recommend rotating your device to landscape mode.</p>
+        <p>You can also play in portrait mode, but landscape offers better visibility and controls.</p>
+    </div>
+
     <div class="main-container">
         <!-- Header with title -->
         <div class="header">
@@ -1601,6 +1699,41 @@
         var canvas = document.querySelector("#unity-canvas");
         var loadingOverlay = document.querySelector("#loading-overlay");
         var fullscreenButton = document.querySelector("#fullscreen-button");
+        var landscapeWarning = document.querySelector("#landscape-warning");
+        var closeWarningButton = document.querySelector("#close-warning");
+
+        // Check if user has already dismissed the warning
+        function hasDismissedWarning() {
+            return localStorage.getItem('landscapeWarningDismissed') === 'true';
+        }
+
+        // Show landscape warning on mobile portrait
+        function checkAndShowWarning() {
+            const isMobile = window.innerWidth <= 768;
+            const isPortrait = window.innerHeight > window.innerWidth;
+            const isFullscreen = document.fullscreenElement || 
+                                document.webkitFullscreenElement || 
+                                document.mozFullScreenElement;
+            
+            // Don't show warning if:
+            // 1. Not on mobile
+            // 2. Not in portrait mode
+            // 3. In fullscreen mode
+            // 4. User has already dismissed it
+            if (!isMobile || !isPortrait || isFullscreen || hasDismissedWarning()) {
+                landscapeWarning.classList.remove('active');
+                return;
+            }
+            
+            // Show warning
+            landscapeWarning.classList.add('active');
+        }
+
+        // Close warning button handler
+        closeWarningButton.addEventListener('click', function() {
+            landscapeWarning.classList.remove('active');
+            localStorage.setItem('landscapeWarningDismissed', 'true');
+        });
 
         // Move fullscreen button to top center
         fullscreenButton.style.left = '50%';
@@ -1655,6 +1788,9 @@
             } else {
                 canvas.classList.remove('aspect-ratio');
             }
+
+            // Check if we should show the landscape warning
+            checkAndShowWarning();
         }
 
         function applySafeAreaCompensation() {
@@ -1669,6 +1805,8 @@
         window.addEventListener('load', function () {
             handleResize();
             applySafeAreaCompensation();
+            // Check for landscape warning on load
+            setTimeout(checkAndShowWarning, 500);
         });
         
         window.addEventListener('resize', function () {
@@ -1680,6 +1818,8 @@
             setTimeout(function () {
                 handleResize();
                 applySafeAreaCompensation();
+                // Re-check warning on orientation change
+                checkAndShowWarning();
             }, 100);
         });
 
@@ -1690,8 +1830,12 @@
                     container.style.padding = '0';
                     canvas.style.maxWidth = '100%';
                     canvas.style.maxHeight = '100%';
+                    // Hide warning when entering fullscreen
+                    landscapeWarning.classList.remove('active');
                 } else {
                     applySafeAreaCompensation();
+                    // Check warning when exiting fullscreen
+                    checkAndShowWarning();
                 }
             }, 100);
         });
@@ -1703,8 +1847,12 @@
                     container.style.padding = '0';
                     canvas.style.maxWidth = '100%';
                     canvas.style.maxHeight = '100%';
+                    // Hide warning when entering fullscreen
+                    landscapeWarning.classList.remove('active');
                 } else {
                     applySafeAreaCompensation();
+                    // Check warning when exiting fullscreen
+                    checkAndShowWarning();
                 }
             }, 100);
         });
@@ -1716,8 +1864,12 @@
                     container.style.padding = '0';
                     canvas.style.maxWidth = '100%';
                     canvas.style.maxHeight = '100%';
+                    // Hide warning when entering fullscreen
+                    landscapeWarning.classList.remove('active');
                 } else {
                     applySafeAreaCompensation();
+                    // Check warning when exiting fullscreen
+                    checkAndShowWarning();
                 }
             }, 100);
         });
@@ -1759,6 +1911,8 @@
                     setTimeout(function () {
                         handleResize();
                         applySafeAreaCompensation();
+                        // Check warning after Unity loads
+                        checkAndShowWarning();
                     }, 100);
                 }).catch((error) => {
                     console.error("Unity initialization error:", error.message);
