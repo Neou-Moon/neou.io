@@ -193,20 +193,19 @@
             border-radius: 8px;
             overflow: hidden;
             box-shadow: 0 0 20px rgba(80, 120, 255, 0.3);
-            /* Fixed aspect ratio container */
-            aspect-ratio: 16/9;
-            max-width: 1920px;
-            max-height: 1080px;
+            /* Add safe area compensation */
+            padding: 2px; /* Small compensation to prevent cutting */
         }
 
         #unity-canvas {
-            width: 100% !important;
-            height: 100% !important;
+            width: 100%;
+            height: 100%;
             object-fit: contain;
             display: block;
             background: #000;
-            /* Fixed 1920x1080 aspect ratio */
-            aspect-ratio: 16/9;
+            /* Ensure no scaling beyond safe boundaries */
+            max-width: calc(100% - 4px);
+            max-height: calc(100% - 4px);
         }
 
         /* How to play image */
@@ -386,11 +385,35 @@
                 border: 1px solid rgba(0, 0, 0, 0.2);
             }
 
-            /* On mobile, container takes full width but maintains aspect ratio */
+            /* More compensation on mobile if needed */
             #unity-container {
-                width: 100%;
-                max-height: 70vh;
-                margin: 0 auto;
+                padding: 3px;
+            }
+
+            #unity-canvas {
+                max-width: calc(100% - 6px);
+                max-height: calc(100% - 6px);
+            }
+
+            /* Adjust PWA instructions for small screens */
+            @media (max-height: 600px) {
+                #ios-pwa-instructions {
+                    bottom: 10px;
+                    padding: 12px;
+                }
+                
+                .pwa-title {
+                    font-size: 14px;
+                }
+                
+                .pwa-content {
+                    font-size: 12px;
+                }
+                
+                .pwa-icon {
+                    font-size: 25px;
+                    margin-bottom: 8px;
+                }
             }
         }
 
@@ -398,30 +421,49 @@
         :fullscreen #unity-container,
         :-webkit-full-screen #unity-container,
         :-moz-full-screen #unity-container {
-            width: 100vw !important;
-            height: 100vh !important;
+            width: 100vw;
+            height: 100vh;
+            padding: 0; /* Remove padding in fullscreen */
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: 0;
+            box-shadow: none;
             max-width: none !important;
             max-height: none !important;
-            aspect-ratio: auto !important;
         }
 
         :fullscreen #unity-canvas,
         :-webkit-full-screen #unity-canvas,
         :-moz-full-screen #unity-canvas {
-            width: 100% !important;
-            height: 100% !important;
+            width: 100%;
+            height: 100%;
             object-fit: contain;
-            aspect-ratio: 16/9 !important;
+            max-width: 100vw !important;
+            max-height: 100vh !important;
+            background: #000;
         }
 
         /* Support for safe area insets on modern browsers */
         @supports (padding: max(0px)) {
             #unity-container {
-                padding: 0;
+                padding-top: max(2px, env(safe-area-inset-top));
+                padding-bottom: max(2px, env(safe-area-inset-bottom));
+                padding-left: max(2px, env(safe-area-inset-left));
+                padding-right: max(2px, env(safe-area-inset-right));
             }
             
             #ios-pwa-instructions {
                 bottom: max(20px, env(safe-area-inset-bottom));
+            }
+            
+            :fullscreen #unity-container {
+                padding-top: env(safe-area-inset-top);
+                padding-bottom: env(safe-area-inset-bottom);
+                padding-left: env(safe-area-inset-left);
+                padding-right: env(safe-area-inset-right);
             }
         }
 
@@ -471,14 +513,13 @@
                 position: fixed;
                 top: 0;
                 left: 0;
-                width: 100vw !important;
-                height: 100vh !important;
+                width: 100vw;
+                height: 100vh;
                 background: #000;
                 padding: 0;
                 margin: 0;
                 justify-content: center;
                 align-items: center;
-                aspect-ratio: auto !important;
             }
 
             :fullscreen #unity-canvas,
@@ -488,7 +529,8 @@
                 background: #000;
                 width: auto !important;
                 height: auto !important;
-                aspect-ratio: 16/9 !important;
+                max-width: 100% !important;
+                max-height: 100% !important;
             }
 
             :fullscreen #ios-pwa-instructions,
@@ -527,19 +569,10 @@
         .pwa-installed #unity-container {
             border-radius: 0;
             box-shadow: none;
-            width: 100vw !important;
-            height: 100vh !important;
-            max-width: none !important;
-            max-height: none !important;
         }
 
         /* Portrait mode support */
         @media (max-width: 768px) and (orientation: portrait) {
-            #unity-container {
-                width: 100%;
-                max-height: 60vh;
-            }
-            
             :fullscreen #unity-canvas,
             :-webkit-full-screen #unity-canvas,
             :-moz-full-screen #unity-canvas {
@@ -549,11 +582,6 @@
         }
 
         @media (max-width: 768px) and (orientation: landscape) {
-            #unity-container {
-                width: 100%;
-                max-height: 80vh;
-            }
-            
             :fullscreen #unity-canvas,
             :-webkit-full-screen #unity-canvas,
             :-moz-full-screen #unity-canvas {
@@ -1887,60 +1915,112 @@
             });
         }
 
-        // Simplified resize handler for consistent 1920x1080 aspect ratio
+        // Handle resize and aspect ratio properly
         function handleResize() {
             const windowWidth = window.innerWidth;
             const windowHeight = window.innerHeight;
             const gameAspectRatio = 16 / 9;
+            const windowAspectRatio = windowWidth / windowHeight;
 
-            // Calculate maximum size that fits within the container while maintaining aspect ratio
-            let containerWidth = container.parentElement.clientWidth;
-            let containerHeight = container.parentElement.clientHeight;
-            
-            // Calculate based on aspect ratio
-            if (containerWidth / containerHeight > gameAspectRatio) {
-                // Container is wider than game aspect ratio
-                container.style.height = '100%';
-                container.style.width = 'auto';
+            console.log(`Window: ${windowWidth}x${windowHeight}, Aspect: ${windowAspectRatio.toFixed(2)}`);
+
+            let targetWidth = windowWidth;
+            let targetHeight = windowHeight;
+
+            const compensation = isIOS() ? 6 : 4; // Slightly more compensation for iOS
+
+            if (windowAspectRatio > gameAspectRatio) {
+                // Window is wider than game aspect ratio (black bars on sides)
+                targetHeight = windowHeight - compensation;
+                targetWidth = targetHeight * gameAspectRatio;
             } else {
-                // Container is taller than game aspect ratio
-                container.style.width = '100%';
-                container.style.height = 'auto';
+                // Window is taller than game aspect ratio (black bars on top/bottom)
+                targetWidth = windowWidth - compensation;
+                targetHeight = targetWidth / gameAspectRatio;
             }
+
+            targetWidth = Math.max(targetWidth, 100);
+            targetHeight = Math.max(targetHeight, 100);
+
+            canvas.style.width = targetWidth + 'px';
+            canvas.style.height = targetHeight + 'px';
+
+            container.style.justifyContent = 'center';
+            container.style.alignItems = 'center';
+
+            console.log(`Adjusted size: ${targetWidth}x${targetHeight}`);
             
-            console.log(`Container size: ${container.offsetWidth}x${container.offsetHeight}`);
+            // Add aspect ratio class for proper fullscreen behavior
+            if (windowAspectRatio !== gameAspectRatio) {
+                canvas.classList.add('aspect-ratio');
+            } else {
+                canvas.classList.remove('aspect-ratio');
+            }
+        }
+
+        function applySafeAreaCompensation() {
+            const safetyMargin = isIOS() ? 3 : 2;
+
+            container.style.padding = safetyMargin + 'px';
+
+            canvas.style.maxWidth = `calc(100% - ${safetyMargin * 2}px)`;
+            canvas.style.maxHeight = `calc(100% - ${safetyMargin * 2}px)`;
         }
 
         window.addEventListener('load', function () {
             handleResize();
+            applySafeAreaCompensation();
             checkAndShowPWAInstructions();
         });
         
         window.addEventListener('resize', function () {
             handleResize();
+            applySafeAreaCompensation();
         });
         
         window.addEventListener('orientationchange', function () {
             setTimeout(function () {
                 handleResize();
+                applySafeAreaCompensation();
             }, 100);
         });
 
         document.addEventListener('fullscreenchange', function () {
             setTimeout(function () {
                 handleResize();
+                if (document.fullscreenElement) {
+                    container.style.padding = '0';
+                    canvas.style.maxWidth = '100%';
+                    canvas.style.maxHeight = '100%';
+                } else {
+                    applySafeAreaCompensation();
+                }
             }, 100);
         });
         
         document.addEventListener('webkitfullscreenchange', function () {
             setTimeout(function () {
                 handleResize();
+                if (document.webkitFullscreenElement) {
+                    container.style.padding = '0';
+                    canvas.style.maxWidth = '100%';
+                    canvas.style.maxHeight = '100%';
+                } else {
+                    applySafeAreaCompensation();
+                }
             }, 100);
         });
         
         document.addEventListener('mozfullscreenchange', function () {
             setTimeout(function () {
                 handleResize();
+                if (document.mozFullScreenElement) {
+                    container.style.padding = '0';
+                    canvas.style.maxWidth = '100%';
+                    canvas.style.maxHeight = '100%';
+                } else {
+                    applySafeAreaCompensation();
+                }
             }, 100);
         });
 
@@ -1980,6 +2060,7 @@
                     console.log('Unity instance initialized');
                     setTimeout(function () {
                         handleResize();
+                        applySafeAreaCompensation();
                     }, 100);
                 }).catch((error) => {
                     console.error("Unity initialization error:", error.message);
