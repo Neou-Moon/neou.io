@@ -228,7 +228,7 @@ For technical issues or game support:
 
 Website: https://neou.io
 
-Email: support@neou.io
+Email: neouio.help@gmail.com
 
 Made with ❤️ and Unity | Hosted on GitHub Pages | © 2023 Neou.io
 
