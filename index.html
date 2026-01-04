@@ -94,6 +94,30 @@
             font-style: italic;
         }
 
+        /* Navigation Bar */
+        .nav-bar {
+            text-align: center;
+            padding: 10px 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            border-bottom: 1px solid rgba(100, 150, 255, 0.3);
+            position: relative;
+            z-index: 5;
+        }
+
+        .nav-bar a {
+            color: #a0d2ff;
+            margin: 0 15px;
+            text-decoration: none;
+            font-size: 16px;
+            transition: color 0.3s;
+        }
+
+        .nav-bar a:hover {
+            color: white;
+            text-decoration: underline;
+        }
+
         /* Main content layout */
         .main-container {
             display: flex;
@@ -124,12 +148,12 @@
             width: 100%;
             height: 90px;
             margin-bottom: 10px;
-            background: rgba(30, 30, 60, 0.5);
-            border: 1px solid rgba(100, 150, 255, 0.3);
+            background: rgba(30, 30, 60, 0.3);
+            border: 1px solid rgba(100, 150, 255, 0.2);
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #a0d2ff;
+            color: rgba(160, 210, 255, 0.5);
             font-size: 14px;
             border-radius: 4px;
         }
@@ -137,12 +161,12 @@
         .ad-vertical {
             flex: 1;
             min-height: 600px;
-            background: rgba(30, 30, 60, 0.5);
-            border: 1px solid rgba(100, 150, 255, 0.3);
+            background: rgba(30, 30, 60, 0.3);
+            border: 1px solid rgba(100, 150, 255, 0.2);
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #a0d2ff;
+            color: rgba(160, 210, 255, 0.5);
             font-size: 14px;
             border-radius: 4px;
             writing-mode: vertical-rl;
@@ -344,6 +368,11 @@
                 font-size: 1rem;
             }
 
+            .nav-bar a {
+                margin: 0 8px;
+                font-size: 14px;
+            }
+
             #fullscreen-button {
                 top: 5px;
                 padding: 1px 10px; /* Ultra thin on mobile */
@@ -442,6 +471,12 @@
                 display: none;
             }
 
+            :fullscreen .nav-bar,
+            :-webkit-full-screen .nav-bar,
+            :-moz-full-screen .nav-bar {
+                display: none;
+            }
+
             :fullscreen .ad-side,
             :-webkit-full-screen .ad-side,
             :-moz-full-screen .ad-side {
@@ -504,6 +539,7 @@
 
         /* PWA installed styles */
         .pwa-installed .header,
+        .pwa-installed .nav-bar,
         .pwa-installed .ad-side,
         .pwa-installed .how-to-play {
             display: none;
@@ -1705,12 +1741,20 @@
             <p class="game-subtitle">An Outer Worldly Adventure</p>
         </div>
 
+        <!-- Navigation Bar -->
+        <div class="nav-bar">
+            <a href="index.html">🎮 Play Game</a>
+            <a href="about.html">📖 About</a>
+            <a href="privacy.html">🔒 Privacy</a>
+            <a href="terms.html">📝 Terms</a>
+        </div>
+
         <!-- Main content area -->
         <div class="content-wrapper">
             <!-- Left ad container -->
             <div class="ad-side left-ad">
-                <div class="ad-top">Google AdSense</div>
-                <div class="ad-vertical">Google AdSense</div>
+                <div class="ad-top" id="ad-top-left"></div>
+                <div class="ad-vertical" id="ad-vertical-left"></div>
             </div>
 
             <!-- Game area -->
@@ -1729,8 +1773,8 @@
 
             <!-- Right ad container -->
             <div class="ad-side right-ad">
-                <div class="ad-top">Google AdSense</div>
-                <div class="ad-vertical">Google AdSense</div>
+                <div class="ad-top" id="ad-top-right"></div>
+                <div class="ad-vertical" id="ad-vertical-right"></div>
             </div>
         </div>
     </div>
