@@ -1,19 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
-        <loc>https://yourdomain.com/</loc>
+        <loc>https://www.neou.io/</loc>
         <lastmod>2023-11-01</lastmod>
     </url>
     <url>
-        <loc>https://yourdomain.com/about.html</loc>
+        <loc>https://www.neou.io/neonracer.html</loc>
         <lastmod>2023-11-01</lastmod>
     </url>
     <url>
-        <loc>https://yourdomain.com/privacy.html</loc>
+        <loc>https://www.neou.io/about.html</loc>
         <lastmod>2023-11-01</lastmod>
     </url>
     <url>
-        <loc>https://yourdomain.com/terms.html</loc>
+        <loc>https://www.neou.io/privacy.html</loc>
+        <lastmod>2023-11-01</lastmod>
+    </url>
+    <url>
+        <loc>https://www.neou.io/terms.html</loc>
         <lastmod>2023-11-01</lastmod>
     </url>
 </urlset>
