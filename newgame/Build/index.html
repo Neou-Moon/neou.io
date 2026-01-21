@@ -1,0 +1,1185 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta http-equiv="Cross-Origin-Embedder-Policy" content="require-corp">
+    <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Neon Road Racer - Multiplayer</title>
+    
+    <!-- iOS PWA meta tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Neon Road Racer">
+    
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+        font-family: 'Arial Rounded MT Bold', 'Arial', sans-serif;
+        color: #fff;
+        min-height: 100vh;
+        overflow-x: hidden;
+        position: relative;
+      }
+
+      /* Starfield effect */
+      .stars {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+        overflow: hidden;
+      }
+
+      .star {
+        position: absolute;
+        background-color: white;
+        border-radius: 50%;
+      }
+
+      #gameContainer {
+        width: 100%;
+        max-width: 1920px;
+        margin: 0 auto;
+        padding: 20px;
+        position: relative;
+      }
+
+      #unity-container {
+        width: 100%;
+        position: relative;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: #000;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 0 20px rgba(80, 120, 255, 0.3);
+        /* Keep aspect ratio at 16:9 */
+        aspect-ratio: 16/9;
+        max-width: 100%;
+        max-height: 100%;
+        border: 3px solid #00ffea;
+      }
+
+      #unity-canvas {
+        width: 100%;
+        height: 100%;
+        background: #000;
+        display: block;
+        /* This is the key: maintain 1920x1080 aspect ratio */
+        object-fit: contain;
+        aspect-ratio: 16/9;
+      }
+
+      #unity-loading-bar {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        background: rgba(0, 0, 0, 0.8);
+        padding: 20px;
+        border-radius: 10px;
+        z-index: 10;
+      }
+
+      #unity-logo {
+        width: 154px;
+        height: 130px;
+        background: url('TemplateData/unity-logo-dark.png') no-repeat center;
+        background-size: contain;
+        margin: 0 auto 20px;
+        animation: pulse 2s infinite;
+      }
+
+      @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+      }
+
+      #unity-progress-bar-empty {
+        width: 300px;
+        height: 20px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        overflow: hidden;
+        margin: 20px auto;
+        border: 2px solid #00ffea;
+      }
+
+      #unity-progress-bar-full {
+        width: 0%;
+        height: 100%;
+        background: linear-gradient(90deg, #00ffea, #0080ff);
+        transition: width 0.3s ease;
+      }
+
+      #unity-warning {
+        position: absolute;
+        left: 50%;
+        top: 5%;
+        transform: translateX(-50%);
+        background: rgba(255, 50, 50, 0.8);
+        padding: 10px 20px;
+        border-radius: 5px;
+        display: none;
+      }
+
+      .fullscreen-btn {
+        position: absolute;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 20;
+        padding: 2px 14px;
+        background: rgba(255, 255, 255, 0.9);
+        border: none;
+        border-radius: 2px;
+        cursor: pointer;
+        font-family: Arial, sans-serif;
+        font-size: 11px;
+        backdrop-filter: blur(5px);
+        white-space: nowrap;
+        line-height: 1.1;
+        color: #000;
+      }
+
+      .fullscreen-btn:hover {
+        background: rgba(255, 255, 255, 0.95);
+      }
+
+      /* iOS PWA Instructions */
+      #ios-pwa-instructions {
+        display: none;
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 90%;
+        max-width: 400px;
+        background: rgba(20, 30, 60, 0.95);
+        border: 2px solid rgba(100, 150, 255, 0.5);
+        border-radius: 10px;
+        padding: 15px;
+        z-index: 1000;
+        box-shadow: 0 0 20px rgba(80, 120, 255, 0.5);
+        backdrop-filter: blur(10px);
+      }
+
+      .pwa-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+      }
+
+      .pwa-title {
+        font-size: 16px;
+        font-weight: bold;
+        color: #a0d2ff;
+        margin: 0;
+      }
+
+      .close-pwa {
+        background: rgba(255, 50, 50, 0.8);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 25px;
+        height: 25px;
+        font-size: 16px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.3s;
+        flex-shrink: 0;
+      }
+
+      .close-pwa:hover {
+        background: rgba(255, 50, 50, 1);
+      }
+
+      .pwa-content {
+        font-size: 14px;
+        line-height: 1.5;
+        color: #e0e0ff;
+        margin-bottom: 10px;
+        text-align: center;
+      }
+
+      .pwa-icon {
+        text-align: center;
+        font-size: 30px;
+        margin-bottom: 10px;
+        color: #a0d2ff;
+      }
+
+      .pwa-steps {
+        text-align: left;
+        margin: 15px 0;
+        padding-left: 20px;
+      }
+
+      .pwa-steps li {
+        margin-bottom: 8px;
+        font-size: 13px;
+      }
+
+      .game-title {
+        text-align: center;
+        margin-bottom: 30px;
+        padding: 0 20px;
+      }
+
+      .game-title h1 {
+        font-size: 3.5em;
+        background: linear-gradient(45deg, #00ffea, #0080ff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-shadow: 0 5px 15px rgba(0, 255, 234, 0.3);
+        margin-bottom: 10px;
+        letter-spacing: 2px;
+      }
+
+      .game-title h2 {
+        font-size: 1.2em;
+        color: #a0a0ff;
+        font-weight: normal;
+        margin-bottom: 20px;
+        opacity: 0.9;
+      }
+
+      .controls {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 15px;
+        margin: 20px 0;
+        padding: 0 20px;
+      }
+
+      .control-item {
+        background: rgba(0, 0, 0, 0.5);
+        border: 2px solid #00ffea;
+        border-radius: 10px;
+        padding: 15px;
+        min-width: 200px;
+        text-align: center;
+        transition: all 0.3s ease;
+      }
+
+      .control-item:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 255, 234, 0.3);
+      }
+
+      .control-item h3 {
+        color: #00ffea;
+        margin-bottom: 10px;
+        font-size: 1.1em;
+      }
+
+      .control-item p {
+        color: #a0a0ff;
+        font-size: 0.9em;
+      }
+
+      .key {
+        display: inline-block;
+        background: linear-gradient(135deg, #2a2a2a, #1a1a1a);
+        border: 2px solid #00ffea;
+        border-radius: 5px;
+        padding: 5px 10px;
+        margin: 2px;
+        font-weight: bold;
+        min-width: 40px;
+        text-align: center;
+        box-shadow: 0 3px 0 #005555;
+      }
+
+      .key.wasd {
+        background: linear-gradient(135deg, #ff0080, #8000ff);
+        border-color: #ff00ff;
+        box-shadow: 0 3px 0 #800080;
+      }
+
+      .instructions {
+        max-width: 800px;
+        margin: 30px auto;
+        padding: 25px;
+        background: rgba(0, 0, 0, 0.7);
+        border-radius: 15px;
+        border: 2px solid #0080ff;
+      }
+
+      .instructions h3 {
+        color: #0080ff;
+        margin-bottom: 15px;
+        text-align: center;
+        font-size: 1.5em;
+      }
+
+      .instructions ul {
+        list-style: none;
+        padding: 0;
+      }
+
+      .instructions li {
+        margin: 10px 0;
+        padding: 10px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 8px;
+        border-left: 4px solid #00ffea;
+      }
+
+      .multiplayer-status {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 15px;
+        margin: 20px 0;
+        padding: 15px;
+        background: rgba(0, 0, 0, 0.6);
+        border-radius: 10px;
+        border: 2px solid #ff0080;
+      }
+
+      .status-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #ff5555;
+        animation: blink 2s infinite;
+      }
+
+      .status-dot.connected {
+        background: #00ff00;
+        animation: none;
+      }
+
+      @keyframes blink {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.3; }
+      }
+
+      .players-online {
+        color: #00ffea;
+        font-weight: bold;
+      }
+
+      .leaderboard {
+        max-width: 600px;
+        margin: 30px auto;
+        padding: 20px;
+        background: rgba(0, 0, 0, 0.8);
+        border-radius: 15px;
+        border: 2px solid #ff0080;
+      }
+
+      .leaderboard h3 {
+        color: #ff0080;
+        text-align: center;
+        margin-bottom: 15px;
+        font-size: 1.5em;
+      }
+
+      .leaderboard-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px;
+        margin: 5px 0;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 8px;
+        border-left: 4px solid #ff0080;
+      }
+
+      .player-rank {
+        color: #ff0080;
+        font-weight: bold;
+        min-width: 40px;
+      }
+
+      .player-name {
+        flex-grow: 1;
+        color: #00ffea;
+      }
+
+      .player-distance {
+        color: #a0a0ff;
+        font-weight: bold;
+      }
+
+      footer {
+        margin-top: 40px;
+        padding: 20px;
+        text-align: center;
+        color: #8080ff;
+        font-size: 0.9em;
+        border-top: 1px solid rgba(0, 255, 234, 0.3);
+        width: 100%;
+      }
+
+      .social-links {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        margin: 15px 0;
+      }
+
+      .social-links a {
+        color: #00ffea;
+        text-decoration: none;
+        padding: 8px 15px;
+        border: 1px solid #00ffea;
+        border-radius: 5px;
+        transition: all 0.3s ease;
+      }
+
+      .social-links a:hover {
+        background: rgba(0, 255, 234, 0.2);
+        transform: translateY(-2px);
+      }
+
+      /* Mobile-specific adjustments */
+      @media (max-width: 768px) {
+        .game-title h1 {
+          font-size: 2.5em;
+        }
+        
+        .game-title h2 {
+          font-size: 1rem;
+        }
+        
+        .controls {
+          flex-direction: column;
+          align-items: center;
+        }
+        
+        .control-item {
+          width: 100%;
+          max-width: 300px;
+        }
+        
+        .instructions {
+          padding: 15px;
+        }
+        
+        #unity-container {
+          width: 100%;
+          max-height: 70vh;
+        }
+        
+        .fullscreen-btn {
+          top: 5px;
+          padding: 1px 10px;
+          font-size: 10px;
+        }
+        
+        /* iOS-specific fullscreen button adjustments */
+        .ios .fullscreen-btn {
+          background: rgba(255, 255, 255, 0.95);
+          border: 1px solid rgba(0, 0, 0, 0.2);
+        }
+      }
+
+      /* Enhanced fullscreen styles with safe area support */
+      :fullscreen #unity-container,
+      :-webkit-full-screen #unity-container,
+      :-moz-full-screen #unity-container {
+        width: 100vw !important;
+        height: 100vh !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        max-width: none !important;
+        max-height: none !important;
+        aspect-ratio: auto !important;
+        border: none !important;
+      }
+
+      :fullscreen #unity-canvas,
+      :-webkit-full-screen #unity-canvas,
+      :-moz-full-screen #unity-canvas {
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: contain !important;
+        max-width: none !important;
+        max-height: none !important;
+        aspect-ratio: 16/9 !important;
+      }
+
+      /* Support for safe area insets on modern browsers */
+      @supports (padding: max(0px)) {
+        #unity-container {
+          padding: 2px;
+        }
+        
+        #ios-pwa-instructions {
+          bottom: max(20px, env(safe-area-inset-bottom));
+        }
+        
+        :fullscreen #unity-container {
+          padding-top: env(safe-area-inset-top) !important;
+          padding-bottom: env(safe-area-inset-bottom) !important;
+          padding-left: env(safe-area-inset-left) !important;
+          padding-right: env(safe-area-inset-right) !important;
+        }
+      }
+
+      /* Hide fullscreen button when in fullscreen mode */
+      :fullscreen .fullscreen-btn,
+      :-webkit-full-screen .fullscreen-btn,
+      :-moz-full-screen .fullscreen-btn {
+        display: none;
+      }
+
+      /* Enhanced fullscreen styles - hide UI elements */
+      @media (max-width: 768px) {
+        :fullscreen .game-title,
+        :-webkit-full-screen .game-title,
+        :-moz-full-screen .game-title {
+          display: none !important;
+        }
+
+        :fullscreen .multiplayer-status,
+        :-webkit-full-screen .multiplayer-status,
+        :-moz-full-screen .multiplayer-status {
+          display: none !important;
+        }
+
+        :fullscreen .controls,
+        :-webkit-full-screen .controls,
+        :-moz-full-screen .controls {
+          display: none !important;
+        }
+
+        :fullscreen .instructions,
+        :-webkit-full-screen .instructions,
+        :-moz-full-screen .instructions {
+          display: none !important;
+        }
+
+        :fullscreen .leaderboard,
+        :-webkit-full-screen .leaderboard,
+        :-moz-full-screen .leaderboard {
+          display: none !important;
+        }
+
+        :fullscreen footer,
+        :-webkit-full-screen footer,
+        :-moz-full-screen footer {
+          display: none !important;
+        }
+
+        :fullscreen #unity-container,
+        :-webkit-full-screen #unity-container,
+        :-moz-full-screen #unity-container {
+          display: flex !important;
+          position: fixed !important;
+          top: 0 !important;
+          left: 0 !important;
+          width: 100vw !important;
+          height: 100vh !important;
+          background: #000 !important;
+          padding: 0 !important;
+          margin: 0 !important;
+          justify-content: center !important;
+          align-items: center !important;
+        }
+
+        :fullscreen #unity-canvas,
+        :-webkit-full-screen #unity-canvas,
+        :-moz-full-screen #unity-canvas {
+          object-fit: contain !important;
+          background: #000 !important;
+          width: 100% !important;
+          height: 100% !important;
+          aspect-ratio: 16/9 !important;
+        }
+
+        :fullscreen #ios-pwa-instructions,
+        :-webkit-full-screen #ios-pwa-instructions,
+        :-moz-full-screen #ios-pwa-instructions {
+          display: none !important;
+        }
+      }
+
+      /* iOS-specific styles for better fullscreen experience */
+      .ios :fullscreen #unity-container,
+      .ios :-webkit-full-screen #unity-container {
+        padding-top: env(safe-area-inset-top) !important;
+        padding-bottom: env(safe-area-inset-bottom) !important;
+        padding-left: env(safe-area-inset-left) !important;
+        padding-right: env(safe-area-inset-right) !important;
+      }
+
+      /* PWA installed styles */
+      .pwa-installed .game-title,
+      .pwa-installed .multiplayer-status,
+      .pwa-installed .controls,
+      .pwa-installed .instructions,
+      .pwa-installed .leaderboard,
+      .pwa-installed footer {
+        display: none;
+      }
+
+      .pwa-installed #gameContainer {
+        padding: 0;
+      }
+
+      .pwa-installed #unity-container {
+        border-radius: 0;
+        box-shadow: none;
+        width: 100vw !important;
+        height: 100vh !important;
+        max-width: none !important;
+        max-height: none !important;
+        border: none !important;
+      }
+
+      /* Portrait mode support */
+      @media (max-width: 768px) and (orientation: portrait) {
+        #unity-container {
+          width: 100%;
+          max-height: 60vh;
+        }
+      }
+
+      @media (max-width: 768px) and (orientation: landscape) {
+        #unity-container {
+          width: 100%;
+          max-height: 80vh;
+        }
+      }
+
+      /* Custom scrollbar */
+      ::-webkit-scrollbar {
+        width: 10px;
+      }
+
+      ::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.3);
+      }
+
+      ::-webkit-scrollbar-thumb {
+        background: linear-gradient(45deg, #00ffea, #0080ff);
+        border-radius: 5px;
+      }
+
+      ::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(45deg, #0080ff, #00ffea);
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Starfield background -->
+    <div class="stars" id="stars"></div>
+
+    <!-- iOS PWA Instructions Popup -->
+    <div id="ios-pwa-instructions">
+      <div class="pwa-header">
+        <h3 class="pwa-title">📱 Install Neon Road Racer App</h3>
+        <button class="close-pwa" id="close-pwa">×</button>
+      </div>
+      <div class="pwa-icon">⬇️</div>
+      <div class="pwa-content">
+        For the best fullscreen experience on iOS, install Neon Road Racer as a PWA (Progressive Web App):
+      </div>
+      <ol class="pwa-steps">
+        <li>Tap the <strong>Share</strong> button <span style="color:#a0d2ff;">(⎋)</span> in Safari</li>
+        <li>Scroll down and tap <strong>"Add to Home Screen"</strong></li>
+        <li>Tap <strong>"Add"</strong> in the top right corner</li>
+        <li>Launch from your Home Screen for fullscreen gameplay!</li>
+      </ol>
+    </div>
+
+    <div class="game-title">
+      <h1>NEON ROAD RACER</h1>
+      <h2>Multiplayer 2D Racing with 3D Perspective</h2>
+    </div>
+
+    <div id="gameContainer">
+      <div id="unity-container">
+        <canvas id="unity-canvas" width=1920 height=1080></canvas>
+        <div id="unity-loading-bar">
+          <div id="unity-logo"></div>
+          <div id="unity-progress-bar-empty">
+            <div id="unity-progress-bar-full"></div>
+          </div>
+        </div>
+        <div id="unity-warning"></div>
+        <button class="fullscreen-btn" id="fullscreenBtn">
+          Fullscreen
+        </button>
+      </div>
+
+      <div class="multiplayer-status">
+        <div class="status-dot" id="statusDot"></div>
+        <span id="statusText">Connecting to Photon servers...</span>
+        <span class="players-online" id="playersOnline">Players Online: 0</span>
+      </div>
+
+      <div class="controls">
+        <div class="control-item">
+          <h3>MOVEMENT</h3>
+          <p>
+            <span class="key wasd">W</span>
+            <span class="key wasd">A</span>
+            <span class="key wasd">S</span>
+            <span class="key wasd">D</span>
+          </p>
+          <p>Accelerate, Steer Left, Brake, Steer Right</p>
+        </div>
+
+        <div class="control-item">
+          <h3>RESPAWN</h3>
+          <p><span class="key">R</span></p>
+          <p>Respawn at last checkpoint</p>
+        </div>
+
+        <div class="control-item">
+          <h3>GAME INFO</h3>
+          <p>5 Minute Rounds</p>
+          <p>Checkpoints every minute</p>
+          <p>10 hits = Game Over</p>
+        </div>
+      </div>
+
+      <div class="instructions">
+        <h3>HOW TO PLAY</h3>
+        <ul>
+          <li>🔄 <strong>Dodge cubes</strong> coming down the road - each hit reduces health by 10</li>
+          <li>⏱️ <strong>Checkpoints</strong> are automatically saved every minute (timer flashes yellow)</li>
+          <li>👥 <strong>Multiplayer:</strong> See other players on the same stretch of road</li>
+          <li>📏 <strong>Distance-based:</strong> Players appear smaller as they get farther ahead</li>
+          <li>💀 <strong>Respawn at checkpoints</strong> when you die - press R to continue</li>
+          <li>🏆 <strong>Win by traveling farthest</strong> in 5 minutes while surviving cube attacks</li>
+        </ul>
+      </div>
+
+      <div class="leaderboard" id="leaderboard">
+        <h3>LIVE LEADERBOARD</h3>
+        <div id="leaderboardContent">
+          <div class="leaderboard-item">
+            <span class="player-rank">1</span>
+            <span class="player-name">You</span>
+            <span class="player-distance">0m</span>
+          </div>
+          <!-- Leaderboard will be populated by JavaScript -->
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <p>Neon Road Racer • Built with Unity • Powered by Photon PUN • Deployed on Netlify</p>
+      <div class="social-links">
+        <a href="#" id="twitterShare">Share on Twitter</a>
+        <a href="#" id="discordLink">Join Discord</a>
+        <a href="#" id="footerFullscreenBtn">Fullscreen</a>
+      </div>
+      <p id="versionInfo">Version 1.0 • Best played in Chrome/Firefox</p>
+    </footer>
+
+    <script>
+      // Detect iOS
+      function isIOS() {
+        return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+      }
+
+      // Detect if installed as PWA
+      function isStandalone() {
+        return window.matchMedia('(display-mode: standalone)').matches || 
+               window.navigator.standalone === true;
+      }
+
+      // Add iOS class to body for iOS-specific styling
+      if (isIOS()) {
+        document.body.classList.add('ios');
+      }
+
+      // Add PWA class if installed as standalone
+      if (isStandalone()) {
+        document.body.classList.add('pwa-installed');
+      }
+
+      // Create starfield effect
+      function createStars() {
+        const starsContainer = document.getElementById('stars');
+        const starCount = 200;
+
+        for (let i = 0; i < starCount; i++) {
+          const star = document.createElement('div');
+          star.className = 'star';
+
+          // Random position
+          const x = Math.random() * 100;
+          const y = Math.random() * 100;
+
+          // Random size (0.5px to 2px)
+          const size = Math.random() * 1.5 + 0.5;
+
+          // Random opacity
+          const opacity = Math.random() * 0.7 + 0.3;
+
+          star.style.left = `${x}%`;
+          star.style.top = `${y}%`;
+          star.style.width = `${size}px`;
+          star.style.height = `${size}px`;
+          star.style.opacity = opacity;
+
+          starsContainer.appendChild(star);
+        }
+      }
+
+      // Initialize starfield
+      createStars();
+
+      // iOS PWA Instructions functionality
+      const pwaInstructions = document.getElementById('ios-pwa-instructions');
+      const closePwaBtn = document.getElementById('close-pwa');
+
+      // Close PWA instructions when X is clicked
+      closePwaBtn.addEventListener('click', () => {
+        pwaInstructions.style.display = 'none';
+        // Store in localStorage that user dismissed the instructions
+        localStorage.setItem('pwaInstructionsDismissed', 'true');
+      });
+
+      // Show PWA instructions for iOS users not in standalone mode
+      function checkAndShowPWAInstructions() {
+        const hasDismissed = localStorage.getItem('pwaInstructionsDismissed');
+        
+        if (isIOS() && !isStandalone() && !hasDismissed) {
+          // Show after a delay so user can see the game loads first
+          setTimeout(() => {
+            pwaInstructions.style.display = 'block';
+          }, 3000);
+        }
+      }
+
+      // iOS Fullscreen workaround
+      function setupIOSFullscreenWorkaround() {
+        if (!isIOS()) return;
+
+        const fullscreenButton = document.getElementById('fullscreenBtn');
+        
+        // Change button text for iOS
+        if (isStandalone()) {
+          fullscreenButton.textContent = 'Exit Fullscreen';
+        } else {
+          fullscreenButton.textContent = 'Fullscreen (Install PWA)';
+          fullscreenButton.addEventListener('click', () => {
+            pwaInstructions.style.display = 'block';
+          });
+          return; // Don't add normal fullscreen behavior for iOS browser
+        }
+      }
+
+      // Unity WebGL loader configuration
+      var buildUrl = "Build";
+      var loaderUrl = buildUrl + "/NEWGAMEHD.loader.js";
+      var config = {
+        dataUrl: buildUrl + "/NEWGAMEHD.data",
+        frameworkUrl: buildUrl + "/NEWGAMEHD.framework.js",
+        codeUrl: buildUrl + "/NEWGAMEHD.wasm",
+        streamingAssetsUrl: "StreamingAssets",
+        companyName: "NeonRacer",
+        productName: "Neon Road Racer",
+        productVersion: "1.0",
+      };
+
+      var unityInstance = null;
+      var container = document.querySelector("#unity-container");
+      var canvas = document.querySelector("#unity-canvas");
+      var loadingBar = document.querySelector("#unity-loading-bar");
+      var progressBarFull = document.querySelector("#unity-progress-bar-full");
+      var fullscreenButton = document.querySelector("#fullscreenBtn");
+      var footerFullscreenBtn = document.querySelector("#footerFullscreenBtn");
+
+      // Move fullscreen button to top center
+      fullscreenButton.style.left = '50%';
+      fullscreenButton.style.transform = 'translateX(-50%)';
+
+      // Setup iOS specific handlers first
+      setupIOSFullscreenWorkaround();
+
+      // Only add normal fullscreen behavior for non-iOS or iOS PWA
+      if (!isIOS() || isStandalone()) {
+        fullscreenButton.addEventListener("click", () => {
+          if (!document.fullscreenElement) {
+            container.requestFullscreen().catch(err => console.error("Fullscreen error:", err));
+          } else {
+            document.exitFullscreen();
+          }
+        });
+        
+        footerFullscreenBtn.addEventListener("click", () => {
+          if (!document.fullscreenElement) {
+            container.requestFullscreen().catch(err => console.error("Fullscreen error:", err));
+          } else {
+            document.exitFullscreen();
+          }
+        });
+      }
+
+      // Handle resize and aspect ratio properly
+      function handleResize() {
+        const windowWidth = window.innerWidth;
+        const windowHeight = window.innerHeight;
+        const gameAspectRatio = 16 / 9;
+        const windowAspectRatio = windowWidth / windowHeight;
+
+        console.log(`Window: ${windowWidth}x${windowHeight}, Aspect: ${windowAspectRatio.toFixed(2)}`);
+
+        let targetWidth = windowWidth;
+        let targetHeight = windowHeight;
+
+        const compensation = isIOS() ? 6 : 4; // Slightly more compensation for iOS
+
+        if (windowAspectRatio > gameAspectRatio) {
+          // Window is wider than game aspect ratio (black bars on sides)
+          targetHeight = windowHeight - compensation;
+          targetWidth = targetHeight * gameAspectRatio;
+        } else {
+          // Window is taller than game aspect ratio (black bars on top/bottom)
+          targetWidth = windowWidth - compensation;
+          targetHeight = targetWidth / gameAspectRatio;
+        }
+
+        targetWidth = Math.max(targetWidth, 100);
+        targetHeight = Math.max(targetHeight, 100);
+
+        // Apply to unity canvas if it exists
+        if (canvas) {
+          canvas.style.width = targetWidth + 'px';
+          canvas.style.height = targetHeight + 'px';
+        }
+
+        container.style.justifyContent = 'center';
+        container.style.alignItems = 'center';
+
+        console.log(`Adjusted size: ${targetWidth}x${targetHeight}`);
+        
+        // Add aspect ratio class for proper fullscreen behavior
+        if (canvas) {
+          if (windowAspectRatio !== gameAspectRatio) {
+            canvas.classList.add('aspect-ratio');
+          } else {
+            canvas.classList.remove('aspect-ratio');
+          }
+        }
+      }
+
+      function applySafeAreaCompensation() {
+        const safetyMargin = isIOS() ? 3 : 2;
+
+        container.style.padding = safetyMargin + 'px';
+
+        if (canvas) {
+          canvas.style.maxWidth = `calc(100% - ${safetyMargin * 2}px)`;
+          canvas.style.maxHeight = `calc(100% - ${safetyMargin * 2}px)`;
+        }
+      }
+
+      // Share buttons
+      document.getElementById('twitterShare').addEventListener('click', function(e) {
+        e.preventDefault();
+        const text = encodeURIComponent("Check out Neon Road Racer! A 2D multiplayer racing game with 3D perspective. Race against others, dodge cubes, and survive for 5 minutes!");
+        const url = encodeURIComponent(window.location.href);
+        window.open(`https://twitter.com/intent/tweet?text=${text}&url=${url}`, '_blank');
+      });
+
+      document.getElementById('discordLink').addEventListener('click', function(e) {
+        e.preventDefault();
+        alert('Discord server coming soon!');
+      });
+
+      // Mock multiplayer status (replace with real Photon integration)
+      function updateMultiplayerStatus() {
+        const statusDot = document.getElementById('statusDot');
+        const statusText = document.getElementById('statusText');
+        const playersOnline = document.getElementById('playersOnline');
+        
+        // Simulate connection process
+        setTimeout(() => {
+          statusDot.classList.add('connected');
+          statusText.textContent = 'Connected to Photon servers';
+          playersOnline.textContent = 'Players Online: 1';
+        }, 2000);
+        
+        // Simulate other players joining
+        setTimeout(() => {
+          const randomPlayers = Math.floor(Math.random() * 5) + 2;
+          playersOnline.textContent = `Players Online: ${randomPlayers}`;
+          updateLeaderboard(randomPlayers);
+        }, 4000);
+      }
+
+      // Mock leaderboard data
+      function updateLeaderboard(playerCount) {
+        const leaderboardContent = document.getElementById('leaderboardContent');
+        leaderboardContent.innerHTML = '';
+        
+        // Add player entries
+        for (let i = 1; i <= playerCount; i++) {
+          const distance = Math.floor(Math.random() * 5000) + 1000;
+          const item = document.createElement('div');
+          item.className = 'leaderboard-item';
+          item.innerHTML = `
+            <span class="player-rank">${i}</span>
+            <span class="player-name">${i === 1 ? 'You' : `Player${i}`}</span>
+            <span class="player-distance">${distance}m</span>
+          `;
+          leaderboardContent.appendChild(item);
+        }
+      }
+
+      // Unity loading progress
+      function onProgress(progress) {
+        if (progressBarFull) {
+          progressBarFull.style.width = 100 * progress + "%";
+        }
+      }
+
+      // Unity error handling
+      function onError(message) {
+        alert('Error loading game: ' + message);
+      }
+
+      // Initialize Unity WebGL
+      function loadUnity() {
+        // Show loading screen
+        if (loadingBar) {
+          loadingBar.style.display = "block";
+        }
+
+        // Load Unity
+        var script = document.createElement("script");
+        script.src = loaderUrl;
+        script.onload = () => {
+          createUnityInstance(canvas, config, onProgress)
+            .then((instance) => {
+              unityInstance = instance;
+              if (loadingBar) {
+                loadingBar.style.display = "none";
+              }
+              updateMultiplayerStatus();
+              setTimeout(function () {
+                handleResize();
+                applySafeAreaCompensation();
+              }, 100);
+            })
+            .catch((message) => {
+              alert(message);
+            });
+        };
+        script.onerror = () => {
+          alert('Failed to load Unity game files. Please check if all files are uploaded correctly.');
+        };
+        document.body.appendChild(script);
+      }
+
+      // Event listeners for resize handling
+      window.addEventListener('load', function () {
+        handleResize();
+        applySafeAreaCompensation();
+        checkAndShowPWAInstructions();
+        loadUnity();
+      });
+      
+      window.addEventListener('resize', function () {
+        handleResize();
+        applySafeAreaCompensation();
+      });
+      
+      window.addEventListener('orientationchange', function () {
+        setTimeout(function () {
+          handleResize();
+          applySafeAreaCompensation();
+        }, 100);
+      });
+
+      document.addEventListener('fullscreenchange', function () {
+        setTimeout(function () {
+          handleResize();
+          if (document.fullscreenElement) {
+            container.style.padding = '0';
+            if (canvas) {
+              canvas.style.maxWidth = '100%';
+              canvas.style.maxHeight = '100%';
+            }
+          } else {
+            applySafeAreaCompensation();
+          }
+        }, 100);
+      });
+      
+      document.addEventListener('webkitfullscreenchange', function () {
+        setTimeout(function () {
+          handleResize();
+          if (document.webkitFullscreenElement) {
+            container.style.padding = '0';
+            if (canvas) {
+              canvas.style.maxWidth = '100%';
+              canvas.style.maxHeight = '100%';
+            }
+          } else {
+            applySafeAreaCompensation();
+          }
+        }, 100);
+      });
+      
+      document.addEventListener('mozfullscreenchange', function () {
+        setTimeout(function () {
+          handleResize();
+          if (document.mozFullScreenElement) {
+            container.style.padding = '0';
+            if (canvas) {
+              canvas.style.maxWidth = '100%';
+              canvas.style.maxHeight = '100%';
+            }
+          } else {
+            applySafeAreaCompensation();
+          }
+        }, 100);
+      });
+
+      // Handle Escape key to exit fullscreen
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && document.fullscreenElement) {
+          if (!document.fullscreenElement) {
+            container.requestFullscreen().catch(err => console.error("Fullscreen error:", err));
+          } else {
+            document.exitFullscreen();
+          }
+        }
+      });
+
+      // Version info with current date
+      document.getElementById('versionInfo').textContent = 
+        `Version 1.0 • ${new Date().getFullYear()} • Best played in Chrome/Firefox`;
+
+      // Instructions for fullscreen
+      console.log('Game optimized for 1920x1080 resolution');
+      console.log('Press the Fullscreen button for the best experience!');
+    </script>
+  </body>
+</html>
