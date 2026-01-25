@@ -3,243 +3,261 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>About Neou.io | An Outer Worldly Adventure</title>
+    <title>About Neou.io - Free Multiplayer Space Adventure Game</title>
+    <meta name="description" content="Learn about Neou.io - a free multiplayer space adventure game and NEWGAMEHD racing game. Our mission, features, and game details.">
+    <meta name="keywords" content="about neou.io, space adventure game, multiplayer games, free online games, game information">
     <style>
-        body {
+        * {
+            box-sizing: border-box;
             margin: 0;
-            padding: 20px;
-            background: #000;
-            color: white;
-            font-family: Arial, sans-serif;
-            min-height: 100vh;
-            background-image: radial-gradient(ellipse at center, rgba(8, 15, 30, 0.8) 0%, rgba(0, 0, 0, 1) 70%);
+            padding: 0;
         }
+        
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            color: white;
+            min-height: 100vh;
+        }
+        
         .container {
             max-width: 1000px;
             margin: 0 auto;
             padding: 20px;
-            background: rgba(30, 30, 60, 0.8);
-            border-radius: 10px;
-            border: 1px solid rgba(100, 150, 255, 0.3);
-            box-shadow: 0 0 30px rgba(80, 120, 255, 0.2);
         }
-        h1 {
-            color: #a0d2ff;
+        
+        .nav-bar {
             text-align: center;
-            font-size: 2.5rem;
-            text-shadow: 0 0 10px rgba(160, 210, 255, 0.5);
+            padding: 15px 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            border-bottom: 1px solid rgba(100, 150, 255, 0.3);
             margin-bottom: 30px;
         }
-        h2 {
-            color: #a0d2ff;
-            border-bottom: 2px solid rgba(100, 150, 255, 0.3);
-            padding-bottom: 10px;
-            margin-top: 40px;
-        }
-        h3 {
-            color: #88bbff;
-            margin-top: 25px;
-        }
-        .nav {
-            text-align: center;
-            margin-bottom: 30px;
-            padding: 15px;
-            background: rgba(0, 0, 0, 0.5);
-            border-radius: 10px;
-            border: 1px solid rgba(100, 150, 255, 0.2);
-        }
-        .nav a {
+        
+        .nav-bar a {
             color: #a0d2ff;
             margin: 0 15px;
             text-decoration: none;
-            font-size: 18px;
+            font-size: 16px;
             padding: 8px 15px;
             border-radius: 5px;
-            transition: all 0.3s;
         }
-        .nav a:hover {
+        
+        .nav-bar a:hover {
+            color: white;
             background: rgba(100, 150, 255, 0.2);
-            text-decoration: none;
         }
-        .content {
-            line-height: 1.7;
-            font-size: 16px;
-        }
-        .game-link {
+        
+        header {
             text-align: center;
-            margin-top: 40px;
-            padding: 20px;
-            background: rgba(100, 150, 255, 0.1);
-            border-radius: 10px;
-            border: 1px solid rgba(100, 150, 255, 0.3);
+            margin-bottom: 40px;
+            padding: 30px 0;
         }
-        .game-link a {
-            background: linear-gradient(45deg, #a0d2ff, #6688ff);
-            color: #000;
-            padding: 15px 30px;
-            text-decoration: none;
-            border-radius: 8px;
-            font-weight: bold;
-            font-size: 18px;
-            display: inline-block;
-            transition: all 0.3s;
-            box-shadow: 0 0 15px rgba(160, 210, 255, 0.4);
-        }
-        .game-link a:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 0 20px rgba(160, 210, 255, 0.6);
-        }
-        ul {
-            padding-left: 20px;
-            margin: 15px 0;
-        }
-        li {
+        
+        h1 {
+            font-size: 2.5em;
             margin-bottom: 10px;
-            padding-left: 5px;
+            color: #00ffea;
         }
-        strong {
-            color: #88bbff;
+        
+        h2 {
+            font-size: 1.8em;
+            margin: 30px 0 15px 0;
+            color: #a0d2ff;
+            border-bottom: 2px solid rgba(100, 150, 255, 0.3);
+            padding-bottom: 5px;
         }
-        .feature-grid {
+        
+        h3 {
+            font-size: 1.4em;
+            margin: 20px 0 10px 0;
+            color: #00ffea;
+        }
+        
+        p {
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+        
+        ul, ol {
+            margin: 15px 0;
+            padding-left: 30px;
+        }
+        
+        li {
+            margin-bottom: 8px;
+        }
+        
+        .game-section {
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(100, 150, 255, 0.2);
+        }
+        
+        .features-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 20px;
             margin: 20px 0;
         }
+        
         .feature-card {
-            background: rgba(20, 30, 60, 0.6);
+            background: rgba(20, 30, 60, 0.8);
             padding: 20px;
             border-radius: 8px;
-            border: 1px solid rgba(100, 150, 255, 0.2);
-            transition: transform 0.3s;
+            border-left: 4px solid #00ffea;
         }
-        .feature-card:hover {
-            transform: translateY(-5px);
-            border-color: rgba(160, 210, 255, 0.4);
-        }
-        .how-to-play-section {
+        
+        .cta {
             text-align: center;
             margin: 40px 0;
-        }
-        .how-to-play-image {
-            max-width: 100%;
-            height: auto;
+            padding: 30px;
+            background: rgba(0, 100, 255, 0.1);
             border-radius: 10px;
-            box-shadow: 0 0 20px rgba(80, 120, 255, 0.4);
-            border: 2px solid rgba(100, 150, 255, 0.3);
         }
+        
+        .btn {
+            display: inline-block;
+            background: linear-gradient(45deg, #00ffea, #0080ff);
+            color: white;
+            padding: 12px 30px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            margin: 10px;
+            transition: transform 0.3s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 255, 234, 0.3);
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            padding: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: #a0a0ff;
+        }
+        
         @media (max-width: 768px) {
             .container {
-                padding: 15px;
+                padding: 10px;
             }
+            
             h1 {
-                font-size: 2rem;
+                font-size: 2em;
             }
-            .nav a {
+            
+            .nav-bar a {
                 display: block;
-                margin: 10px 0;
-                font-size: 16px;
-            }
-            .feature-grid {
-                grid-template-columns: 1fr;
+                margin: 5px auto;
+                max-width: 200px;
             }
         }
     </style>
 </head>
 <body>
+    <div class="nav-bar">
+        <a href="index.html">🎮 Play Neou.io</a>
+        <a href="neonracer.html">🏎️ Play NEWGAMEHD</a>
+        <a href="about.html" style="color:#00ffea; border:1px solid #00ffea;">📖 About</a>
+        <a href="privacy.html">🔒 Privacy</a>
+        <a href="terms.html">📝 Terms</a>
+    </div>
+    
     <div class="container">
-        <div class="nav">
-            <a href="index.html">🎮 Play Game</a>
-            <a href="about.html">📖 About</a>
-            <a href="privacy.html">🔒 Privacy</a>
-            <a href="terms.html">📝 Terms</a>
+        <header>
+            <h1>About Neou.io</h1>
+            <p>Free Multiplayer Space Adventure & Racing Games Platform</p>
+        </header>
+        
+        <div class="game-section">
+            <h2>Our Mission</h2>
+            <p>At Neou.io, we believe that great gaming experiences should be accessible to everyone. That's why we've created free-to-play, browser-based multiplayer games that work on any device without downloads or subscriptions. Our goal is to bring players together in exciting virtual worlds where skill, strategy, and friendship matter.</p>
         </div>
         
-        <h1>About Neou.io</h1>
+        <div class="game-section">
+            <h2>Neou.io - Space Adventure Game</h2>
+            <p>Neou.io is our flagship multiplayer space adventure game where players explore outer worlds, complete missions, and compete on global leaderboards. Built with Unity WebGL, the game delivers stunning visuals and smooth gameplay directly in your web browser.</p>
+            
+            <h3>Key Features:</h3>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <h4>🚀 Space Exploration</h4>
+                    <p>Discover new planets, complete missions, and explore vast space environments with realistic physics.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>👥 Multiplayer Battles</h4>
+                    <p>Team up with friends or compete against players worldwide in real-time space battles.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🏆 Leaderboard System</h4>
+                    <p>Compete for top rankings across multiple game modes including Moon Ran and Team Moon Ran.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🎭 Character Customization</h4>
+                    <p>Create and personalize your own space adventurer with unique cosmetics and upgrades.</p>
+                </div>
+            </div>
+        </div>
         
-        <div class="content">
-            <h2>🚀 The Ultimate Outer Worldly Adventure</h2>
-            <p>Welcome to <strong>Neou.io</strong>, a groundbreaking multiplayer space adventure that takes you on an epic journey through uncharted galaxies! Dive into a universe filled with mystery, competition, and endless exploration.</p>
+        <div class="game-section">
+            <h2>NEWGAMEHD - Racing Game</h2>
+            <p>NEWGAMEHD offers intense 2D multiplayer racing with immersive 3D perspective. Race against other players, dodge obstacles, and survive for 5 minutes to claim victory on the leaderboards.</p>
             
-            <h2>🎮 Game Features</h2>
-            <div class="feature-grid">
-                <div class="feature-card">
-                    <h3>🌌 Real-time Multiplayer</h3>
-                    <p>Battle with players from around the world in intense space adventures. Team up or compete in massive cosmic battles.</p>
-                </div>
-                <div class="feature-card">
-                    <h3>🏆 Leaderboard System</h3>
-                    <p>Compete for the top spot on global leaderboards and earn special rewards for your achievements.</p>
-                </div>
-                <div class="feature-card">
-                    <h3>📱 Cross-platform Play</h3>
-                    <p>Play on any device with a modern web browser - no downloads required!</p>
-                </div>
-            </div>
-            
-            <h2>🕹️ How to Play</h2>
-            <p>Here's a quick guide to get you started on your space adventure:</p>
-            
-            <div class="how-to-play-section">
-                <!-- REPLACE THIS URL WITH YOUR HOW TO PLAY IMAGE -->
-                <img src="videos/HowToPlay.png" alt="How to Play Neou.io" class="how-to-play-image">
-                <p><em>Visual guide to mastering Neou.io</em></p>
-            </div>
-            
-  
-            
-            <h3>⚔️ Game Modes</h3>
+            <h3>Game Features:</h3>
             <ul>
-                <li><strong>Battle Arena:</strong> Free For All in lunar landscapes</li>
-                <li><strong>Team Battles:</strong> Join forces with friends in 5v5 space combat</li>
+                <li><strong>Real-time Multiplayer Racing:</strong> Compete against players worldwide</li>
+                <li><strong>3D Perspective:</strong> Unique visual experience with depth and dimension</li>
+                <li><strong>Survival Gameplay:</strong> Dodge cubes and survive for 5 minutes to win</li>
+                <li><strong>Checkpoint System:</strong> Automatic save points every minute</li>
+                <li><strong>Distance Leaderboards:</strong> Compete for the farthest travel distance</li>
             </ul>
+        </div>
+        
+        <div class="game-section">
+            <h2>Technical Information</h2>
+            <p>Our games are built using cutting-edge web technologies to ensure the best possible gaming experience:</p>
             
-            <h2>🌟 The Story</h2>
-            <p>In the year 3026, humanity discovered the "Neou Gateway" - a network of interstellar portals connecting previously unknown galaxies. As a member of the Galactic Exploration Unit, your mission is to:</p>
             <ul>
-                <li>Explore these mysterious outer worlds</li>
-                <li>Collect rare cosmic resources</li>
-                <li>Defend against hostile alien forces</li>
-                <li>Uncover the secrets of the ancient Neou civilization</li>
+                <li><strong>Platform:</strong> Unity WebGL (runs directly in browser)</li>
+                <li><strong>Multiplayer:</strong> Photon PUN for real-time multiplayer</li>
+                <li><strong>Backend:</strong> Firebase for authentication, leaderboards, and data storage</li>
+                <li><strong>Compatibility:</strong> Works on Windows, Mac, Linux, iOS, and Android</li>
+                <li><strong>Requirements:</strong> Modern browser (Chrome, Firefox, Safari, Edge) with WebGL support</li>
+                <li><strong>Storage:</strong> No downloads required - play instantly</li>
             </ul>
-            
-            <h2>🔧 Advanced Technology</h2>
-            <p>Neou.io is powered by cutting-edge technology:</p>
+        </div>
+        
+        <div class="game-section">
+            <h2>Our Commitment</h2>
             <ul>
-                <li><strong>Unity WebGL:</strong> High-performance 3D graphics in your browser</li>
-                <li><strong>Photon PUN 2.0:</strong> Seamless real-time multiplayer connectivity</li>
-                <li><strong>Firebase:</strong> Secure authentication and global leaderboards</li>
-                <li><strong>Progressive Web App:</strong> Install as an app on any device</li>
-                <li><strong>Responsive Design:</strong> Optimized for desktop, tablet, and mobile</li>
+                <li><strong>Free to Play:</strong> All games are completely free with no hidden costs</li>
+                <li><strong>No Pay-to-Win:</strong> Skill-based gameplay where victory depends on your abilities</li>
+                <li><strong>Safe Gaming Environment:</strong> Robust moderation and reporting systems</li>
+                <li><strong>Regular Updates:</strong> New features, content, and improvements added regularly</li>
+                <li><strong>Community Focus:</strong> Player feedback shapes our development roadmap</li>
             </ul>
-            
-            <h2>📱 Play Anywhere, Anytime</h2>
-            <p>Neou.io works perfectly on:</p>
-            <ul>
-                <li>Desktop computers (Windows, Mac, Linux)</li>
-                <li>Laptops and notebooks</li>
-                <li>Tablets (iPad, Android tablets)</li>
-                <li>Smartphones (iPhone, Android)</li>
-                <li>Any modern web browser (Chrome, Firefox, Safari, Edge)</li>
-            </ul>
-            
-            <h2>🤝 Join Our Community</h2>
-            <p>Become part of our growing community of space explorers! Share strategies, form alliances, and compete in regular tournaments. Follow us for updates on new features, worlds, and special events.</p>
-            
-            <div class="game-link">
-                <h3>Ready to Begin Your Adventure?</h3>
-                <p>Join thousands of players exploring the Neou universe right now!</p>
-                <a href="index.html">🚀 LAUNCH NEOU.IO NOW!</a>
-                <p style="margin-top: 15px; font-size: 14px; color: #88bbff;">
-                    <strong>Free to Play • No Download Required • Instant Access</strong>
-                </p>
-            </div>
-            
-            <p style="text-align: center; margin-top: 30px; color: #88bbff; font-style: italic;">
-                "The universe is not only stranger than we imagine, it is stranger than we can imagine."<br>
-                <span style="font-size: 14px;">- Adapted for Neou.io explorers</span>
-            </p>
+        </div>
+        
+        <div class="cta">
+            <h2>Ready to Play?</h2>
+            <p>Join thousands of players exploring our gaming universe. No downloads, no registration required (though optional accounts unlock more features).</p>
+            <a href="index.html" class="btn">Play Neou.io Space Adventure</a>
+            <a href="neonracer.html" class="btn">Play NEWGAMEHD Racing</a>
         </div>
     </div>
+    
+    <footer>
+        <p>© 2024 Neou.io - Free Multiplayer Browser Games</p>
+        <p>All games are free to play. No downloads required.</p>
+    </footer>
 </body>
 </html>
