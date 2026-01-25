@@ -1,0 +1,26 @@
+User-agent: *
+Allow: /
+Disallow: /Build/
+Disallow: /StreamingAssets/
+Disallow: /TemplateData/
+Disallow: /newgame/
+
+# Google-specific crawler
+User-agent: Googlebot
+Allow: /
+Disallow: /Build/
+Disallow: /StreamingAssets/
+Disallow: /TemplateData/
+Disallow: /newgame/
+
+# Bing crawler
+User-agent: Bingbot
+Allow: /
+Disallow: /Build/
+Disallow: /StreamingAssets/
+Disallow: /TemplateData/
+Disallow: /newgame/
+
+# Sitemap location
+Sitemap: https://www.neou.io/sitemap.xml
+Sitemap: https://neou.io/sitemap.xml
