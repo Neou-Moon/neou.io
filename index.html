@@ -7,7 +7,7 @@
     <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     
-    <!-- SEO Meta Tags - ADDED -->
+    <!-- SEO Meta Tags -->
     <meta name="description" content="Play Neou.io - A free multiplayer space adventure game. Explore outer worlds, complete missions, and compete on leaderboards with players worldwide. Also play NEWGAMEHD multiplayer racing.">
     <meta name="keywords" content="neou.io, multiplayer game, space adventure, free online game, webgl game, unity game, outer space adventure, multiplayer battles, leaderboards, character creation, NEWGAMEHD, racing game">
     <meta name="author" content="Neou.io">
@@ -21,12 +21,10 @@
     <meta name="twitter:title" content="Neou.io | An Outer Worldly Adventure">
     <meta name="twitter:description" content="Free multiplayer space adventure game with exploration, missions, and leaderboards.">
     
-    <!-- Google AdSense Auto Ads - Optimized Position -->
-    <!-- TEMPORARILY COMMENT OUT FOR GOOGLE REVIEW -->
-    <!-- <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9730697030788080" crossorigin="anonymous"></script> -->
+    <!-- Google AdSense - COMPLETELY REMOVED -->
     
     <title>Neou.io | An Outer Worldly Adventure</title>
-    <link rel="icon" href="data:;base64,iVBORw0KGgo="> <!-- Suppress favicon 404 -->
+    <link rel="icon" href="data:;base64,iVBORw0KGgo=">
     
     <!-- PWA Manifest -->
     <link rel="manifest" href="manifest.json">
@@ -53,19 +51,17 @@
             position: relative;
         }
 
-            /* Space background with stars */
-            body::before {
-                content: '';
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: radial-gradient(ellipse at center, rgba(8, 15, 30, 0.8) 0%, rgba(0, 0, 0, 1) 70%), url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"><defs><radialGradient id="grad"><stop offset="0%" stop-color="%23000B1A"/><stop offset="100%" stop-color="%23000000"/></radialGradient></defs><rect width="100%" height="100%" fill="url(%23grad)"/></svg>');
-                z-index: -2;
-            }
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at center, rgba(8, 15, 30, 0.8) 0%, rgba(0, 0, 0, 1) 70%), url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"><defs><radialGradient id="grad"><stop offset="0%" stop-color="%23000B1A"/><stop offset="100%" stop-color="%23000000"/></radialGradient></defs><rect width="100%" height="100%" fill="url(%23grad)"/></svg>');
+            z-index: -2;
+        }
 
-        /* Starfield effect */
         .stars {
             position: fixed;
             top: 0;
@@ -82,7 +78,6 @@
             border-radius: 50%;
         }
 
-        /* Header with title */
         .header {
             text-align: center;
             padding: 10px 0;
@@ -109,7 +104,6 @@
             font-style: italic;
         }
 
-        /* Navigation Bar */
         .nav-bar {
             text-align: center;
             padding: 10px 0;
@@ -133,7 +127,6 @@
             text-decoration: underline;
         }
 
-        /* Main content layout */
         .main-container {
             display: flex;
             flex-direction: column;
@@ -141,60 +134,15 @@
             padding: 0;
         }
 
-        .content-wrapper {
-            display: flex;
-            flex: 1;
-            width: 100%;
-            max-width: 1600px;
-            margin: 0 auto;
-            padding: 0 10px;
-        }
-
-        /* Ad containers */
-        .ad-side {
-            flex: 0 0 160px;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
-            padding: 10px 5px;
-        }
-
-        .ad-top {
-            width: 100%;
-            height: 90px;
-            margin-bottom: 10px;
-            background: rgba(30, 30, 60, 0.3);
-            border: 1px solid rgba(100, 150, 255, 0.2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: rgba(160, 210, 255, 0.5);
-            font-size: 14px;
-            border-radius: 4px;
-        }
-
-        .ad-vertical {
-            flex: 1;
-            min-height: 600px;
-            background: rgba(30, 30, 60, 0.3);
-            border: 1px solid rgba(100, 150, 255, 0.2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: rgba(160, 210, 255, 0.5);
-            font-size: 14px;
-            border-radius: 4px;
-            writing-mode: vertical-rl;
-            text-orientation: mixed;
-        }
-
-        /* Game container */
         .game-area {
             flex: 1;
             display: flex;
             flex-direction: column;
             align-items: center;
             padding: 10px;
+            max-width: 1600px;
+            margin: 0 auto;
+            width: 100%;
         }
 
         #unity-container {
@@ -208,7 +156,6 @@
             border-radius: 8px;
             overflow: hidden;
             box-shadow: 0 0 20px rgba(80, 120, 255, 0.3);
-            /* Keep aspect ratio at 16:9 */
             aspect-ratio: 16/9;
             max-width: 100%;
             max-height: 100%;
@@ -219,25 +166,22 @@
             height: 100%;
             background: #000;
             display: block;
-            /* This is the key: maintain 1920x1080 aspect ratio */
             object-fit: contain;
             aspect-ratio: 16/9;
         }
 
-        /* How to play image */
         .how-to-play {
             margin-top: 15px;
             text-align: center;
         }
 
-            .how-to-play img {
-                max-width: 100%;
-                height: auto;
-                border-radius: 8px;
-                box-shadow: 0 0 10px rgba(80, 120, 255, 0.5);
-            }
+        .how-to-play img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(80, 120, 255, 0.5);
+        }
 
-        /* Loading and fullscreen button styles */
         #loading-overlay {
             position: absolute;
             top: 0;
@@ -262,19 +206,18 @@
             left: 50%;
             transform: translateX(-50%);
             z-index: 20;
-            padding: 2px 14px; /* Super thin - 2px top/bottom */
+            padding: 2px 14px;
             background: rgba(255, 255, 255, 0.9);
             border: none;
-            border-radius: 2px; /* Very small radius */
+            border-radius: 2px;
             cursor: pointer;
             font-family: Arial, sans-serif;
-            font-size: 11px; /* Compact font */
+            font-size: 11px;
             backdrop-filter: blur(5px);
             white-space: nowrap;
-            line-height: 1.1; /* Very tight line height */
+            line-height: 1.1;
         }
 
-        /* iOS PWA Instructions */
         #ios-pwa-instructions {
             display: none;
             position: fixed;
@@ -352,30 +295,7 @@
             font-size: 13px;
         }
 
-        /* Mobile-specific adjustments */
         @media (max-width: 768px) {
-            .content-wrapper {
-                flex-direction: column;
-                padding: 0 5px;
-            }
-
-            .ad-side {
-                flex-direction: row;
-                flex: 0 0 auto;
-                padding: 5px 0;
-            }
-
-            .ad-top {
-                width: 100%;
-                height: 50px;
-                margin: 0 5px;
-                writing-mode: horizontal-tb;
-            }
-
-            .ad-vertical {
-                display: none; /* Hide vertical ads on mobile */
-            }
-
             .game-title {
                 font-size: 2.5rem;
             }
@@ -391,24 +311,21 @@
 
             #fullscreen-button {
                 top: 5px;
-                padding: 1px 10px; /* Ultra thin on mobile */
+                padding: 1px 10px;
                 font-size: 10px;
             }
 
-            /* iOS-specific fullscreen button adjustments */
             .ios #fullscreen-button {
                 background: rgba(255, 255, 255, 0.95);
                 border: 1px solid rgba(0, 0, 0, 0.2);
             }
 
-            /* On mobile, let the container take available height */
             #unity-container {
                 width: 100%;
                 max-height: 70vh;
             }
         }
 
-        /* Enhanced fullscreen styles with safe area support */
         :fullscreen #unity-container,
         :-webkit-full-screen #unity-container,
         :-moz-full-screen #unity-container {
@@ -439,7 +356,6 @@
             aspect-ratio: 16/9 !important;
         }
 
-        /* Support for safe area insets on modern browsers */
         @supports (padding: max(0px)) {
             #unity-container {
                 padding: 2px;
@@ -457,14 +373,12 @@
             }
         }
 
-        /* Hide fullscreen button when in fullscreen mode */
         :fullscreen #fullscreen-button,
         :-webkit-full-screen #fullscreen-button,
         :-moz-full-screen #fullscreen-button {
             display: none;
         }
 
-        /* Enhanced fullscreen styles - hide UI elements */
         @media (max-width: 768px) {
             :fullscreen .main-container,
             :-webkit-full-screen .main-container,
@@ -481,12 +395,6 @@
             :fullscreen .nav-bar,
             :-webkit-full-screen .nav-bar,
             :-moz-full-screen .nav-bar {
-                display: none !important;
-            }
-
-            :fullscreen .ad-side,
-            :-webkit-full-screen .ad-side,
-            :-moz-full-screen .ad-side {
                 display: none !important;
             }
 
@@ -529,7 +437,6 @@
             }
         }
 
-        /* iOS-specific styles for better fullscreen experience */
         .ios :fullscreen #unity-container,
         .ios :-webkit-full-screen #unity-container {
             padding-top: env(safe-area-inset-top) !important;
@@ -538,10 +445,8 @@
             padding-right: env(safe-area-inset-right) !important;
         }
 
-        /* PWA installed styles */
         .pwa-installed .header,
         .pwa-installed .nav-bar,
-        .pwa-installed .ad-side,
         .pwa-installed .how-to-play {
             display: none;
         }
@@ -559,7 +464,6 @@
             max-height: none !important;
         }
 
-        /* Portrait mode support */
         @media (max-width: 768px) and (orientation: portrait) {
             #unity-container {
                 width: 100%;
@@ -574,9 +478,9 @@
             }
         }
     </style>
-    <!-- Use Firebase modular API -->
+    <!-- Your Firebase code remains exactly the same -->
     <script type="module">
-        // Your existing Firebase code remains exactly the same
+        // Your existing Firebase code (unchanged)
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js';
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, updateProfile, sendPasswordResetEmail, sendEmailVerification, signInAnonymously, updateEmail } from 'https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js';
         import { getDatabase, ref, set, update, remove, onValue, onDisconnect, push, get, query, orderByChild } from 'https://www.gstatic.com/firebasejs/10.14.0/firebase-database.js';
@@ -621,7 +525,6 @@
                 setUserOnlineStatus(uid, true);
                 onDisconnect(ref(db, `users/${uid}/online`)).set(false);
 
-                // Existing party invite listener
                 onValue(ref(db, `partyInvites/${uid}`), (snapshot) => {
                     snapshot.forEach((childSnapshot) => {
                         const invite = childSnapshot.val();
@@ -637,7 +540,6 @@
                     });
                 }, { onlyOnce: false });
 
-                // NEW: Party join notification listener
                 onValue(ref(db, `partyJoinNotifications/${uid}`), (snapshot) => {
                     snapshot.forEach((childSnapshot) => {
                         const notification = childSnapshot.val();
@@ -718,7 +620,6 @@
             }
         };
 
-        // Anonymous sign-in for guests
         window.FirebaseAnonymousSignIn = function (callbackObjectName) {
             console.log('Attempting anonymous sign-in');
             signInAnonymously(auth)
@@ -776,7 +677,6 @@
 
                 console.log('[FirebaseSignUp] SUCCESS:', data);
 
-                // ✅ SIGN THE USER IN CLIENT-SIDE
                 const userCredential = await signInWithEmailAndPassword(auth, email, password);
                 console.log('[FirebaseSignUp] User signed in:', userCredential.user.uid);
 
@@ -803,7 +703,6 @@
                 }
             }
         };
-
 
         window.FirebaseSignIn = async function (username, password) {
             console.log(`[FirebaseSignIn] SECURE: Attempting login for username: ${username}`);
@@ -848,7 +747,6 @@
 
                 console.log('[FirebaseSignIn] SECURE: Cloud Function successful, signing in client-side');
 
-                // Now sign in client-side with the email we received
                 const userCredential = await signInWithEmailAndPassword(auth, data.email, password);
                 const user = userCredential.user;
 
@@ -1025,10 +923,6 @@
             }
         };
 
-        // ============================================================================
-        // LEADERBOARD AND STATS FUNCTIONS
-        // ============================================================================
-
         window.FirebaseLoadLeaderboard = function (gameMode, limit) {
             console.log(`🏆 DIRECT LEADERBOARD: Loading ${gameMode}, limit: ${limit}`);
 
@@ -1180,7 +1074,6 @@
                 });
         };
 
-        // ADD THIS FUNCTION to index.html
         window.FirebaseCleanupOldPartyInvites = function (uid, callbackObjectName) {
             console.log(`Cleaning up old party invites for UID: ${uid}`);
 
@@ -1194,7 +1087,6 @@
 
             const oneDayAgo = Date.now() - (24 * 60 * 60 * 1000); // 24 hours ago
 
-            // Cleanup old party invites
             get(ref(db, `partyInvites/${uid}`)).then((snapshot) => {
                 const updates = {};
 
@@ -1208,7 +1100,6 @@
                     });
                 }
 
-                // Cleanup old party join notifications
                 return get(ref(db, `partyJoinNotifications/${uid}`)).then((notifSnapshot) => {
                     if (notifSnapshot.exists()) {
                         notifSnapshot.forEach((childSnapshot) => {
@@ -1258,10 +1149,6 @@
                     console.error('❌ Crown award failed:', error);
                 });
         };
-
-        // ============================================================================
-        // FRIEND SYSTEM FUNCTIONS - DIRECT DATABASE ACCESS
-        // ============================================================================
 
         window.FirebaseSendFriendRequest = function (fromUid, toUsername, callbackObjectName) {
             console.log(`Sending friend request from ${fromUid} to ${toUsername}`);
@@ -1361,12 +1248,10 @@
 
                 console.log('Friends data loaded:', result);
 
-                // Create arrays to store promises for username lookups
                 const acceptedPromises = [];
                 const receivedPromises = [];
                 const sentPromises = [];
 
-                // Look up usernames for accepted friends
                 Object.keys(result.accepted).forEach(friendUid => {
                     acceptedPromises.push(
                         get(ref(db, `users/${friendUid}/username`))
@@ -1377,7 +1262,6 @@
                     );
                 });
 
-                // Look up usernames for received requests
                 Object.keys(result.receivedRequests).forEach(fromUid => {
                     receivedPromises.push(
                         get(ref(db, `users/${fromUid}/username`))
@@ -1388,7 +1272,6 @@
                     );
                 });
 
-                // Look up usernames for sent requests
                 Object.keys(result.sentRequests).forEach(toUid => {
                     sentPromises.push(
                         get(ref(db, `users/${toUid}/username`))
@@ -1399,13 +1282,11 @@
                     );
                 });
 
-                // Wait for all username lookups to complete
                 return Promise.all([
                     Promise.all(acceptedPromises),
                     Promise.all(receivedPromises),
                     Promise.all(sentPromises)
                 ]).then(([acceptedUsers, receivedUsers, sentUsers]) => {
-                    // Format: acceptedUsernames|receivedUsernames|sentUsernames
                     const acceptedStr = acceptedUsers.map(user => `${user.username}:${user.uid}`).join(',');
                     const receivedStr = receivedUsers.map(user => `${user.username}:${user.uid}`).join(',');
                     const sentStr = sentUsers.map(user => `${user.username}:${user.uid}`).join(',');
@@ -1445,12 +1326,6 @@
             });
         };
 
-        // ============================================================================
-        // PARTY SYSTEM FUNCTIONS - DIRECT DATABASE ACCESS
-        // ============================================================================
-
-        // Add these to your existing Firebase functions
-
         window.FirebaseKickFromParty = function (partyId, targetUid, callbackObjectName) {
             console.log(`Kicking ${targetUid} from party ${partyId}`);
 
@@ -1462,7 +1337,6 @@
                 return;
             }
 
-            // DIRECT DATABASE ACCESS - No Cloud Function needed
             const updates = {};
             updates[`parties/${partyId}/members/${targetUid}`] = null;
 
@@ -1492,7 +1366,6 @@
                 return;
             }
 
-            // Get leader username for the notification
             get(ref(db, `users/${auth.currentUser.uid}/username`)).then((snapshot) => {
                 const leaderUsername = snapshot.val() || 'Unknown';
 
@@ -1505,7 +1378,7 @@
                     timestamp: Date.now(),
                     type: 'joinMatch',
                     isPartyMatch: true,
-                    scene: "PartyLoadingMatch" // SPECIFIC SCENE FOR PARTIES
+                    scene: "PartyLoadingMatch"
                 };
 
                 return update(ref(db), updates);
@@ -1620,7 +1493,6 @@
         window.FirebaseLeaveParty = function (uid, partyId, callbackObjectName) {
             console.log(`Leaving party ${partyId} for ${uid}`);
 
-            // Use a transaction to safely handle party cleanup
             const partyRef = ref(db, `parties/${partyId}`);
 
             get(partyRef).then((snapshot) => {
@@ -1635,7 +1507,6 @@
                 const updates = {};
                 updates[`parties/${partyId}/members/${uid}`] = null;
 
-                // Check if we're the last member
                 const members = snapshot.val().members || {};
                 let remainingMembers = 0;
                 Object.keys(members).forEach(memberUid => {
@@ -1644,10 +1515,8 @@
                     }
                 });
 
-                // If we're the last member, delete the entire party
                 if (remainingMembers === 0) {
                     console.log(`Deleting empty party ${partyId}`);
-                    // Use remove() for the entire party instead of setting to null in updates
                     remove(partyRef).then(() => {
                         console.log('Left party and deleted empty party successfully');
                         if (unityInstance) {
@@ -1660,7 +1529,6 @@
                         }
                     });
                 } else {
-                    // Just remove ourselves from members
                     update(ref(db), updates)
                         .then(() => {
                             console.log('Left party successfully');
@@ -1714,12 +1582,12 @@
     </script>
 </head>
 <body>
-    <!-- CONTENT FOR GOOGLE CRAWLER - ADDED THIS SECTION -->
-    <div id="seo-content" style="position: absolute; left: -9999px; top: -9999px; width: 1px; height: 1px; overflow: hidden;">
-        <h1>Neou.io - An Outer Worldly Adventure Game</h1>
+    <!-- CONTENT FOR GOOGLE CRAWLER - MOVED TO VISIBLE AREA AT BOTTOM -->
+    <div id="game-description" style="padding: 20px; max-width: 1200px; margin: 0 auto; color: #ccc; border-top: 1px solid #333;">
+        <h1 style="color: white;">Neou.io - An Outer Worldly Adventure Game</h1>
         <p>Neou.io is a free multiplayer space adventure game where you explore outer worlds, complete missions, and compete with players worldwide. Experience space exploration, multiplayer battles, leaderboard competition, and custom character creation in this immersive browser-based game.</p>
         
-        <h2>Game Features:</h2>
+        <h2 style="color: white;">Game Features:</h2>
         <ul>
             <li><strong>Multiplayer Space Adventure:</strong> Play with friends and players from around the world</li>
             <li><strong>Real-time Leaderboard System:</strong> Compete for top rankings in various game modes</li>
@@ -1730,10 +1598,10 @@
             <li><strong>Free to Play:</strong> No downloads or subscriptions required</li>
         </ul>
         
-        <h2>How to Play Neou.io:</h2>
+        <h2 style="color: white;">How to Play Neou.io:</h2>
         <p>Start your space adventure by creating a character and entering the game world. Use the on-screen controls or keyboard to navigate your spaceship. Complete missions to earn crowns, which improve your ranking on the global leaderboards. Invite friends to form parties and explore together.</p>
         
-        <h3>Game Modes:</h3>
+        <h3 style="color: white;">Game Modes:</h3>
         <ul>
             <li><strong>Moon Ran:</strong> Competitive racing and survival mode</li>
             <li><strong>Team Moon Ran:</strong> Team-based cooperative gameplay</li>
@@ -1741,10 +1609,10 @@
             <li><strong>Multiplayer Battles:</strong> Compete against other players in real-time</li>
         </ul>
         
-        <h2>Also Available: NEWGAMEHD Racing Game</h2>
+        <h2 style="color: white;">Also Available: NEWGAMEHD Racing Game</h2>
         <p>In addition to Neou.io, enjoy <strong>NEWGAMEHD</strong> - a 2D multiplayer racing game with 3D perspective. Race against other players, dodge obstacles, and survive for 5 minutes to win. Features real-time multiplayer, checkpoints, and live leaderboards.</p>
         
-        <h3>NEWGAMEHD Features:</h3>
+        <h3 style="color: white;">NEWGAMEHD Features:</h3>
         <ul>
             <li>Real-time multiplayer 2D racing with 3D perspective</li>
             <li>Dodge cubes coming down the road - each hit reduces health</li>
@@ -1754,13 +1622,13 @@
             <li>Cross-platform multiplayer racing</li>
         </ul>
         
-        <h3>Game Controls for Neou.io:</h3>
+        <h3 style="color: white;">Game Controls for Neou.io:</h3>
         <p>WASD keys for movement, mouse for interaction, and on-screen controls for mobile devices. The game features intuitive controls suitable for both beginners and experienced gamers.</p>
         
-        <h2>About Neou.io Platform:</h2>
+        <h2 style="color: white;">About Neou.io Platform:</h2>
         <p>Neou.io is a gaming platform offering free multiplayer browser games built with Unity WebGL technology. All games run directly in your web browser without downloads, working on Windows, Mac, Linux, iOS, and Android devices. Best experienced in Chrome or Firefox browsers.</p>
         
-        <h3>Technical Requirements:</h3>
+        <h3 style="color: white;">Technical Requirements:</h3>
         <ul>
             <li>Modern web browser (Chrome, Firefox, Safari, Edge)</li>
             <li>Internet connection for multiplayer features</li>
@@ -1768,7 +1636,7 @@
             <li>No additional downloads or plugins required</li>
         </ul>
         
-        <h3>Privacy and Safety:</h3>
+        <h3 style="color: white;">Privacy and Safety:</h3>
         <p>Neou.io is committed to providing a safe gaming environment for all players. We implement appropriate chat filters, reporting systems, and privacy protections to ensure a positive gaming experience.</p>
     </div>
 
@@ -1809,37 +1677,24 @@
             <a href="terms.html">📝 Terms</a>
         </div>
         
-        <!-- Main content area -->
-        <div class="content-wrapper">
-            <!-- Left ad container -->
-            <div class="ad-side left-ad">
-                <div class="ad-top" id="ad-top-left"></div>
-                <div class="ad-vertical" id="ad-vertical-left"></div>
+        <!-- Game area - NO AD CONTAINERS -->
+        <div class="game-area">
+            <div id="unity-container">
+                <canvas id="unity-canvas"></canvas>
+                <div id="loading-overlay">Loading NeouWebGL...</div>
+                <button id="fullscreen-button">Fullscreen</button>
             </div>
 
-            <!-- Game area -->
-            <div class="game-area">
-                <div id="unity-container">
-                    <canvas id="unity-canvas"></canvas>
-                    <div id="loading-overlay">Loading NeouWebGL...</div>
-                    <button id="fullscreen-button">Fullscreen</button>
-                </div>
-
-                <!-- How to play image -->
-                <div class="how-to-play">
-                    <img src="videos/HowToPlay.png" alt="How to Play Neou.io - Space Adventure Game Controls and Instructions" crossorigin="anonymous">
-                </div>
-            </div>
-
-            <!-- Right ad container -->
-            <div class="ad-side right-ad">
-                <div class="ad-top" id="ad-top-right"></div>
-                <div class="ad-vertical" id="ad-vertical-right"></div>
+            <!-- How to play image -->
+            <div class="how-to-play">
+                <img src="videos/HowToPlay.png" alt="How to Play Neou.io - Space Adventure Game Controls and Instructions" crossorigin="anonymous">
             </div>
         </div>
     </div>
 
+    <!-- Your existing JavaScript (unchanged) -->
     <script>
+        // Your existing JavaScript code (exactly as you had it)
         // Detect iOS
         function isIOS() {
             return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
