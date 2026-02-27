@@ -141,16 +141,16 @@
             max-width: 1600px;
             margin: 0 auto;
             padding: 0 10px;
-            justify-content: center; /* Center the game area */
+            justify-content: center;
         }
 
         .game-area {
-            flex: 0 1 auto; /* Don't grow, can shrink, auto basis */
+            flex: 0 1 auto;
             display: flex;
             flex-direction: column;
             align-items: center;
             padding: 10px;
-            max-width: 100%; /* Take full width of wrapper */
+            max-width: 100%;
             width: 100%;
         }
 
@@ -304,7 +304,7 @@
             font-size: 13px;
         }
 
-        /* SEO Content Section */
+        /* SEO Content Section - Moved to bottom */
         #game-description {
             padding: 30px 20px;
             max-width: 1200px;
@@ -1617,7 +1617,62 @@
     </script>
 </head>
 <body>
-    <!-- CONTENT FOR GOOGLE CRAWLER - VISIBLE AT TOP (SO CRAWLER SEES IT FIRST) -->
+    <!-- Starfield background -->
+    <div class="stars" id="stars"></div>
+
+    <!-- iOS PWA Instructions Popup -->
+    <div id="ios-pwa-instructions">
+        <div class="pwa-header">
+            <h3 class="pwa-title">📱 Install Neou.io App</h3>
+            <button class="close-pwa" id="close-pwa">×</button>
+        </div>
+        <div class="pwa-icon">⬇️</div>
+        <div class="pwa-content">
+            For the best fullscreen experience on iOS, install Neou.io as a PWA (Progressive Web App):
+        </div>
+        <ol class="pwa-steps">
+            <li>Tap the <strong>Share</strong> button <span style="color:#a0d2ff;">(⎋)</span> in Safari</li>
+            <li>Scroll down and tap <strong>"Add to Home Screen"</strong></li>
+            <li>Tap <strong>"Add"</strong> in the top right corner</li>
+            <li>Launch from your Home Screen for fullscreen gameplay!</li>
+        </ol>
+    </div>
+
+    <div class="main-container">
+        <!-- Header with title -->
+        <div class="header">
+            <h1 class="game-title">Neou.io</h1>
+            <p class="game-subtitle">An Outer Worldly Adventure</p>
+        </div>
+
+        <!-- Navigation Bar -->
+        <div class="nav-bar">
+            <a href="index.html">🎮 Play Neou.io</a>
+            <a href="neonracer.html">🏎️ Play Neon Road Racer</a>
+            <a href="about.html">📖 About</a>
+            <a href="privacy.html">🔒 Privacy</a>
+            <a href="terms.html">📝 Terms</a>
+        </div>
+        
+        <!-- Main content area with proper layout (SIDEBARS REMOVED) -->
+        <div class="content-wrapper">
+            <!-- Game area - centered, no sidebars -->
+            <div class="game-area">
+                <div id="unity-container">
+                    <canvas id="unity-canvas"></canvas>
+                    <div id="loading-overlay">Loading NeouWebGL...</div>
+                    <button id="fullscreen-button">Fullscreen</button>
+                </div>
+
+                <!-- How to play image -->
+                <div class="how-to-play">
+                    <img src="videos/HowToPlay.png" alt="How to Play Neou.io - Space Adventure Game Controls and Instructions" crossorigin="anonymous">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTENT FOR GOOGLE CRAWLER - MOVED BELOW GAME AND HOW-TO-PLAY -->
     <div id="game-description">
         <h1>Neou.io - An Outer Worldly Adventure Game</h1>
         <p>Neou.io is a free multiplayer space adventure game where you explore outer worlds, complete missions, and compete with players worldwide. Experience space exploration, multiplayer battles, leaderboard competition, and custom character creation in this immersive browser-based game.</p>
@@ -1673,62 +1728,6 @@
         
         <h3>Privacy and Safety:</h3>
         <p>Neou.io is committed to providing a safe gaming environment for all players. We implement appropriate chat filters, reporting systems, and privacy protections to ensure a positive gaming experience.</p>
-    </div>
-
-    <!-- Starfield background -->
-    <div class="stars" id="stars"></div>
-
-    <!-- iOS PWA Instructions Popup -->
-    <div id="ios-pwa-instructions">
-        <div class="pwa-header">
-            <h3 class="pwa-title">📱 Install Neou.io App</h3>
-            <button class="close-pwa" id="close-pwa">×</button>
-        </div>
-        <div class="pwa-icon">⬇️</div>
-        <div class="pwa-content">
-            For the best fullscreen experience on iOS, install Neou.io as a PWA (Progressive Web App):
-        </div>
-        <ol class="pwa-steps">
-            <li>Tap the <strong>Share</strong> button <span style="color:#a0d2ff;">(⎋)</span> in Safari</li>
-            <li>Scroll down and tap <strong>"Add to Home Screen"</strong></li>
-            <li>Tap <strong>"Add"</strong> in the top right corner</li>
-            <li>Launch from your Home Screen for fullscreen gameplay!</li>
-        </ol>
-    </div>
-
-    <div class="main-container">
-        <!-- Header with title -->
-        <div class="header">
-            <h1 class="game-title">Neou.io</h1>
-            <p class="game-subtitle">An Outer Worldly Adventure</p>
-        </div>
-
-        <!-- Navigation Bar -->
-        <div class="nav-bar">
-            <a href="index.html">🎮 Play Neou.io</a>
-            <a href="neonracer.html">🏎️ Play Neon Road Racer</a>
-            <a href="indeximg.html">📷 Free AI Image Generator</a>
-            <a href="about.html">📖 About</a>
-            <a href="privacy.html">🔒 Privacy</a>
-            <a href="terms.html">📝 Terms</a>
-        </div>
-        
-        <!-- Main content area with proper layout (SIDEBARS REMOVED) -->
-        <div class="content-wrapper">
-            <!-- Game area - centered, no sidebars -->
-            <div class="game-area">
-                <div id="unity-container">
-                    <canvas id="unity-canvas"></canvas>
-                    <div id="loading-overlay">Loading NeouWebGL...</div>
-                    <button id="fullscreen-button">Fullscreen</button>
-                </div>
-
-                <!-- How to play image -->
-                <div class="how-to-play">
-                    <img src="videos/HowToPlay.png" alt="How to Play Neou.io - Space Adventure Game Controls and Instructions" crossorigin="anonymous">
-                </div>
-            </div>
-        </div>
     </div>
 
     <!-- Your existing JavaScript (unchanged) -->
