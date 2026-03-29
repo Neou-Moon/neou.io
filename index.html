@@ -1734,7 +1734,7 @@
     <script>
         // Your existing JavaScript code (exactly as you had it)
         // Detect iOS
-        function isIOS() {
+          function isIOS() {
             return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
         }
 
@@ -1827,12 +1827,12 @@
             }
         }
 
-        // NEW FUNCTION: Exit fullscreen when input fields are clicked
+        // IMPROVED: Exit fullscreen when input fields are clicked
         function exitFullscreenOnInputFocus() {
             // Function to exit fullscreen
             function exitFullscreen() {
                 if (document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement) {
-                    console.log('Exiting fullscreen due to input field focus');
+                    console.log('Exiting fullscreen due to input field interaction');
                     if (document.exitFullscreen) {
                         document.exitFullscreen();
                     } else if (document.webkitExitFullscreen) {
@@ -1840,18 +1840,55 @@
                     } else if (document.mozCancelFullScreen) {
                         document.mozCancelFullScreen();
                     }
+                    return true;
                 }
+                return false;
             }
 
-            // Listen for focus events on any input or textarea elements
-            document.addEventListener('focusin', function(event) {
-                const tagName = event.target.tagName.toLowerCase();
-                if (tagName === 'input' || tagName === 'textarea' || 
-                    (event.target.isContentEditable) ||
-                    event.target.getAttribute('contenteditable') === 'true') {
+            // Use capture phase to catch events before they reach Unity
+            document.addEventListener('mousedown', function(event) {
+                // Check if the clicked element is an input or has an input ancestor
+                let target = event.target;
+                let isInput = false;
+                
+                while (target && target !== document.body) {
+                    const tagName = target.tagName ? target.tagName.toLowerCase() : '';
+                    if (tagName === 'input' || tagName === 'textarea' || 
+                        target.isContentEditable ||
+                        target.getAttribute('contenteditable') === 'true' ||
+                        target.classList?.contains('unity-input')) {
+                        isInput = true;
+                        break;
+                    }
+                    target = target.parentElement;
+                }
+                
+                if (isInput) {
                     exitFullscreen();
                 }
-            });
+            }, true); // Use capture phase
+            
+            // Also handle touchstart for mobile
+            document.addEventListener('touchstart', function(event) {
+                let target = event.target;
+                let isInput = false;
+                
+                while (target && target !== document.body) {
+                    const tagName = target.tagName ? target.tagName.toLowerCase() : '';
+                    if (tagName === 'input' || tagName === 'textarea' || 
+                        target.isContentEditable ||
+                        target.getAttribute('contenteditable') === 'true' ||
+                        target.classList?.contains('unity-input')) {
+                        isInput = true;
+                        break;
+                    }
+                    target = target.parentElement;
+                }
+                
+                if (isInput) {
+                    exitFullscreen();
+                }
+            }, true);
         }
 
         var unityInstance = null;
