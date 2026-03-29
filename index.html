@@ -1827,6 +1827,33 @@
             }
         }
 
+        // NEW FUNCTION: Exit fullscreen when input fields are clicked
+        function exitFullscreenOnInputFocus() {
+            // Function to exit fullscreen
+            function exitFullscreen() {
+                if (document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement) {
+                    console.log('Exiting fullscreen due to input field focus');
+                    if (document.exitFullscreen) {
+                        document.exitFullscreen();
+                    } else if (document.webkitExitFullscreen) {
+                        document.webkitExitFullscreen();
+                    } else if (document.mozCancelFullScreen) {
+                        document.mozCancelFullScreen();
+                    }
+                }
+            }
+
+            // Listen for focus events on any input or textarea elements
+            document.addEventListener('focusin', function(event) {
+                const tagName = event.target.tagName.toLowerCase();
+                if (tagName === 'input' || tagName === 'textarea' || 
+                    (event.target.isContentEditable) ||
+                    event.target.getAttribute('contenteditable') === 'true') {
+                    exitFullscreen();
+                }
+            });
+        }
+
         var unityInstance = null;
         var container = document.querySelector("#unity-container");
         var canvas = document.querySelector("#unity-canvas");
@@ -1839,6 +1866,9 @@
 
         // Setup iOS specific handlers first
         setupIOSFullscreenWorkaround();
+
+        // Setup fullscreen exit on input focus (for all devices)
+        exitFullscreenOnInputFocus();
 
         // Only add normal fullscreen behavior for non-iOS or iOS PWA
         if (!isIOS() || isStandalone()) {
