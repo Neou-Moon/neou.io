@@ -1,3 +1,5 @@
+Here is your complete `index.html` with Google AdSense and side banners removed, and the Monetag popunder ad added (shows once per session before the game loads).
+```html
 <!DOCTYPE html>
 <html lang="en-us">
 <head>
@@ -21,8 +23,15 @@
     <meta name="twitter:title" content="Neou.io | An Outer Worldly Adventure">
     <meta name="twitter:description" content="Free multiplayer space adventure game with exploration, missions, and leaderboards.">
     
-    <!-- AppLixir Pre-roll Ad SDK -->
-    <script src="https://cdn.applixir.com/sdk/applixir-sdk.min.js"></script>
+    <!-- Monetag Popunder Ad - shows once per session when page loads -->
+    <script>
+        // Only show popunder once per browser session
+        if (!sessionStorage.getItem('monetag_popped')) {
+            sessionStorage.setItem('monetag_popped', 'true');
+            // Monetag zone code
+            (function(s){s.dataset.zone='10905867',s.src='https://al5sm.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')));
+        }
+    </script>
     
     <title>Neou.io | An Outer Worldly Adventure</title>
     <link rel="icon" href="data:;base64,iVBORw0KGgo=">
@@ -178,65 +187,6 @@
             display: block;
             object-fit: contain;
             aspect-ratio: 16/9;
-        }
-
-        /* Ad overlay container - sits on top of the game canvas */
-        #ad-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: #000;
-            z-index: 100;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            border-radius: 8px;
-        }
-        
-        #ad-container {
-            width: 100%;
-            height: 100%;
-            background: #000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        
-        .ad-loading-text {
-            color: white;
-            font-size: 18px;
-            text-align: center;
-            padding: 20px;
-        }
-        
-        .skip-ad-button {
-            position: absolute;
-            bottom: 20px;
-            right: 20px;
-            background: rgba(0,0,0,0.7);
-            color: white;
-            border: 1px solid #fff;
-            border-radius: 4px;
-            padding: 8px 16px;
-            cursor: pointer;
-            font-size: 14px;
-            z-index: 101;
-            display: none;
-        }
-        
-        .ad-counter {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: rgba(0,0,0,0.6);
-            color: white;
-            padding: 5px 10px;
-            border-radius: 20px;
-            font-size: 12px;
-            z-index: 101;
         }
 
         .how-to-play {
@@ -601,8 +551,8 @@
             console.log('Firebase initialized successfully');
         } catch (error) {
             console.error('Firebase initialization failed:', error.message);
-            if (unityInstance) {
-                unityInstance.SendMessage('GameManager', 'OnFirebaseInitFailed', error.message);
+            if (window.unityInstance) {
+                window.unityInstance.SendMessage('GameManager', 'OnFirebaseInitFailed', error.message);
             }
             throw error;
         }
@@ -624,8 +574,8 @@
                         const invite = childSnapshot.val();
                         if (invite) {
                             console.log(`🎉 PARTY INVITE RECEIVED for UID ${uid}:`, JSON.stringify(invite));
-                            if (unityInstance) {
-                                unityInstance.SendMessage('FriendsManager', 'OnPartyInviteReceived', `${invite.inviterUid}|${invite.inviterUsername}|${invite.partyId}`);
+                            if (window.unityInstance) {
+                                window.unityInstance.SendMessage('FriendsManager', 'OnPartyInviteReceived', `${invite.inviterUid}|${invite.inviterUsername}|${invite.partyId}`);
                             } else {
                                 console.error('Unity instance not initialized for party invite');
                             }
@@ -639,8 +589,8 @@
                         const notification = childSnapshot.val();
                         if (notification && notification.type === 'joinMatch') {
                             console.log(`🎯 PARTY JOIN NOTIFICATION for UID ${uid}:`, JSON.stringify(notification));
-                            if (unityInstance) {
-                                unityInstance.SendMessage('FriendsManager', 'OnPartyJoinNotification',
+                            if (window.unityInstance) {
+                                window.unityInstance.SendMessage('FriendsManager', 'OnPartyJoinNotification',
                                     `${notification.partyId}|${notification.leaderUsername}`);
                             } else {
                                 console.error('Unity instance not initialized for party join notification');
@@ -655,7 +605,7 @@
         });
 
         // ============================================================================
-        // AUTHENTICATION FUNCTIONS (keeping all your existing Firebase functions)
+        // AUTHENTICATION FUNCTIONS (all original functions preserved)
         // ============================================================================
 
         window.FirebaseCheckUsernameAvailability = async function (username) {
@@ -663,8 +613,8 @@
 
             if (!username || typeof username !== 'string' || username.trim() === '') {
                 console.error('[FirebaseCheckUsernameAvailability] Invalid username');
-                if (unityInstance) {
-                    unityInstance.SendMessage('StartScreenController', 'OnUsernameCheckResult', 'error|Invalid username');
+                if (window.unityInstance) {
+                    window.unityInstance.SendMessage('StartScreenController', 'OnUsernameCheckResult', 'error|Invalid username');
                 }
                 return;
             }
@@ -692,12 +642,12 @@
                 console.log(`[FirebaseCheckUsernameAvailability] SECURE: Response data:`, data);
 
                 if (data.available) {
-                    if (unityInstance) {
-                        unityInstance.SendMessage('StartScreenController', 'OnUsernameCheckResult', 'available');
+                    if (window.unityInstance) {
+                        window.unityInstance.SendMessage('StartScreenController', 'OnUsernameCheckResult', 'available');
                     }
                 } else {
-                    if (unityInstance) {
-                        unityInstance.SendMessage('StartScreenController', 'OnUsernameCheckResult', 'taken');
+                    if (window.unityInstance) {
+                        window.unityInstance.SendMessage('StartScreenController', 'OnUsernameCheckResult', 'taken');
                     }
                 }
             } catch (error) {
@@ -708,8 +658,8 @@
                     errorMessage = 'Network error: Cannot reach server. Check your connection.';
                 }
 
-                if (unityInstance) {
-                    unityInstance.SendMessage('StartScreenController', 'OnUsernameCheckResult', `error|${errorMessage}`);
+                if (window.unityInstance) {
+                    window.unityInstance.SendMessage('StartScreenController', 'OnUsernameCheckResult', `error|${errorMessage}`);
                 }
             }
         };
@@ -721,16 +671,16 @@
                     const uid = userCredential.user.uid;
                     console.log('Anonymous sign-in successful, UID: ' + uid);
                     setUserOnlineStatus(uid, true);
-                    if (unityInstance) {
-                        unityInstance.SendMessage(callbackObjectName, 'OnAnonymousSignInSuccess', uid);
+                    if (window.unityInstance) {
+                        window.unityInstance.SendMessage(callbackObjectName, 'OnAnonymousSignInSuccess', uid);
                     } else {
                         console.error('Unity instance not initialized');
                     }
                 })
                 .catch((error) => {
                     console.error('Anonymous sign-in error: ', error.code, error.message);
-                    if (unityInstance) {
-                        unityInstance.SendMessage(callbackObjectName, 'OnAnonymousSignInFailed', error.message);
+                    if (window.unityInstance) {
+                        window.unityInstance.SendMessage(callbackObjectName, 'OnAnonymousSignInFailed', error.message);
                     } else {
                         console.error('Unity instance not initialized');
                     }
@@ -742,8 +692,8 @@
 
             if (!username || !password || !email) {
                 console.error('[FirebaseSignUp] Missing fields');
-                if (unityInstance) {
-                    unityInstance.SendMessage('StartScreenController', 'OnSignUpFailed', 'Username, email, and password are required');
+                if (window.unityInstance) {
+                    window.unityInstance.SendMessage('StartScreenController', 'OnSignUpFailed', 'Username, email, and password are required');
                 }
                 return;
             }
@@ -774,8 +724,8 @@
                 const userCredential = await signInWithEmailAndPassword(auth, email, password);
                 console.log('[FirebaseSignUp] User signed in:', userCredential.user.uid);
 
-                if (unityInstance) {
-                    unityInstance.SendMessage(
+                if (window.unityInstance) {
+                    window.unityInstance.SendMessage(
                         'StartScreenController',
                         'OnSignUpSuccess',
                         `${data.uid}|${data.username}|${data.email}`
@@ -792,8 +742,8 @@
                     errorMessage = 'Username already taken';
                 }
 
-                if (unityInstance) {
-                    unityInstance.SendMessage('StartScreenController', 'OnSignUpFailed', errorMessage);
+                if (window.unityInstance) {
+                    window.unityInstance.SendMessage('StartScreenController', 'OnSignUpFailed', errorMessage);
                 }
             }
         };
@@ -804,8 +754,8 @@
 
             if (!username || !password) {
                 console.error('[FirebaseSignIn] Invalid input: username or password is empty');
-                if (unityInstance) {
-                    unityInstance.SendMessage('StartScreenController', 'OnSignInFailed', 'Username and password are required');
+                if (window.unityInstance) {
+                    window.unityInstance.SendMessage('StartScreenController', 'OnSignInFailed', 'Username and password are required');
                 }
                 return;
             }
@@ -847,8 +797,8 @@
 
                 console.log('[FirebaseSignIn] SECURE: Client-side sign-in successful:', user.uid);
 
-                if (unityInstance) {
-                    unityInstance.SendMessage(
+                if (window.unityInstance) {
+                    window.unityInstance.SendMessage(
                         'StartScreenController',
                         'OnSignInSuccess',
                         `${data.uid}|${data.username}`
@@ -886,8 +836,8 @@
 
                 console.error(`[FirebaseSignIn] SECURE: Final error message: ${errorMessage}`);
 
-                if (unityInstance) {
-                    unityInstance.SendMessage('StartScreenController', 'OnSignInFailed', errorMessage);
+                if (window.unityInstance) {
+                    window.unityInstance.SendMessage('StartScreenController', 'OnSignInFailed', errorMessage);
                 }
             }
         };
@@ -897,16 +847,16 @@
             sendPasswordResetEmail(auth, email)
                 .then(() => {
                     console.log('Password reset email sent successfully');
-                    if (unityInstance) {
-                        unityInstance.SendMessage(callbackObjectName, 'OnPasswordResetSent', 'success');
+                    if (window.unityInstance) {
+                        window.unityInstance.SendMessage(callbackObjectName, 'OnPasswordResetSent', 'success');
                     } else {
                         console.error('Unity instance not initialized');
                     }
                 })
                 .catch(error => {
                     console.error('Error sending password reset:', error.code, error.message);
-                    if (unityInstance) {
-                        unityInstance.SendMessage(callbackObjectName, 'OnPasswordResetSent', error.message);
+                    if (window.unityInstance) {
+                        window.unityInstance.SendMessage(callbackObjectName, 'OnPasswordResetSent', error.message);
                     } else {
                         console.error('Unity instance not initialized');
                     }
@@ -919,23 +869,23 @@
             if (user) {
                 user.reload().then(() => {
                     console.log('Verification status: ', user.emailVerified ? 'verified' : 'unverified');
-                    if (unityInstance) {
-                        unityInstance.SendMessage(callbackObjectName, 'OnVerificationStatusReceived', user.emailVerified ? 'verified' : 'unverified');
+                    if (window.unityInstance) {
+                        window.unityInstance.SendMessage(callbackObjectName, 'OnVerificationStatusReceived', user.emailVerified ? 'verified' : 'unverified');
                     } else {
                         console.error('Unity instance not initialized');
                     }
                 }).catch(error => {
                     console.error('Error reloading user for verification status:', error.code, error.message);
-                    if (unityInstance) {
-                        unityInstance.SendMessage(callbackObjectName, 'OnVerificationStatusReceived', 'error');
+                    if (window.unityInstance) {
+                        window.unityInstance.SendMessage(callbackObjectName, 'OnVerificationStatusReceived', 'error');
                     } else {
                         console.error('Unity instance not initialized');
                     }
                 });
             } else {
                 console.error('No user signed in for verification status check');
-                if (unityInstance) {
-                    unityInstance.SendMessage(callbackObjectName, 'OnVerificationStatusReceived', 'no_user');
+                if (window.unityInstance) {
+                    window.unityInstance.SendMessage(callbackObjectName, 'OnVerificationStatusReceived', 'no_user');
                 } else {
                     console.error('Unity instance not initialized');
                 }
@@ -947,15 +897,15 @@
             get(ref(db, `users/${uid}/email`)).then(snapshot => {
                 const email = snapshot.val() || '';
                 console.log(`Email loaded: ${email}`);
-                if (unityInstance) {
-                    unityInstance.SendMessage(callbackObjectName, 'OnEmailLoaded', email);
+                if (window.unityInstance) {
+                    window.unityInstance.SendMessage(callbackObjectName, 'OnEmailLoaded', email);
                 } else {
                     console.error('Unity instance not initialized');
                 }
             }).catch(error => {
                 console.error('Error loading email:', error.code, error.message);
-                if (unityInstance) {
-                    unityInstance.SendMessage(callbackObjectName, 'OnEmailLoaded', '');
+                if (window.unityInstance) {
+                    window.unityInstance.SendMessage(callbackObjectName, 'OnEmailLoaded', '');
                 } else {
                     console.error('Unity instance not initialized');
                 }
@@ -973,16 +923,16 @@
                         auth.signOut()
                             .then(() => {
                                 console.log(`User ${uid} signed out successfully`);
-                                if (unityInstance) {
-                                    unityInstance.SendMessage('GameManager', 'OnSignOutSuccess', 'success');
+                                if (window.unityInstance) {
+                                    window.unityInstance.SendMessage('GameManager', 'OnSignOutSuccess', 'success');
                                 } else {
                                     console.error('Unity instance not initialized');
                                 }
                             })
                             .catch(error => {
                                 console.error(`SignOut error: ${error.code} - ${error.message}`);
-                                if (unityInstance) {
-                                    unityInstance.SendMessage('GameManager', 'OnSignOutFailed', error.message);
+                                if (window.unityInstance) {
+                                    window.unityInstance.SendMessage('GameManager', 'OnSignOutFailed', error.message);
                                 } else {
                                     console.error('Unity instance not initialized');
                                 }
@@ -993,16 +943,16 @@
                         auth.signOut()
                             .then(() => {
                                 console.log(`User ${uid} signed out successfully`);
-                                if (unityInstance) {
-                                    unityInstance.SendMessage('GameManager', 'OnSignOutSuccess', 'success');
+                                if (window.unityInstance) {
+                                    window.unityInstance.SendMessage('GameManager', 'OnSignOutSuccess', 'success');
                                 } else {
                                     console.error('Unity instance not initialized');
                                 }
                             })
                             .catch(error => {
                                 console.error(`SignOut error: ${error.code} - ${error.message}`);
-                                if (unityInstance) {
-                                    unityInstance.SendMessage('GameManager', 'OnSignOutFailed', error.message);
+                                if (window.unityInstance) {
+                                    window.unityInstance.SendMessage('GameManager', 'OnSignOutFailed', error.message);
                                 } else {
                                     console.error('Unity instance not initialized');
                                 }
@@ -1010,8 +960,8 @@
                     });
             } else {
                 console.log("No user is currently signed in");
-                if (unityInstance) {
-                    unityInstance.SendMessage('GameManager', 'OnSignOutFailed', 'No user signed in');
+                if (window.unityInstance) {
+                    window.unityInstance.SendMessage('GameManager', 'OnSignOutFailed', 'No user signed in');
                 } else {
                     console.error('Unity instance not initialized');
                 }
@@ -1039,8 +989,8 @@
             get(usersRef).then((snapshot) => {
                 if (!snapshot.exists()) {
                     console.log('🏆 No users found');
-                    if (unityInstance) {
-                        unityInstance.SendMessage('LeaderboardManager', 'OnLeaderboardLoaded', `${correctedGameMode}|`);
+                    if (window.unityInstance) {
+                        window.unityInstance.SendMessage('LeaderboardManager', 'OnLeaderboardLoaded', `${correctedGameMode}|`);
                     }
                     return;
                 }
@@ -1089,15 +1039,15 @@
 
                 const payload = `${correctedGameMode}|${entries.join(';')}`;
 
-                if (unityInstance) {
-                    unityInstance.SendMessage('LeaderboardManager', 'OnLeaderboardLoaded', payload);
+                if (window.unityInstance) {
+                    window.unityInstance.SendMessage('LeaderboardManager', 'OnLeaderboardLoaded', payload);
                 }
 
             }).catch((error) => {
                 console.error('❌ DIRECT LEADERBOARD ERROR:', error);
 
-                if (unityInstance) {
-                    unityInstance.SendMessage('LeaderboardManager', 'OnLeaderboardLoaded', `${correctedGameMode}|`);
+                if (window.unityInstance) {
+                    window.unityInstance.SendMessage('LeaderboardManager', 'OnLeaderboardLoaded', `${correctedGameMode}|`);
                 }
             });
         };
@@ -1110,14 +1060,14 @@
             getPlayerStats({ uid, gameMode })
                 .then((result) => {
                     console.log('✅ Player stats loaded:', result.data);
-                    if (unityInstance) {
-                        unityInstance.SendMessage(callbackObjectName, 'OnPlayerStatsLoaded', JSON.stringify(result.data));
+                    if (window.unityInstance) {
+                        window.unityInstance.SendMessage(callbackObjectName, 'OnPlayerStatsLoaded', JSON.stringify(result.data));
                     }
                 })
                 .catch((error) => {
                     console.error('❌ Error loading player stats:', error);
-                    if (unityInstance) {
-                        unityInstance.SendMessage(callbackObjectName, 'OnPlayerStatsLoaded', JSON.stringify({
+                    if (window.unityInstance) {
+                        window.unityInstance.SendMessage(callbackObjectName, 'OnPlayerStatsLoaded', JSON.stringify({
                             crowns: 0,
                             gameMode: gameMode
                         }));
@@ -1134,8 +1084,8 @@
                     crowns: 0,
                     gameMode: gameMode || "Unknown"
                 };
-                if (unityInstance) {
-                    unityInstance.SendMessage(callbackObjectName, 'OnPlayerStatsLoaded', JSON.stringify(result));
+                if (window.unityInstance) {
+                    window.unityInstance.SendMessage(callbackObjectName, 'OnPlayerStatsLoaded', JSON.stringify(result));
                 }
                 return;
             }
@@ -1153,8 +1103,8 @@
                         gameMode: gameMode
                     };
 
-                    if (unityInstance) {
-                        unityInstance.SendMessage(callbackObjectName, 'OnPlayerStatsLoaded', JSON.stringify(result));
+                    if (window.unityInstance) {
+                        window.unityInstance.SendMessage(callbackObjectName, 'OnPlayerStatsLoaded', JSON.stringify(result));
                     }
                 })
                 .catch((error) => {
@@ -1163,8 +1113,8 @@
                         crowns: 0,
                         gameMode: gameMode
                     };
-                    if (unityInstance) {
-                        unityInstance.SendMessage(callbackObjectName, 'OnPlayerStatsLoaded', JSON.stringify(result));
+                    if (window.unityInstance) {
+                        window.unityInstance.SendMessage(callbackObjectName, 'OnPlayerStatsLoaded', JSON.stringify(result));
                     }
                 });
         };
@@ -1174,13 +1124,13 @@
 
             if (!auth.currentUser) {
                 console.error('No authenticated user');
-                if (unityInstance) {
-                    unityInstance.SendMessage(callbackObjectName, 'OnPartyCleanupComplete', 'Error: Not authenticated');
+                if (window.unityInstance) {
+                    window.unityInstance.SendMessage(callbackObjectName, 'OnPartyCleanupComplete', 'Error: Not authenticated');
                 }
                 return;
             }
 
-            const oneDayAgo = Date.now() - (24 * 60 * 60 * 1000); // 24 hours ago
+            const oneDayAgo = Date.now() - (24 * 60 * 60 * 1000);
 
             get(ref(db, `partyInvites/${uid}`)).then((snapshot) => {
                 const updates = {};
@@ -1215,13 +1165,13 @@
 
             }).then(() => {
                 console.log('✅ Successfully cleaned up old party data');
-                if (unityInstance) {
-                    unityInstance.SendMessage(callbackObjectName, 'OnPartyCleanupComplete', 'success');
+                if (window.unityInstance) {
+                    window.unityInstance.SendMessage(callbackObjectName, 'OnPartyCleanupComplete', 'success');
                 }
             }).catch((error) => {
                 console.error('❌ Cleanup failed:', error);
-                if (unityInstance) {
-                    unityInstance.SendMessage(callbackObjectName, 'OnPartyCleanupComplete', error.message);
+                if (window.unityInstance) {
+                    window.unityInstance.SendMessage(callbackObjectName, 'OnPartyCleanupComplete', error.message);
                 }
             });
         };
@@ -1264,14 +1214,14 @@
             })
                 .then(() => {
                     console.log('Friend request sent successfully');
-                    if (unityInstance) {
-                        unityInstance.SendMessage(callbackObjectName, 'OnFriendRequestSent', 'success');
+                    if (window.unityInstance) {
+                        window.unityInstance.SendMessage(callbackObjectName, 'OnFriendRequestSent', 'success');
                     }
                 })
                 .catch((error) => {
                     console.error('Send request error:', error);
-                    if (unityInstance) {
-                        unityInstance.SendMessage(callbackObjectName, 'OnFriendRequestSent', error.message);
+                    if (window.unityInstance) {
+                        window.unityInstance.SendMessage(callbackObjectName, 'OnFriendRequestSent', error.message);
                     }
                 });
         };
@@ -1288,14 +1238,14 @@
             update(ref(db), updates)
                 .then(() => {
                     console.log('Friend request accepted successfully');
-                    if (unityInstance) {
-                        unityInstance.SendMessage(callbackObjectName, 'OnFriendRequestAccepted', 'success');
+                    if (window.unityInstance) {
+                        window.unityInstance.SendMessage(callbackObjectName, 'OnFriendRequestAccepted', 'success');
                     }
                 })
                 .catch((error) => {
                     console.error('Accept request error:', error);
-                    if (unityInstance) {
-                        unityInstance.SendMessage(callbackObjectName, 'OnFriendRequestAccepted', error.message);
+                    if (window.unityInstance) {
+                        window.unityInstance.SendMessage(callbackObjectName, 'OnFriendRequestAccepted', error.message);
                     }
                 });
         };
@@ -1310,14 +1260,14 @@
             update(ref(db), updates)
                 .then(() => {
                     console.log('Friend request rejected successfully');
-                    if (unityInstance) {
-                        unityInstance.SendMessage(callbackObjectName, 'OnFriendRequestRejected', 'success');
+                    if (window.unityInstance) {
+                        window.unityInstance.SendMessage(callbackObjectName, 'OnFriendRequestRejected', 'success');
                     }
                 })
                 .catch((error) => {
                     console.error('Reject request error:', error);
-                    if (unityInstance) {
-                        unityInstance.SendMessage(callbackObjectName, 'OnFriendRequestRejected', error.message);
+                    if (window.unityInstance) {
+                        window.unityInstance.SendMessage(callbackObjectName, 'OnFriendRequestRejected', error.message);
                     }
                 });
         };
@@ -1390,15 +1340,15 @@
 
                     console.log('Formatted friends data:', formattedData);
 
-                    if (unityInstance) {
-                        unityInstance.SendMessage(callbackObjectName, 'OnFriendsLoaded', formattedData);
+                    if (window.unityInstance) {
+                        window.unityInstance.SendMessage(callbackObjectName, 'OnFriendsLoaded', formattedData);
                     }
                 });
 
             }).catch((error) => {
                 console.error('Error loading friends:', error);
-                if (unityInstance) {
-                    unityInstance.SendMessage(callbackObjectName, 'OnFriendsLoaded', '||');
+                if (window.unityInstance) {
+                    window.unityInstance.SendMessage(callbackObjectName, 'OnFriendsLoaded', '||');
                 }
             });
         };
@@ -1410,13 +1360,13 @@
                 const isOnline = snapshot.val() || false;
                 const result = `${friendUid}|${isOnline}`;
 
-                if (unityInstance) {
-                    unityInstance.SendMessage(callbackObjectName, 'OnOnlineStatusReceived', result);
+                if (window.unityInstance) {
+                    window.unityInstance.SendMessage(callbackObjectName, 'OnOnlineStatusReceived', result);
                 }
             }).catch((error) => {
                 console.error('Error checking online status:', error);
-                if (unityInstance) {
-                    unityInstance.SendMessage(callbackObjectName, 'OnOnlineStatusReceived', `${friendUid}|false`);
+                if (window.unityInstance) {
+                    window.unityInstance.SendMessage(callbackObjectName, 'OnOnlineStatusReceived', `${friendUid}|false`);
                 }
             });
         };
@@ -1426,8 +1376,8 @@
 
             if (!auth.currentUser) {
                 console.error('No authenticated user');
-                if (unityInstance) {
-                    unityInstance.SendMessage(callbackObjectName, 'OnPartyKicked', 'Error: Not authenticated');
+                if (window.unityInstance) {
+                    window.unityInstance.SendMessage(callbackObjectName, 'OnPartyKicked', 'Error: Not authenticated');
                 }
                 return;
             }
@@ -1438,14 +1388,14 @@
             update(ref(db), updates)
                 .then(() => {
                     console.log('✅ Successfully kicked user from party via direct database access');
-                    if (unityInstance) {
-                        unityInstance.SendMessage(callbackObjectName, 'OnPartyKicked', 'success');
+                    if (window.unityInstance) {
+                        window.unityInstance.SendMessage(callbackObjectName, 'OnPartyKicked', 'success');
                     }
                 })
                 .catch((error) => {
                     console.error('❌ Kick from party failed:', error);
-                    if (unityInstance) {
-                        unityInstance.SendMessage(callbackObjectName, 'OnPartyKicked', error.message);
+                    if (window.unityInstance) {
+                        window.unityInstance.SendMessage(callbackObjectName, 'OnPartyKicked', error.message);
                     }
                 });
         };
@@ -1455,8 +1405,8 @@
 
             if (!auth.currentUser) {
                 console.error('No authenticated user');
-                if (unityInstance) {
-                    unityInstance.SendMessage(callbackObjectName, 'OnPartyJoinNotified', 'Error: Not authenticated');
+                if (window.unityInstance) {
+                    window.unityInstance.SendMessage(callbackObjectName, 'OnPartyJoinNotified', 'Error: Not authenticated');
                 }
                 return;
             }
@@ -1480,14 +1430,14 @@
             })
                 .then(() => {
                     console.log('✅ Successfully notified party member to join via direct database access');
-                    if (unityInstance) {
-                        unityInstance.SendMessage(callbackObjectName, 'OnPartyJoinNotified', 'success');
+                    if (window.unityInstance) {
+                        window.unityInstance.SendMessage(callbackObjectName, 'OnPartyJoinNotified', 'success');
                     }
                 })
                 .catch((error) => {
                     console.error('❌ Party join notification failed:', error);
-                    if (unityInstance) {
-                        unityInstance.SendMessage(callbackObjectName, 'OnPartyJoinNotified', error.message);
+                    if (window.unityInstance) {
+                        window.unityInstance.SendMessage(callbackObjectName, 'OnPartyJoinNotified', error.message);
                     }
                 });
         };
@@ -1509,14 +1459,14 @@
             })
                 .then(() => {
                     console.log('Party created successfully');
-                    if (unityInstance) {
-                        unityInstance.SendMessage(callbackObjectName, 'OnPartyCreated', 'success');
+                    if (window.unityInstance) {
+                        window.unityInstance.SendMessage(callbackObjectName, 'OnPartyCreated', 'success');
                     }
                 })
                 .catch((error) => {
                     console.error('Create party error:', error);
-                    if (unityInstance) {
-                        unityInstance.SendMessage(callbackObjectName, 'OnPartyCreated', error.message);
+                    if (window.unityInstance) {
+                        window.unityInstance.SendMessage(callbackObjectName, 'OnPartyCreated', error.message);
                     }
                 });
         };
@@ -1545,14 +1495,14 @@
             })
                 .then(() => {
                     console.log('Party invite sent successfully');
-                    if (unityInstance) {
-                        unityInstance.SendMessage(callbackObjectName, 'OnPartyInvited', 'success');
+                    if (window.unityInstance) {
+                        window.unityInstance.SendMessage(callbackObjectName, 'OnPartyInvited', 'success');
                     }
                 })
                 .catch((error) => {
                     console.error('Party invite error:', error);
-                    if (unityInstance) {
-                        unityInstance.SendMessage(callbackObjectName, 'OnPartyInvited', error.message);
+                    if (window.unityInstance) {
+                        window.unityInstance.SendMessage(callbackObjectName, 'OnPartyInvited', error.message);
                     }
                 });
         };
@@ -1573,14 +1523,14 @@
             })
                 .then(() => {
                     console.log('Joined party successfully');
-                    if (unityInstance) {
-                        unityInstance.SendMessage(callbackObjectName, 'OnPartyJoined', 'success');
+                    if (window.unityInstance) {
+                        window.unityInstance.SendMessage(callbackObjectName, 'OnPartyJoined', 'success');
                     }
                 })
                 .catch((error) => {
                     console.error('Join party error:', error);
-                    if (unityInstance) {
-                        unityInstance.SendMessage(callbackObjectName, 'OnPartyJoined', error.message);
+                    if (window.unityInstance) {
+                        window.unityInstance.SendMessage(callbackObjectName, 'OnPartyJoined', error.message);
                     }
                 });
         };
@@ -1593,8 +1543,8 @@
             get(partyRef).then((snapshot) => {
                 if (!snapshot.exists()) {
                     console.log(`Party ${partyId} already deleted`);
-                    if (unityInstance) {
-                        unityInstance.SendMessage(callbackObjectName, 'OnPartyLeft', 'success');
+                    if (window.unityInstance) {
+                        window.unityInstance.SendMessage(callbackObjectName, 'OnPartyLeft', 'success');
                     }
                     return;
                 }
@@ -1614,34 +1564,34 @@
                     console.log(`Deleting empty party ${partyId}`);
                     remove(partyRef).then(() => {
                         console.log('Left party and deleted empty party successfully');
-                        if (unityInstance) {
-                            unityInstance.SendMessage(callbackObjectName, 'OnPartyLeft', 'success');
+                        if (window.unityInstance) {
+                            window.unityInstance.SendMessage(callbackObjectName, 'OnPartyLeft', 'success');
                         }
                     }).catch((error) => {
                         console.error('Error deleting party:', error);
-                        if (unityInstance) {
-                            unityInstance.SendMessage(callbackObjectName, 'OnPartyLeft', error.message);
+                        if (window.unityInstance) {
+                            window.unityInstance.SendMessage(callbackObjectName, 'OnPartyLeft', error.message);
                         }
                     });
                 } else {
                     update(ref(db), updates)
                         .then(() => {
                             console.log('Left party successfully');
-                            if (unityInstance) {
-                                unityInstance.SendMessage(callbackObjectName, 'OnPartyLeft', 'success');
+                            if (window.unityInstance) {
+                                window.unityInstance.SendMessage(callbackObjectName, 'OnPartyLeft', 'success');
                             }
                         })
                         .catch((error) => {
                             console.error('Leave party error:', error);
-                            if (unityInstance) {
-                                unityInstance.SendMessage(callbackObjectName, 'OnPartyLeft', error.message);
+                            if (window.unityInstance) {
+                                window.unityInstance.SendMessage(callbackObjectName, 'OnPartyLeft', error.message);
                             }
                         });
                 }
             }).catch((error) => {
                 console.error('Error checking party:', error);
-                if (unityInstance) {
-                    unityInstance.SendMessage(callbackObjectName, 'OnPartyLeft', error.message);
+                if (window.unityInstance) {
+                    window.unityInstance.SendMessage(callbackObjectName, 'OnPartyLeft', error.message);
                 }
             });
         };
@@ -1663,17 +1613,16 @@
                 const result = members.join('-');
                 console.log('Party members loaded:', result);
 
-                if (unityInstance) {
-                    unityInstance.SendMessage(callbackObjectName, 'OnPartyMembersLoaded', result);
+                if (window.unityInstance) {
+                    window.unityInstance.SendMessage(callbackObjectName, 'OnPartyMembersLoaded', result);
                 }
             }).catch((error) => {
                 console.error('Error loading party members:', error);
-                if (unityInstance) {
-                    unityInstance.SendMessage(callbackObjectName, 'OnPartyMembersLoaded', '');
+                if (window.unityInstance) {
+                    window.unityInstance.SendMessage(callbackObjectName, 'OnPartyMembersLoaded', '');
                 }
             });
         };
-
     </script>
 </head>
 <body>
@@ -1722,14 +1671,6 @@
                     <canvas id="unity-canvas"></canvas>
                     <div id="loading-overlay">Loading NeouWebGL...</div>
                     <button id="fullscreen-button">Fullscreen</button>
-                    
-                    <!-- Ad Overlay - will show pre-roll ad before game starts -->
-                    <div id="ad-overlay" style="display: none;">
-                        <div id="ad-container"></div>
-                        <div class="ad-loading-text" id="ad-loading-text">Loading advertisement...</div>
-                        <div class="ad-counter" id="ad-counter"></div>
-                        <button class="skip-ad-button" id="skip-ad-button">Skip Ad</button>
-                    </div>
                 </div>
 
                 <!-- How to play image -->
@@ -1798,10 +1739,11 @@
         <p>Neou.io is committed to providing a safe gaming environment for all players. We implement appropriate chat filters, reporting systems, and privacy protections to ensure a positive gaming experience.</p>
     </div>
 
-    <!-- Your existing JavaScript (with added AppLixir pre-roll ad integration) -->
+    <!-- Your existing JavaScript (unchanged) -->
     <script>
+        // Your existing JavaScript code (exactly as you had it)
         // Detect iOS
-          function isIOS() {
+        function isIOS() {
             return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
         }
 
@@ -1963,13 +1905,9 @@
         var canvas = document.querySelector("#unity-canvas");
         var loadingOverlay = document.querySelector("#loading-overlay");
         var fullscreenButton = document.querySelector("#fullscreen-button");
-        
-        // Ad related elements
-        var adOverlay = document.getElementById("ad-overlay");
-        var adContainer = document.getElementById("ad-container");
-        var adLoadingText = document.getElementById("ad-loading-text");
-        var adCounter = document.getElementById("ad-counter");
-        var skipAdButton = document.getElementById("skip-ad-button");
+
+        // Make unityInstance available globally for Firebase calls
+        window.unityInstance = unityInstance;
 
         // Move fullscreen button to top center
         fullscreenButton.style.left = '50%';
@@ -2101,216 +2039,67 @@
             }, 100);
         });
 
-        // ========== APPLIXIR PRE-ROLL AD INTEGRATION ==========
-        // This function will be called when the page loads to show the pre-roll ad
-        function showPreRollAd() {
-            // Check if ad has already been shown in this session
-            if (sessionStorage.getItem('preroll_shown') === 'true') {
-                console.log('Pre-roll ad already shown this session, loading game directly');
-                loadUnityGame();
+        const possibleBuildPaths = [
+            "Build/NeouWebGL.loader.js",
+            "Build/neouwebgl.loader.js",
+            "Build/NeouWebGL/NeouWebGL.loader.js"
+        ];
+
+        function tryLoadUnityScript(index = 0) {
+            if (index >= possibleBuildPaths.length) {
+                console.error("All Unity script load attempts failed.");
+                loadingOverlay.innerText = 'Failed to load the game. Please check your network, file paths, or Unity build settings.';
                 return;
             }
-            
-            console.log('Starting pre-roll ad sequence');
-            
-            // Show the ad overlay
-            adOverlay.style.display = 'flex';
-            adLoadingText.style.display = 'block';
-            adCounter.style.display = 'none';
-            skipAdButton.style.display = 'none';
-            
-            // Initialize AppLixir SDK
-            // IMPORTANT: Replace 'YOUR_APPLIXIR_APP_ID' with your actual AppLixir App ID
-            // You need to register at https://applixir.com and create an app to get your App ID
-            const APPLIXIR_APP_ID = 'YOUR_APPLIXIR_APP_ID'; // <-- REPLACE THIS
-            
-            // Check if AppLixir SDK is loaded
-            if (typeof AppLixir === 'undefined') {
-                console.error('AppLixir SDK not loaded! Make sure the SDK script is included.');
-                adLoadingText.innerText = 'Ad service unavailable. Starting game...';
-                setTimeout(() => {
-                    hideAdAndStartGame();
-                }, 2000);
-                return;
-            }
-            
-            // Initialize AppLixir
-            const applixir = new AppLixir({
-                appId: APPLIXIR_APP_ID,
-                onReady: function() {
-                    console.log('AppLixir SDK ready');
-                    adLoadingText.innerText = 'Loading ad...';
-                    loadAd();
-                },
-                onError: function(error) {
-                    console.error('AppLixir initialization error:', error);
-                    adLoadingText.innerText = 'Ad could not load. Starting game...';
-                    setTimeout(() => {
-                        hideAdAndStartGame();
-                    }, 2000);
-                }
-            });
-            
-            function loadAd() {
-                // Load a pre-roll video ad
-                applixir.loadAd({
-                    type: 'preroll',
-                    container: adContainer,
-                    onLoaded: function() {
-                        console.log('Ad loaded successfully');
-                        adLoadingText.style.display = 'none';
-                        adCounter.style.display = 'block';
-                        updateAdCounter(0);
-                        startAdPlayback();
-                    },
-                    onError: function(error) {
-                        console.error('Ad load error:', error);
-                        adLoadingText.innerText = 'Ad failed to load. Starting game...';
-                        setTimeout(() => {
-                            hideAdAndStartGame();
-                        }, 2000);
-                    }
+
+            const buildScriptPath = possibleBuildPaths[index];
+            console.log(`Attempting to load Unity script: ${buildScriptPath}`);
+
+            var script = document.createElement("script");
+            script.src = buildScriptPath;
+            script.onload = () => {
+                console.log(`Unity script loaded successfully: ${buildScriptPath}`);
+                const buildName = buildScriptPath.split('/').pop().replace('.loader.js', '');
+                createUnityInstance(canvas, {
+                    dataUrl: `Build/${buildName}.data`,
+                    frameworkUrl: `Build/${buildName}.framework.js`,
+                    codeUrl: `Build/${buildName}.wasm`,
+                    streamingAssetsUrl: "StreamingAssets",
+                    companyName: "DefaultCompany",
+                    productName: "1.0",
+                    productVersion: "1.0",
+                    autoSyncPersistentDataPath: true
+                }).then((instance) => {
+                    unityInstance = instance;
+                    window.unityInstance = instance; // Update global reference
+                    loadingOverlay.style.display = 'none';
+                    console.log('Unity instance initialized');
+                    setTimeout(function () {
+                        handleResize();
+                        applySafeAreaCompensation();
+                    }, 100);
+                }).catch((error) => {
+                    console.error("Unity initialization error:", error.message);
+                    loadingOverlay.innerText = 'Failed to initialize the game. Please try again.';
                 });
-            }
-            
-            function startAdPlayback() {
-                applixir.playAd({
-                    onStart: function() {
-                        console.log('Ad playback started');
-                        // Start counting ad duration (assuming 15-30 second ads)
-                        let duration = 15; // Default, AppLixir should provide actual duration
-                        let currentTime = 0;
-                        
-                        const interval = setInterval(() => {
-                            currentTime++;
-                            updateAdCounter(duration - currentTime);
-                            
-                            if (currentTime >= duration) {
-                                clearInterval(interval);
-                                onAdComplete();
-                            }
-                        }, 1000);
-                        
-                        // Enable skip button after 5 seconds (optional)
-                        setTimeout(() => {
-                            skipAdButton.style.display = 'block';
-                            skipAdButton.onclick = function() {
-                                clearInterval(interval);
-                                applixir.skipAd();
-                                onAdComplete();
-                            };
-                        }, 5000);
-                    },
-                    onComplete: function() {
-                        console.log('Ad completed');
-                        onAdComplete();
-                    },
-                    onError: function(error) {
-                        console.error('Ad playback error:', error);
-                        onAdComplete();
-                    },
-                    onSkip: function() {
-                        console.log('Ad skipped');
-                        onAdComplete();
-                    }
-                });
-            }
-            
-            function updateAdCounter(secondsLeft) {
-                if (secondsLeft > 0) {
-                    adCounter.innerText = `Ad ends in ${secondsLeft}s`;
-                } else {
-                    adCounter.innerText = 'Ad ending...';
-                }
-            }
-            
-            function onAdComplete() {
-                // Mark that ad has been shown this session
-                sessionStorage.setItem('preroll_shown', 'true');
-                hideAdAndStartGame();
-            }
-            
-            function hideAdAndStartGame() {
-                // Hide the ad overlay
-                adOverlay.style.display = 'none';
-                // Clear the ad container
-                adContainer.innerHTML = '';
-                // Load the actual game
-                loadUnityGame();
-            }
+            };
+            script.onerror = (error) => {
+                console.error(`Failed to load Unity script at ${buildScriptPath}:`, error.message);
+                console.error(`Check if the file exists at ${buildScriptPath} and is accessible. Possible issues: file missing, incorrect path, server permissions, or incorrect MIME type.`);
+                console.error(`Attempting next path (if available)...`);
+                tryLoadUnityScript(index + 1);
+            };
+            document.body.appendChild(script);
         }
-        
-        // Function to load the Unity game (moved from original script)
-        function loadUnityGame() {
-            const possibleBuildPaths = [
-                "Build/NeouWebGL.loader.js",
-                "Build/neouwebgl.loader.js",
-                "Build/NeouWebGL/NeouWebGL.loader.js"
-            ];
 
-            function tryLoadUnityScript(index = 0) {
-                if (index >= possibleBuildPaths.length) {
-                    console.error("All Unity script load attempts failed.");
-                    loadingOverlay.innerText = 'Failed to load the game. Please check your network, file paths, or Unity build settings.';
-                    return;
-                }
-
-                const buildScriptPath = possibleBuildPaths[index];
-                console.log(`Attempting to load Unity script: ${buildScriptPath}`);
-
-                var script = document.createElement("script");
-                script.src = buildScriptPath;
-                script.onload = () => {
-                    console.log(`Unity script loaded successfully: ${buildScriptPath}`);
-                    const buildName = buildScriptPath.split('/').pop().replace('.loader.js', '');
-                    createUnityInstance(canvas, {
-                        dataUrl: `Build/${buildName}.data`,
-                        frameworkUrl: `Build/${buildName}.framework.js`,
-                        codeUrl: `Build/${buildName}.wasm`,
-                        streamingAssetsUrl: "StreamingAssets",
-                        companyName: "DefaultCompany",
-                        productName: "1.0",
-                        productVersion: "1.0",
-                        autoSyncPersistentDataPath: true
-                    }).then((instance) => {
-                        unityInstance = instance;
-                        loadingOverlay.style.display = 'none';
-                        console.log('Unity instance initialized');
-                        setTimeout(function () {
-                            handleResize();
-                            applySafeAreaCompensation();
-                        }, 100);
-                    }).catch((error) => {
-                        console.error("Unity initialization error:", error.message);
-                        loadingOverlay.innerText = 'Failed to initialize the game. Please try again.';
-                    });
-                };
-                script.onerror = (error) => {
-                    console.error(`Failed to load Unity script at ${buildScriptPath}:`, error.message);
-                    console.error(`Check if the file exists at ${buildScriptPath} and is accessible. Possible issues: file missing, incorrect path, server permissions, or incorrect MIME type.`);
-                    console.error(`Attempting next path (if available)...`);
-                    tryLoadUnityScript(index + 1);
-                };
-                document.body.appendChild(script);
-            }
-
-            tryLoadUnityScript();
-        }
-        
-        // Start the pre-roll ad sequence when page loads
-        // Wait for everything to be ready, then show ad and load game after
-        window.addEventListener('load', function() {
-            // Small delay to ensure DOM is fully ready
-            setTimeout(() => {
-                showPreRollAd();
-            }, 100);
-        });
+        tryLoadUnityScript();
 
         document.addEventListener('click', () => {
-            if (typeof AudioContext !== 'undefined' && unityInstance && unityInstance.Module.audioContext) {
+            if (typeof AudioContext !== 'undefined' && unityInstance && unityInstance.Module && unityInstance.Module.audioContext) {
                 unityInstance.Module.audioContext.resume().then(() => console.log('Audio context resumed'));
             }
         }, { once: true });
     </script>
 </body>
 </html>
+```
