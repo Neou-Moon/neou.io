@@ -21,7 +21,8 @@
     <meta name="twitter:title" content="Neou.io | An Outer Worldly Adventure">
     <meta name="twitter:description" content="Free multiplayer space adventure game with exploration, missions, and leaderboards.">
     
-    <!-- Google AdSense - COMPLETELY REMOVED -->
+    <!-- AppLixir Pre-roll Ad SDK -->
+    <script src="https://cdn.applixir.com/sdk/applixir-sdk.min.js"></script>
     
     <title>Neou.io | An Outer Worldly Adventure</title>
     <link rel="icon" href="data:;base64,iVBORw0KGgo=">
@@ -177,6 +178,65 @@
             display: block;
             object-fit: contain;
             aspect-ratio: 16/9;
+        }
+
+        /* Ad overlay container - sits on top of the game canvas */
+        #ad-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: 100;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            border-radius: 8px;
+        }
+        
+        #ad-container {
+            width: 100%;
+            height: 100%;
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .ad-loading-text {
+            color: white;
+            font-size: 18px;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .skip-ad-button {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            border: 1px solid #fff;
+            border-radius: 4px;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-size: 14px;
+            z-index: 101;
+            display: none;
+        }
+        
+        .ad-counter {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.6);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            z-index: 101;
         }
 
         .how-to-play {
@@ -595,7 +655,7 @@
         });
 
         // ============================================================================
-        // AUTHENTICATION FUNCTIONS
+        // AUTHENTICATION FUNCTIONS (keeping all your existing Firebase functions)
         // ============================================================================
 
         window.FirebaseCheckUsernameAvailability = async function (username) {
@@ -1662,6 +1722,14 @@
                     <canvas id="unity-canvas"></canvas>
                     <div id="loading-overlay">Loading NeouWebGL...</div>
                     <button id="fullscreen-button">Fullscreen</button>
+                    
+                    <!-- Ad Overlay - will show pre-roll ad before game starts -->
+                    <div id="ad-overlay" style="display: none;">
+                        <div id="ad-container"></div>
+                        <div class="ad-loading-text" id="ad-loading-text">Loading advertisement...</div>
+                        <div class="ad-counter" id="ad-counter"></div>
+                        <button class="skip-ad-button" id="skip-ad-button">Skip Ad</button>
+                    </div>
                 </div>
 
                 <!-- How to play image -->
@@ -1730,9 +1798,8 @@
         <p>Neou.io is committed to providing a safe gaming environment for all players. We implement appropriate chat filters, reporting systems, and privacy protections to ensure a positive gaming experience.</p>
     </div>
 
-    <!-- Your existing JavaScript (unchanged) -->
+    <!-- Your existing JavaScript (with added AppLixir pre-roll ad integration) -->
     <script>
-        // Your existing JavaScript code (exactly as you had it)
         // Detect iOS
           function isIOS() {
             return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
@@ -1896,6 +1963,13 @@
         var canvas = document.querySelector("#unity-canvas");
         var loadingOverlay = document.querySelector("#loading-overlay");
         var fullscreenButton = document.querySelector("#fullscreen-button");
+        
+        // Ad related elements
+        var adOverlay = document.getElementById("ad-overlay");
+        var adContainer = document.getElementById("ad-container");
+        var adLoadingText = document.getElementById("ad-loading-text");
+        var adCounter = document.getElementById("ad-counter");
+        var skipAdButton = document.getElementById("skip-ad-button");
 
         // Move fullscreen button to top center
         fullscreenButton.style.left = '50%';
@@ -2027,59 +2101,210 @@
             }, 100);
         });
 
-        const possibleBuildPaths = [
-            "Build/NeouWebGL.loader.js",
-            "Build/neouwebgl.loader.js",
-            "Build/NeouWebGL/NeouWebGL.loader.js"
-        ];
-
-        function tryLoadUnityScript(index = 0) {
-            if (index >= possibleBuildPaths.length) {
-                console.error("All Unity script load attempts failed.");
-                loadingOverlay.innerText = 'Failed to load the game. Please check your network, file paths, or Unity build settings.';
+        // ========== APPLIXIR PRE-ROLL AD INTEGRATION ==========
+        // This function will be called when the page loads to show the pre-roll ad
+        function showPreRollAd() {
+            // Check if ad has already been shown in this session
+            if (sessionStorage.getItem('preroll_shown') === 'true') {
+                console.log('Pre-roll ad already shown this session, loading game directly');
+                loadUnityGame();
                 return;
             }
-
-            const buildScriptPath = possibleBuildPaths[index];
-            console.log(`Attempting to load Unity script: ${buildScriptPath}`);
-
-            var script = document.createElement("script");
-            script.src = buildScriptPath;
-            script.onload = () => {
-                console.log(`Unity script loaded successfully: ${buildScriptPath}`);
-                const buildName = buildScriptPath.split('/').pop().replace('.loader.js', '');
-                createUnityInstance(canvas, {
-                    dataUrl: `Build/${buildName}.data`,
-                    frameworkUrl: `Build/${buildName}.framework.js`,
-                    codeUrl: `Build/${buildName}.wasm`,
-                    streamingAssetsUrl: "StreamingAssets",
-                    companyName: "DefaultCompany",
-                    productName: "1.0",
-                    productVersion: "1.0",
-                    autoSyncPersistentDataPath: true
-                }).then((instance) => {
-                    unityInstance = instance;
-                    loadingOverlay.style.display = 'none';
-                    console.log('Unity instance initialized');
-                    setTimeout(function () {
-                        handleResize();
-                        applySafeAreaCompensation();
-                    }, 100);
-                }).catch((error) => {
-                    console.error("Unity initialization error:", error.message);
-                    loadingOverlay.innerText = 'Failed to initialize the game. Please try again.';
+            
+            console.log('Starting pre-roll ad sequence');
+            
+            // Show the ad overlay
+            adOverlay.style.display = 'flex';
+            adLoadingText.style.display = 'block';
+            adCounter.style.display = 'none';
+            skipAdButton.style.display = 'none';
+            
+            // Initialize AppLixir SDK
+            // IMPORTANT: Replace 'YOUR_APPLIXIR_APP_ID' with your actual AppLixir App ID
+            // You need to register at https://applixir.com and create an app to get your App ID
+            const APPLIXIR_APP_ID = 'YOUR_APPLIXIR_APP_ID'; // <-- REPLACE THIS
+            
+            // Check if AppLixir SDK is loaded
+            if (typeof AppLixir === 'undefined') {
+                console.error('AppLixir SDK not loaded! Make sure the SDK script is included.');
+                adLoadingText.innerText = 'Ad service unavailable. Starting game...';
+                setTimeout(() => {
+                    hideAdAndStartGame();
+                }, 2000);
+                return;
+            }
+            
+            // Initialize AppLixir
+            const applixir = new AppLixir({
+                appId: APPLIXIR_APP_ID,
+                onReady: function() {
+                    console.log('AppLixir SDK ready');
+                    adLoadingText.innerText = 'Loading ad...';
+                    loadAd();
+                },
+                onError: function(error) {
+                    console.error('AppLixir initialization error:', error);
+                    adLoadingText.innerText = 'Ad could not load. Starting game...';
+                    setTimeout(() => {
+                        hideAdAndStartGame();
+                    }, 2000);
+                }
+            });
+            
+            function loadAd() {
+                // Load a pre-roll video ad
+                applixir.loadAd({
+                    type: 'preroll',
+                    container: adContainer,
+                    onLoaded: function() {
+                        console.log('Ad loaded successfully');
+                        adLoadingText.style.display = 'none';
+                        adCounter.style.display = 'block';
+                        updateAdCounter(0);
+                        startAdPlayback();
+                    },
+                    onError: function(error) {
+                        console.error('Ad load error:', error);
+                        adLoadingText.innerText = 'Ad failed to load. Starting game...';
+                        setTimeout(() => {
+                            hideAdAndStartGame();
+                        }, 2000);
+                    }
                 });
-            };
-            script.onerror = (error) => {
-                console.error(`Failed to load Unity script at ${buildScriptPath}:`, error.message);
-                console.error(`Check if the file exists at ${buildScriptPath} and is accessible. Possible issues: file missing, incorrect path, server permissions, or incorrect MIME type.`);
-                console.error(`Attempting next path (if available)...`);
-                tryLoadUnityScript(index + 1);
-            };
-            document.body.appendChild(script);
+            }
+            
+            function startAdPlayback() {
+                applixir.playAd({
+                    onStart: function() {
+                        console.log('Ad playback started');
+                        // Start counting ad duration (assuming 15-30 second ads)
+                        let duration = 15; // Default, AppLixir should provide actual duration
+                        let currentTime = 0;
+                        
+                        const interval = setInterval(() => {
+                            currentTime++;
+                            updateAdCounter(duration - currentTime);
+                            
+                            if (currentTime >= duration) {
+                                clearInterval(interval);
+                                onAdComplete();
+                            }
+                        }, 1000);
+                        
+                        // Enable skip button after 5 seconds (optional)
+                        setTimeout(() => {
+                            skipAdButton.style.display = 'block';
+                            skipAdButton.onclick = function() {
+                                clearInterval(interval);
+                                applixir.skipAd();
+                                onAdComplete();
+                            };
+                        }, 5000);
+                    },
+                    onComplete: function() {
+                        console.log('Ad completed');
+                        onAdComplete();
+                    },
+                    onError: function(error) {
+                        console.error('Ad playback error:', error);
+                        onAdComplete();
+                    },
+                    onSkip: function() {
+                        console.log('Ad skipped');
+                        onAdComplete();
+                    }
+                });
+            }
+            
+            function updateAdCounter(secondsLeft) {
+                if (secondsLeft > 0) {
+                    adCounter.innerText = `Ad ends in ${secondsLeft}s`;
+                } else {
+                    adCounter.innerText = 'Ad ending...';
+                }
+            }
+            
+            function onAdComplete() {
+                // Mark that ad has been shown this session
+                sessionStorage.setItem('preroll_shown', 'true');
+                hideAdAndStartGame();
+            }
+            
+            function hideAdAndStartGame() {
+                // Hide the ad overlay
+                adOverlay.style.display = 'none';
+                // Clear the ad container
+                adContainer.innerHTML = '';
+                // Load the actual game
+                loadUnityGame();
+            }
         }
+        
+        // Function to load the Unity game (moved from original script)
+        function loadUnityGame() {
+            const possibleBuildPaths = [
+                "Build/NeouWebGL.loader.js",
+                "Build/neouwebgl.loader.js",
+                "Build/NeouWebGL/NeouWebGL.loader.js"
+            ];
 
-        tryLoadUnityScript();
+            function tryLoadUnityScript(index = 0) {
+                if (index >= possibleBuildPaths.length) {
+                    console.error("All Unity script load attempts failed.");
+                    loadingOverlay.innerText = 'Failed to load the game. Please check your network, file paths, or Unity build settings.';
+                    return;
+                }
+
+                const buildScriptPath = possibleBuildPaths[index];
+                console.log(`Attempting to load Unity script: ${buildScriptPath}`);
+
+                var script = document.createElement("script");
+                script.src = buildScriptPath;
+                script.onload = () => {
+                    console.log(`Unity script loaded successfully: ${buildScriptPath}`);
+                    const buildName = buildScriptPath.split('/').pop().replace('.loader.js', '');
+                    createUnityInstance(canvas, {
+                        dataUrl: `Build/${buildName}.data`,
+                        frameworkUrl: `Build/${buildName}.framework.js`,
+                        codeUrl: `Build/${buildName}.wasm`,
+                        streamingAssetsUrl: "StreamingAssets",
+                        companyName: "DefaultCompany",
+                        productName: "1.0",
+                        productVersion: "1.0",
+                        autoSyncPersistentDataPath: true
+                    }).then((instance) => {
+                        unityInstance = instance;
+                        loadingOverlay.style.display = 'none';
+                        console.log('Unity instance initialized');
+                        setTimeout(function () {
+                            handleResize();
+                            applySafeAreaCompensation();
+                        }, 100);
+                    }).catch((error) => {
+                        console.error("Unity initialization error:", error.message);
+                        loadingOverlay.innerText = 'Failed to initialize the game. Please try again.';
+                    });
+                };
+                script.onerror = (error) => {
+                    console.error(`Failed to load Unity script at ${buildScriptPath}:`, error.message);
+                    console.error(`Check if the file exists at ${buildScriptPath} and is accessible. Possible issues: file missing, incorrect path, server permissions, or incorrect MIME type.`);
+                    console.error(`Attempting next path (if available)...`);
+                    tryLoadUnityScript(index + 1);
+                };
+                document.body.appendChild(script);
+            }
+
+            tryLoadUnityScript();
+        }
+        
+        // Start the pre-roll ad sequence when page loads
+        // Wait for everything to be ready, then show ad and load game after
+        window.addEventListener('load', function() {
+            // Small delay to ensure DOM is fully ready
+            setTimeout(() => {
+                showPreRollAd();
+            }, 100);
+        });
 
         document.addEventListener('click', () => {
             if (typeof AudioContext !== 'undefined' && unityInstance && unityInstance.Module.audioContext) {
